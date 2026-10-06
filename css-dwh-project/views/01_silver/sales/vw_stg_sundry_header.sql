@@ -1,0 +1,32 @@
+CREATE VIEW -- OR ALTER
+[stg].[sundry_header]
+AS
+SELECT sh.TransType AS trans_type,
+       sh.InvoiceNo AS invoice_no,
+       sh.OpenInvoice AS open_invoice,
+       sh.InvoiceDate AS invoice_date,
+       sh.Salesperson AS salesperson,
+       sh.CustomerCode AS customer_code,
+       sh.TotalValue AS total_value,
+       sh.PaymentToDate AS payment_to_date,
+       sh.DiscountToDate AS discount_to_date,
+       sh.WriteOffToDate AS write_off_to_date,
+       sh.PayCompleteDate AS pay_complete_date,
+       sh.TaxRate1 AS tax_rate_1,
+       sh.GoodsValue1 AS goods_value_1,
+       sh.TaxValue1 AS tax_value_1,
+       sh.TaxRate2 AS tax_rate_2,
+       sh.GoodsValue2 AS goods_value_2,
+       sh.TaxValue2 AS tax_value_2,
+       sh.TaxRate3 AS tax_rate_3,
+       sh.GoodsValue3 AS goods_value_3,
+       sh.TaxValue3 AS tax_value_3,
+       sh.TaxRate4 AS tax_rate_4,
+       sh.GoodsValue4 AS goods_value_4,
+       sh.TaxValue4 AS tax_value_4,
+       sh.TaxRate5 AS tax_rate_5,
+       sh.GoodsValue5 AS goods_value_5,
+       sh.TaxValue5 AS tax_value_5,
+       sh.SiteNo AS site_no,
+       sh.row_modified_datetime
+FROM   raw_ccdata.SundryHeader AS sh;

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "30da1cb7970ec3abcccc",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 6001,
+    "height": 720,
+    "width": 1280,
+    "tabOrder": 1000
+  },
+  "visualGroup": {
+    "displayName": "Custom Modal",
+    "groupMode": "ScaleMode"
+  },
+  "isHidden": true
+}

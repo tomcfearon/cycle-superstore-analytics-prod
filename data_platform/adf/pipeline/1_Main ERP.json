@@ -1,0 +1,529 @@
+{
+	"name": "1_Main ERP",
+	"properties": {
+		"activities": [
+			{
+				"name": "CCData_Tables",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Wake DB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@createArray(\n  json('{\"Name\": \"dbo.Customer\", \"IsIncremental\": true, \"PrimaryKey\": \"CustomerCode\", \"WatermarkCol\": \"row_modified_datetime\", \"CustomQuery\": \"SELECT * FROM dbo.Customer WHERE row_modified_datetime >= DATEADD(year, -3, GETDATE())\"}'),\n  json('{\"Name\": \"dbo.InvoiceHeader\", \"IsIncremental\": true, \"PrimaryKey\": \"TransType,InvoiceNo\", \"WatermarkCol\": \"row_modified_datetime\", \"CustomQuery\": \"SELECT * FROM dbo.InvoiceHeader WHERE row_modified_datetime >= DATEADD(year, -3, GETDATE())\"}'),\n  json('{\"Name\": \"dbo.Products\", \"IsIncremental\": true, \"PrimaryKey\": \"ModelNo\", \"WatermarkCol\": \"row_modified_datetime\", \"CustomQuery\": \"SELECT * FROM dbo.Products WHERE row_modified_datetime >= DATEADD(year, -3, GETDATE())\"}'),\n  json('{\"Name\": \"dbo.Repairs\", \"IsIncremental\": true, \"PrimaryKey\": \"FaultNo\", \"WatermarkCol\": \"row_modified_datetime\", \"CustomQuery\": \"SELECT * FROM dbo.Repairs WHERE row_modified_datetime >= DATEADD(year, -3, GETDATE())\"}'),\n  json('{\"Name\": \"dbo.Stock\", \"IsIncremental\": true, \"PrimaryKey\": \"StockCode\", \"WatermarkCol\": \"row_modified_datetime\", \"CustomQuery\": \"SELECT * FROM dbo.Stock WHERE row_modified_datetime >= DATEADD(year, -3, GETDATE())\"}'),\n  json('{\"Name\": \"dbo.SundryHeader\", \"IsIncremental\": true, \"PrimaryKey\": \"TransType,InvoiceNo\", \"WatermarkCol\": \"row_modified_datetime\", \"CustomQuery\": \"SELECT * FROM dbo.SundryHeader WHERE row_modified_datetime >= DATEADD(year, -3, GETDATE())\"}'),\n  json('{\"Name\": \"dbo.InvoiceDetails\", \"IsIncremental\": true, \"PrimaryKey\": \"TransType,InvoiceNo,GroupSeqNo\", \"WatermarkCol\": \"h.row_modified_datetime\", \"CustomQuery\": \"SELECT d.* FROM dbo.InvoiceDetails d INNER JOIN dbo.InvoiceHeader h ON d.InvoiceNo = h.InvoiceNo AND d.TransType = h.TransType WHERE h.row_modified_datetime >= DATEADD(year, -3, GETDATE())\", \"BaseQuery\": \"SELECT d.* FROM dbo.InvoiceDetails d INNER JOIN dbo.InvoiceHeader h ON d.InvoiceNo = h.InvoiceNo AND d.TransType = h.TransType WHERE 1=1\"}'),\n  json('{\"Name\": \"dbo.RepairsDetails\", \"IsIncremental\": true, \"PrimaryKey\": \"FaultNo,GroupSeqNo\", \"WatermarkCol\": \"h.row_modified_datetime\", \"CustomQuery\": \"SELECT d.* FROM dbo.RepairsDetails d INNER JOIN dbo.Repairs h ON d.FaultNo = h.FaultNo WHERE h.row_modified_datetime >= DATEADD(year, -3, GETDATE())\", \"BaseQuery\": \"SELECT d.* FROM dbo.RepairsDetails d INNER JOIN dbo.Repairs h ON d.FaultNo = h.FaultNo WHERE 1=1\"}'),\n  json('{\"Name\": \"dbo.SundryDetails\", \"IsIncremental\": true, \"PrimaryKey\": \"TransType,InvoiceNo,GroupSeqNo\", \"WatermarkCol\": \"h.row_modified_datetime\", \"CustomQuery\": \"SELECT d.* FROM dbo.SundryDetails d INNER JOIN dbo.SundryHeader h ON d.InvoiceNo = h.InvoiceNo AND d.TransType = h.TransType WHERE h.row_modified_datetime >= DATEADD(year, -3, GETDATE())\", \"BaseQuery\": \"SELECT d.* FROM dbo.SundryDetails d INNER JOIN dbo.SundryHeader h ON d.InvoiceNo = h.InvoiceNo AND d.TransType = h.TransType WHERE 1=1\"}'),\n  json('{\"Name\": \"dbo.SaleOrderHeader\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.SaleOrderDetails\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.StockCountedLocations\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.Quotations\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.QuotationDetails\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.PurchaseOrderHeader\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.PurchaseOrderDetails\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.CustomerPhoneNo\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.UsedBikes\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.AdminUsers\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.Events\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}'),\n  json('{\"Name\": \"dbo.Makes\", \"IsIncremental\": false, \"PrimaryKey\": \"\", \"WatermarkCol\": \"\", \"CustomQuery\": \"\"}')\n)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "LogRefreshCCData",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "If Condition1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[meta].[usp_log_refresh]",
+								"storedProcedureParameters": {
+									"table_name": {
+										"value": {
+											"value": "@replace(item().Name, 'dbo.', 'raw_ccdata.')",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "Azure_DWH",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+								}
+							}
+						},
+						{
+							"name": "Get Last Row Modified",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "SELECT COALESCE(DATEADD(hour, -1, MAX(last_refresh_utc)), '1900-01-01') AS last_refresh_utc\nFROM [meta].[refresh_metadata]\nWHERE table_name = '@{replace(item().Name, 'dbo.', 'raw_ccdata.')}'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": "[meta]",
+										"pTable": "[refresh_metadata]",
+										"ds_database_name": {
+											"value": "@pipeline().globalParameters.DWH_DB_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						{
+							"name": "Drop Full",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Get Last Row Modified",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[usp_drop_if_full_load]",
+								"storedProcedureParameters": {
+									"FullTableName": {
+										"value": {
+											"value": "@item().Name",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"IsIncremental": {
+										"value": {
+											"value": "@item().IsIncremental",
+											"type": "Expression"
+										},
+										"type": "Boolean"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "Azure_DWH",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"linked_db_name": {
+										"value": "@pipeline().globalParameters.DWH_DB_Name",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Drop Full",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@not(empty(item().PrimaryKey))",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Insert",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [
+											{
+												"name": "Source",
+												"value": "@{split(item().Name, '.')[0]}.@{split(item().Name, '.')[1]}\""
+											},
+											{
+												"name": "Destination",
+												"value": "raw_ccdata.@{split(item().Name, '.')[1]}"
+											}
+										],
+										"typeProperties": {
+											"source": {
+												"type": "SqlServerSource",
+												"sqlReaderQuery": {
+													"value": "@if(item().IsIncremental, \n    if(equals(pipeline().globalParameters.Environment, 'Prod'), \n        if(contains(item(), 'BaseQuery'),\n            concat(item().BaseQuery, ' AND ', item().WatermarkCol, ' > ''', activity('Get Last Row Modified').output.firstRow.last_refresh_utc, ''''),\n            concat('SELECT * FROM ', item().Name, ' WHERE ', item().WatermarkCol, ' > ''', activity('Get Last Row Modified').output.firstRow.last_refresh_utc, '''')\n        ), \n        concat(item().CustomQuery, ' AND ', item().WatermarkCol, ' > ''', activity('Get Last Row Modified').output.firstRow.last_refresh_utc, '''')\n    ), \n    if(equals(pipeline().globalParameters.Environment, 'Prod'), \n        concat('SELECT * FROM ', item().Name), \n        if(empty(item().CustomQuery), concat('SELECT * FROM ', item().Name), item().CustomQuery)\n    )\n)",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"sink": {
+												"type": "AzureSqlSink",
+												"writeBehavior": "insert",
+												"sqlWriterUseTableLock": false,
+												"tableOption": "autoCreate",
+												"disableMetricsCollection": false
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ccdata_tables",
+												"type": "DatasetReference",
+												"parameters": {
+													"pSchema": {
+														"value": "@split(item().Name, '.')[0]",
+														"type": "Expression"
+													},
+													"pTable": {
+														"value": "@split(item().Name, '.')[1]",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "azure_sql_dwh",
+												"type": "DatasetReference",
+												"parameters": {
+													"pSchema": {
+														"value": "raw_ccdata",
+														"type": "Expression"
+													},
+													"pTable": {
+														"value": "@split(item().Name, '.')[1]",
+														"type": "Expression"
+													},
+													"ds_database_name": "@pipeline().globalParameters.DWH_DB_Name"
+												}
+											}
+										]
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Upsert",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [
+											{
+												"name": "Source",
+												"value": "@{split(item().Name, '.')[0]}.@{split(item().Name, '.')[1]}\""
+											},
+											{
+												"name": "Destination",
+												"value": "raw_ccdata.@{split(item().Name, '.')[1]}"
+											}
+										],
+										"typeProperties": {
+											"source": {
+												"type": "SqlServerSource",
+												"sqlReaderQuery": {
+													"value": "@if(item().IsIncremental, \n    if(equals(pipeline().globalParameters.Environment, 'Prod'), \n        if(contains(item(), 'BaseQuery'),\n            concat(item().BaseQuery, ' AND ', item().WatermarkCol, ' > ''', activity('Get Last Row Modified').output.firstRow.last_refresh_utc, ''''),\n            concat('SELECT * FROM ', item().Name, ' WHERE ', item().WatermarkCol, ' > ''', activity('Get Last Row Modified').output.firstRow.last_refresh_utc, '''')\n        ), \n        concat(item().CustomQuery, ' AND ', item().WatermarkCol, ' > ''', activity('Get Last Row Modified').output.firstRow.last_refresh_utc, '''')\n    ), \n    if(equals(pipeline().globalParameters.Environment, 'Prod'), \n        concat('SELECT * FROM ', item().Name), \n        if(empty(item().CustomQuery), concat('SELECT * FROM ', item().Name), item().CustomQuery)\n    )\n)",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"sink": {
+												"type": "AzureSqlSink",
+												"writeBehavior": "upsert",
+												"upsertSettings": {
+													"useTempDB": true,
+													"keys": {
+														"value": "@split(item().PrimaryKey, ',')",
+														"type": "Expression"
+													}
+												},
+												"sqlWriterUseTableLock": false,
+												"tableOption": "autoCreate",
+												"disableMetricsCollection": false
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ccdata_tables",
+												"type": "DatasetReference",
+												"parameters": {
+													"pSchema": {
+														"value": "@split(item().Name, '.')[0]",
+														"type": "Expression"
+													},
+													"pTable": {
+														"value": "@split(item().Name, '.')[1]",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "azure_sql_dwh",
+												"type": "DatasetReference",
+												"parameters": {
+													"pSchema": {
+														"value": "raw_ccdata",
+														"type": "Expression"
+													},
+													"pTable": {
+														"value": "@split(item().Name, '.')[1]",
+														"type": "Expression"
+													},
+													"ds_database_name": "@pipeline().globalParameters.DWH_DB_Name"
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Mart Loaders",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Refresh Int",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "int.*"
+					},
+					{
+						"name": "Destination",
+						"value": "marts.*"
+					},
+					{
+						"name": "LoadScope",
+						"value": "marts.usp_load_warehouse_dimensions -> marts.usp_load_warehouse_facts"
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@createArray('usp_load_warehouse_dimensions', 'usp_load_warehouse_facts')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Refresh Mart",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": {
+									"value": "@concat('[marts].[', string(item()), ']')",
+									"type": "Expression"
+								},
+								"storedProcedureParameters": {
+									"ForceFullLoad": {
+										"value": {
+											"value": "@pipeline().parameters.ForceFullLoadIntMarts",
+											"type": "Expression"
+										},
+										"type": "Boolean"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "Azure_DWH",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Refresh Base Semantic Model",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Mart Loaders",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": {
+						"value": "@concat('https://api.powerbi.com/v1.0/myorg/groups/', pipeline().globalParameters.PBI_Workspace_ID, '/datasets/', pipeline().globalParameters.PBI_Dataset_ID, '/refreshes')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://analysis.windows.net/powerbi/api"
+					}
+				}
+			},
+			{
+				"name": "Refresh Int",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CCData_Tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[int].[usp_load_ccdata_int]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"ForceFullLoad": {
+							"value": {
+								"value": "@pipeline().parameters.ForceFullLoadIntMarts",
+								"type": "Expression"
+							},
+							"type": "Boolean"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+					}
+				}
+			},
+			{
+				"name": "Wake DB",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 60,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "meta",
+							"pTable": "refresh_metadata",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ForceFullLoadIntMarts": {
+				"type": "bool",
+				"defaultValue": false
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-08-15T14:14:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

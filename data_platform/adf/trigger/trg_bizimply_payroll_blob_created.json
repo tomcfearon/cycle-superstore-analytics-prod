@@ -1,0 +1,25 @@
+{
+	"name": "trg_bizimply_payroll_blob_created",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "4_Bizimply Payroll",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/staging/blobs/bizimply/",
+			"blobPathEndsWith": ".csv",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/734f5710-6460-44c1-bba0-61ad2be7fdec/resourceGroups/rg-css-analytics-prd/providers/Microsoft.Storage/storageAccounts/analyticalstorage01",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}

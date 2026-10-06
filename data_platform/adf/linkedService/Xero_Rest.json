@@ -1,0 +1,14 @@
+{
+	"name": "Xero_Rest",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.xero.com/api.xro/2.0/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDZDMEQyQTAzLTFBMEItNDIxNS1BNzEyLTUxMTU2QkRGODA3Rl8wY2U0YTE1OS01ODE5LTRjYWMtYmIzMS05MWNjMGU0YWMxYzYiDQp9"
+		}
+	}
+}

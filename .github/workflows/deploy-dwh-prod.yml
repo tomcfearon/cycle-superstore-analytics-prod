@@ -1,0 +1,84 @@
+name: Deploy CSS DWH Project to Azure SQL (OIDC)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'css-dwh-project/**'
+      - '.github/workflows/deploy-dwh-prod.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  SQL_SERVER_FQDN: css-sql-prd-neu.database.windows.net
+  SQL_DATABASE: css-dwh-prod
+
+jobs:
+  build-and-deploy:
+    # GitHub Environment approval authorizes the post-merge production deployment.
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. Build using RELEASE configuration instead of Debug
+      - name: Build Database Project
+        run: dotnet build "css-dwh-project/css-dwh-project.sqlproj" -c Release
+
+      # 2. Log in without subscription context; SQL access uses an access token directly.
+      - name: Login to Azure using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Install SqlPackage and sqlcmd
+        run: |
+          dotnet tool install -g Microsoft.SqlPackage
+          echo "/home/runner/.dotnet/tools" >> $GITHUB_PATH
+
+          curl -sSfL https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
+            -o packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update -qq
+          sudo ACCEPT_EULA=Y apt-get install -y sqlcmd
+
+      - name: Get Azure SQL access token
+        id: sql_token
+        run: |
+          TOKEN=$(az account get-access-token \
+            --resource https://database.windows.net \
+            --query accessToken -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "value=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Wake up Serverless Database
+        continue-on-error: true
+        run: |
+          sqlcmd -S "$SQL_SERVER_FQDN" -d "$SQL_DATABASE" \
+            --access-token "${{ steps.sql_token.outputs.value }}" \
+            -i "data_platform/ops/utility/wake_db.sql"
+
+      - name: Wait for Cold Start
+        run: sleep 90s
+
+      # 5. Deploy the compiled RELEASE package cleanly
+      - name: Deploy DACPAC to Azure SQL
+        run: |
+          sqlpackage /Action:Publish \
+            /SourceFile:"css-dwh-project/bin/Release/css-dwh-project.dacpac" \
+            /TargetServerName:"$SQL_SERVER_FQDN" \
+            /TargetDatabaseName:"$SQL_DATABASE" \
+            /AccessToken:"${{ steps.sql_token.outputs.value }}" \
+            /p:BlockOnPossibleDataLoss=False \
+            /p:DropObjectsNotInSource=False \
+            /p:CreateNewDatabase=False \
+            /p:ScriptDatabaseOptions=False \
+            /p:GenerateSmartDefaults=True \
+            /v:AdfPrincipalName="df-css-ana-prd-neu"

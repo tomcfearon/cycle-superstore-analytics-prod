@@ -1,0 +1,46 @@
+table '50 - Service Type'
+	lineageTag: 9b5d88e0-3cad-422d-a769-168e35fb22a3
+
+	column 'Service Type Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7b992f4e-e98e-49d2-851a-8074ca663f00
+		summarizeBy: none
+		sourceColumn: Service Type Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Service Category'
+		dataType: string
+		lineageTag: 711d844f-ccf6-4d5f-931c-425276977b95
+		summarizeBy: none
+		sourceColumn: Service Category
+		sortByColumn: 'Sort Order'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sort Order'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4c8a2615-20ae-43ed-bf0e-89890ea263b1
+		summarizeBy: sum
+		sourceColumn: Sort Order
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '50 - Service Type' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name=Database]}[Data],
+				    #"dbo_50 - Service Type" = #"css-dwh-dev"{[Schema="dbo",Item="50 - Service Type"]}[Data]
+				in
+				    #"dbo_50 - Service Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

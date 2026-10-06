@@ -1,0 +1,24 @@
+{
+	"name": "css_mail_365",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://graph.microsoft.com/v1.0/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "AadServicePrincipal",
+			"servicePrincipalId": "cdd7947a-d531-4292-87cf-6be3c2503ece",
+			"servicePrincipalKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "css-365-mail-app"
+			},
+			"servicePrincipalCredentialType": "ServicePrincipalKey",
+			"tenant": "178cd43d-e68f-41dc-b423-978c613e4f0c",
+			"aadResourceId": "https://graph.microsoft.com"
+		}
+	}
+}

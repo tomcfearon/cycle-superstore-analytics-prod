@@ -1,0 +1,179 @@
+{
+	"name": "Snapshot Data To Dev",
+	"properties": {
+		"description": "unscheduled",
+		"activities": [
+			{
+				"name": "Snapshot Pulls",
+				"description": "Last 90 days",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@json('[\n  {\"schema\": \"raw_ccdata\", \"table\": \"Inventory\", \"date_col\": \"query_datetime\"},\n  {\"schema\": \"raw_ccdata\", \"table\": \"Prices\", \"date_col\": \"query_datetime\"}\n]')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy Inventory",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Max Table Date",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('SELECT * FROM [', item().schema, '].[', item().table, '] WHERE ', item().date_col, ' > ''', activity('Max Table Date').output.firstRow.MaxDate, '''')",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": "@item().schema",
+										"pTable": "@item().table",
+										"ds_database_name": "css-dwh-prod"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": {
+											"value": "@item().schema",
+											"type": "Expression"
+										},
+										"pTable": "@item().table",
+										"ds_database_name": "css-dwh-dev"
+									}
+								}
+							]
+						},
+						{
+							"name": "Max Table Date",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('SELECT COALESCE(MAX(', item().date_col, '), ''1900-01-01'') AS MaxDate FROM ', item().schema, '.', item().table)",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": "@item().schema",
+										"pTable": "@item().table",
+										"ds_database_name": "css-dwh-dev"
+									}
+								}
+							}
+						},
+						{
+							"name": "Log Load",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Copy Inventory",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[meta].[usp_log_refresh]",
+								"storedProcedureParameters": {
+									"refresh_time_utc": {
+										"value": {
+											"value": "@formatDateTime(activity('Max Table Date').output.firstRow.MaxDate, 'yyyy-MM-dd HH:mm:ss')",
+											"type": "Expression"
+										},
+										"type": "DateTime"
+									},
+									"table_name": {
+										"value": {
+											"value": "@concat(item().schema, '.', item().table)",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "Azure_DWH",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"linked_db_name": "css-dwh-dev"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "Dev Only"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-08-15T14:14:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

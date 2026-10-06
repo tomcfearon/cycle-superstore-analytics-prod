@@ -1,0 +1,80 @@
+table '48 - Engineer'
+	lineageTag: c0a00e75-001d-4477-b99b-8924fd68c46b
+
+	column 'Engineer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 83dc6b51-7c4e-4315-b9c3-d7f3eb76c28c
+		summarizeBy: none
+		sourceColumn: Engineer Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: 6de18eb8-e08a-4115-9e7c-1b01256cfcac
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Engineer Name'
+		dataType: string
+		lineageTag: b1857868-9e92-4b0a-a6b2-2a0d2b20e49b
+		summarizeBy: none
+		sourceColumn: Engineer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Active'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 11c99c0c-b8ca-4b9b-85d5-3175a02c76ae
+		summarizeBy: none
+		sourceColumn: Is Active
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3b05bcd5-70b7-4545-a0e1-10b4cfec2cb2
+		summarizeBy: none
+		sourceColumn: Start Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Engineer Reference Number'
+		dataType: string
+		lineageTag: 45f78e17-2d59-44cc-904b-3d9cc0ffa1bc
+		summarizeBy: none
+		sourceColumn: Engineer Reference Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Bonus
+		dataType: double
+		lineageTag: 6a9cf626-576f-49f4-b4e4-a310ffb0f3fb
+		summarizeBy: sum
+		sourceColumn: Bonus
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '48 - Engineer' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name=Database]}[Data],
+				    #"dbo_48 - Engineer" = #"css-dwh-dev"{[Schema="dbo",Item="48 - Engineer"]}[Data]
+				in
+				    #"dbo_48 - Engineer"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

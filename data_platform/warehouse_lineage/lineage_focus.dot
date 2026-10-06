@@ -1,0 +1,15 @@
+digraph focus_lineage {
+  rankdir=RL;
+  graph [pad="0.45", nodesep="0.7", ranksep="1.5", splines=ortho, concentrate=true, fontname="Segoe UI", labelloc="t", labeljust="c", label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="12" CELLPADDING="0"><TR><TD COLSPAN="3" ALIGN="CENTER"><FONT POINT-SIZE="24"><B>Focused Lineage: int.product_google_signals</B></FONT></TD></TR><TR><TD><FONT COLOR="#b45309">?</FONT> Selected object</TD><TD><FONT COLOR="#2563eb">?</FONT> Dependency</TD><TD><FONT COLOR="#dc2626">?</FONT> Downstream consumer</TD></TR></TABLE>>];
+  node [fontsize=15, fontname="Segoe UI", color="#334155", penwidth=1.35, margin="0.18,0.12"];
+  edge [color="#64748b", arrowsize=0.8, penwidth=1.2];
+
+    stg_google_price_competitiveness [label="stg.google_price_competitiveness", shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#2563eb", penwidth=1.9];
+    stg_google_price_insights [label="stg.google_price_insights", shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#2563eb", penwidth=1.9];
+    int_product_consolidated_enriched [label="int.product_consolidated_enriched", shape=box, style="rounded,filled", fillcolor="#fee2e2", color="#dc2626", penwidth=1.9];
+    int_product_google_signals [label="int.product_google_signals", shape=box, style="rounded,filled", fillcolor="#fde68a", color="#b45309", penwidth=2.2];
+
+  int_product_consolidated_enriched -> int_product_google_signals [color="#dc2626", penwidth=2.2];
+  int_product_google_signals -> stg_google_price_competitiveness [color="#2563eb", penwidth=2.2];
+  int_product_google_signals -> stg_google_price_insights [color="#2563eb", penwidth=2.2];
+}

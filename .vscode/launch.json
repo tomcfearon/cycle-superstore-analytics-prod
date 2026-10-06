@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Database Tests (PowerShell)",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/data_platform/tests/run_database_tests.ps1"
+    }
+  ]
+}

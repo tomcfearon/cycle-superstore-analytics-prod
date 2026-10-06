@@ -1,0 +1,54 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-IE
+	metadataAccessPolicy: calculationDefinitions
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+queryGroup Facts
+
+	annotation PBI_QueryGroupOrder = 0
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_ProTooling = ["DevMode","CalcGroup","DaxQueryView_Desktop","WebModelingEdit","TMDLView_Desktop","TMDL-Extension","CopilotTooling"]
+
+annotation PBI_QueryOrder = ["01 - Order Invoices","02 - Till Invoices","03 - Service Invoices","04 - Used Bikes","05 - Order Credits","06 - Till Credits","07 - Service Credits","08 - Sales Orders","09 - Service Orders","10 - Inventory","11 - Emails","12 - Purchase Orders","43 - Customer","44 - Salesperson","45 - Order Channel","98 - Refreshes","99 - Data From","Data From","Database","13 - Google Campaign Conversions","14 - Google Product Performance","15 - Service Engineer Performance","42 - Product","47 - Transaction"]
+
+annotation __BNorm = 1
+
+annotation __TEdtr = 1
+
+annotation __LastRPTime = 134152159713752061
+
+ref table 'Order Invoices'
+ref table 'Service Invoices'
+ref table 'Used Bikes'
+ref table 'Till Invoices'
+ref table 'Order Credits'
+ref table 'Till Credits'
+ref table 'Service Orders'
+ref table 'Service Credits'
+ref table Inventory
+ref table Emails
+ref table 'Purchase Orders'
+ref table Customer
+ref table Product
+ref table Salesperson
+ref table '98 - Refreshes'
+ref table Date
+ref table Metrics
+ref table 'Sales Orders'
+ref table Time
+ref table 'Order Channel'
+ref table 'Google Campaign Conversions'
+ref table 'Google Product Performance'
+ref table '99 - Data From'
+ref table 'Service Engineer Performance'
+ref table Transaction
+
+ref cultureInfo en-US
+

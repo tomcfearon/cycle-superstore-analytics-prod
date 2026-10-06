@@ -1,0 +1,40 @@
+{
+	"name": "azure_sql_dwh",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Azure_DWH",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"linked_db_name": {
+					"value": "@dataset().ds_database_name",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"pSchema": {
+				"type": "string"
+			},
+			"pTable": {
+				"type": "string"
+			},
+			"ds_database_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().pSchema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().pTable",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

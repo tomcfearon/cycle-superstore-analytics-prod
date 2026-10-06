@@ -1,0 +1,109 @@
+table Salesperson
+	lineageTag: a40108fe-7d3c-456b-93b5-7ebd3e2f57cb
+
+	column 'Employee Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: 9eef9d71-61e2-43bb-a145-f66cb161df64
+		summarizeBy: none
+		sourceColumn: Employee Key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: d5e87422-48d3-4205-8b9b-7b90ed1c341a
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Name'
+		dataType: string
+		lineageTag: b1bfc078-654e-4eac-8e74-488bd75b58f2
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Employee Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Active'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ea9d78a0-c1a8-492c-a19a-582ea03c43cf
+		summarizeBy: none
+		sourceColumn: Is Active
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Engineer'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 06200faa-c99a-4f78-92ff-cede1dfb86e8
+		summarizeBy: none
+		sourceColumn: Is Engineer
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 8a34dfd4-1e39-47bd-9aab-cc62dba8f4cd
+		summarizeBy: none
+		sourceColumn: Start Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Bonus
+		dataType: double
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		lineageTag: 12c2e1cf-4b6f-4029-a033-37665e10e792
+		summarizeBy: sum
+		sourceColumn: Bonus
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bonus From Collections'
+		dataType: double
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		lineageTag: 96ee6d71-48d1-408f-b6e4-aeca01670760
+		summarizeBy: sum
+		sourceColumn: Bonus From Collections
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Reference Number'
+		dataType: string
+		isHidden
+		lineageTag: 0411841d-07c4-4eeb-8f47-220d5c123b88
+		summarizeBy: none
+		sourceColumn: Employee Reference Number
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '54 - Employee' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_54 - Employee" = #"css-dwh"{[Schema="dbo",Item="44 - Employee"]}[Data]
+				in
+				    #"dbo_54 - Employee"
+
+	changedProperty = Name
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

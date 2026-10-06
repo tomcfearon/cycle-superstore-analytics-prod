@@ -1,0 +1,12 @@
+# Force Git engine to normalize all text files to LF on checkout/commit
+* text=auto eol=lf
+
+# Power BI binaries tracked via Git LFS
+*.pbix filter=lfs diff=lfs merge=lfs -text
+*.pbit filter=lfs diff=lfs merge=lfs -text
+
+# Database build artifacts (Binary, never text-convert)
+*.dacpac binary
+*.bacpac binary
+*.dll binary
+*.exe binary

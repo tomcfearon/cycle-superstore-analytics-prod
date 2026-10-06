@@ -1,0 +1,108 @@
+table 'Schema Completion Flags'
+	lineageTag: dca60e4c-cf2c-4909-9a57-042947679ccf
+
+	column Date
+		formatString: Short Date
+		lineageTag: 33c71ebd-f5b9-4f3b-9b36-45f96ca935f4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: 41 - Date[Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Is Completed Day - int'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: d72aff63-cc7b-4856-a484-9c843c8161ac
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - int]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day - marts'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 0206f97a-3d5c-4fb1-8036-62c5bb6935aa
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - marts]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day - op'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 6463b590-aaf9-4acc-ab7d-8be2bc192f34
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - op]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day - raw_ccdata'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: bf923478-7049-485a-9e3b-2d630d73f3a3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - raw_ccdata]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day - raw_css2'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b4e6216f-a933-4db7-9bf8-0c47a50c0a77
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - raw_css2]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day - raw_google'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c7ce098f-c58f-4daa-8a1b-6517b9261787
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - raw_google]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day - raw_inventory'
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 1fe45ac6-5b70-4cbc-b7c2-0945692610a4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Is Completed Day - raw_inventory]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Schema Completion Flags' = calculated
+		mode: import
+		source =
+				
+				// 1. Calculate the exact max refresh date for each schema up front
+				VAR Max_int       = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "int")
+				VAR Max_marts     = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "marts")
+				VAR Max_op        = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "op")
+				VAR Max_ccdata    = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "raw_ccdata")
+				VAR Max_css2      = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "raw_css2")
+				VAR Max_google    = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "raw_google")
+				VAR Max_inventory = CALCULATE(MAX('98 - Refreshes'[Last Refresh Date]), '98 - Refreshes'[Layer Name] = "raw_inventory")
+				
+				// 2. Base the table strictly on your unique Dates
+				VAR BaseDates = DISTINCT('41 - Date'[Date])
+				
+				// 3. Add the individual schema flags as columns
+				RETURN
+				    ADDCOLUMNS(
+				        BaseDates,
+				        "Is Completed Day - int",           [Date] <= Max_int,
+				        "Is Completed Day - marts",         [Date] <= Max_marts,
+				        "Is Completed Day - op",            [Date] <= Max_op,
+				        "Is Completed Day - raw_ccdata",    [Date] <= Max_ccdata,
+				        "Is Completed Day - raw_css2",      [Date] <= Max_css2,
+				        "Is Completed Day - raw_google",    [Date] <= Max_google,
+				        "Is Completed Day - raw_inventory", [Date] <= Max_inventory
+				    )
+
+	annotation PBI_Id = c613e2d3f2a143c88b20d2a1d58a727b
+

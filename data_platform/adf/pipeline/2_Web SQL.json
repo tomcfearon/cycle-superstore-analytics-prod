@@ -1,0 +1,74 @@
+{
+	"name": "2_Web SQL",
+	"properties": {
+		"description": "non incremental supplementary data",
+		"activities": [
+			{
+				"name": "Refresh Int",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Wake DB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[int].[usp_load_web_stock_integrated]",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+					}
+				}
+			},
+			{
+				"name": "Wake DB",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 60,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "meta",
+							"pTable": "refresh_metadata",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}

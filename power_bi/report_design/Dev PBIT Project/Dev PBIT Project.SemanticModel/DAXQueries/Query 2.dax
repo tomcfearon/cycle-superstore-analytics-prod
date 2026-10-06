@@ -1,0 +1,71 @@
+DEFINE
+    -- ================================================================
+    -- Stock Value measures matching ERP SaleMake "Show Stock Value"
+    -- Main  = bikes  (stock key ends -1)
+    -- Sundry = non-bike (stock key ends -0)
+    -- Three sources summed for each: physical stock + sales orders
+    --   + open service orders (already filtered to no invoice)
+    -- ================================================================
+
+    -- ============ Main (Bike) Stock Value ============
+    MEASURE '00 - Measures'[Main Stock Value] =
+        -- Physical bike stock
+        SUMX(
+            FILTER('20 - Inventory', RIGHT('20 - Inventory'[Stock Key], 2) = "-1"),
+            RELATED('52 - Stock'[Cost Price]) * '20 - Inventory'[Quantity On Hand Cara]
+        )
+        -- Bikes on open sales orders
+        + SUMX(
+            FILTER('18 - Sales Orders', RIGHT('18 - Sales Orders'[Stock Key], 2) = "-1"),
+            RELATED('52 - Stock'[Cost Price])
+        )
+        -- Bikes on open service jobs
+        + SUMX(
+            FILTER('19 - Service Orders', RIGHT('19 - Service Orders'[Stock Key], 2) = "-1"),
+            RELATED('52 - Stock'[Cost Price])
+        )
+
+    -- ============ Sundry Stock Value ============
+    MEASURE '00 - Measures'[Sundry Stock Value] =
+        -- Physical sundry stock
+        SUMX(
+            FILTER('20 - Inventory', RIGHT('20 - Inventory'[Stock Key], 2) = "-0"),
+            RELATED('52 - Stock'[Average Cost Price]) * '20 - Inventory'[Quantity On Hand Cara]
+        )
+        -- Sundry on open sales orders
+        + SUMX(
+            FILTER('18 - Sales Orders', RIGHT('18 - Sales Orders'[Stock Key], 2) = "-0"),
+            RELATED('52 - Stock'[Average Cost Price]) * '18 - Sales Orders'[Quantity Taken]
+        )
+        -- Sundry on open service jobs
+        + SUMX(
+            FILTER('19 - Service Orders', RIGHT('19 - Service Orders'[Stock Key], 2) = "-0"),
+            RELATED('52 - Stock'[Average Cost Price]) * '19 - Service Orders'[Quantity]
+        )
+
+    -- ============ Total Stock Value ============
+    MEASURE '00 - Measures'[Stock Value] =
+        [Main Stock Value] + [Sundry Stock Value]
+
+    -- ============ Turn (Net Sales / Stock Value) ============
+    MEASURE '00 - Measures'[Stock Turn (ERP)] =
+        VAR _netSales =
+            SUMX(
+                FILTER(
+                    '11 - Order Invoices',
+                    NOT '11 - Order Invoices'[Is Credited]
+                        && '11 - Order Invoices'[Price] <> 0
+                ),
+                '11 - Order Invoices'[Price] - '11 - Order Invoices'[VAT Amount]
+            )
+            +
+            SUMX(
+                FILTER('12 - Till Invoices', '12 - Till Invoices'[Price] <> 0),
+                '12 - Till Invoices'[Price] - '12 - Till Invoices'[VAT Amount]
+            )
+        VAR _stock = [Stock Value]
+        RETURN
+            IF(_stock = 0, BLANK(), ROUND(_netSales / _stock, 2))
+
+EVALUATE
+{ 1 }

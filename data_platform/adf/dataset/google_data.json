@@ -1,0 +1,13 @@
+{
+	"name": "google_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GoogleBigQuery",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "GoogleBigQueryV2Object",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

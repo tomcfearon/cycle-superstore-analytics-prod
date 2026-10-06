@@ -1,0 +1,40 @@
+table '61 - Metric Selection'
+	lineageTag: 0c221baa-98e7-4f81-967a-93bc6b2b00bd
+
+	column Value1
+		lineageTag: eceb9232-685d-487a-b517-b1cd7a7f88ad
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Value1]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value2
+		lineageTag: 0a72f855-9019-4a02-8ad6-389e02a8e699
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Value2]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value3
+		formatString: 0
+		lineageTag: 464504f5-d811-4cca-bdaa-fa8fe3de8910
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '61 - Metric Selection' = calculated
+		mode: import
+		source =
+				{
+				    ("Average Daily Sales Orders Each Hour", NAMEOF('00 - Measures'[Average Sales Order Count By Hour]), 1),
+				    ("Average Daily Gross Profit Each Hour", NAMEOF('00 - Measures'[Average Sales Order Gross Profit By Hour]), 2),
+				    ("In-Store Sales Order Customers By Commencement Date", NAMEOF('00 - Measures'[Retail In-Store Order Invoice Customer Count By Order Date]), 3),
+				    ("In-Store Bikes Sold By Commencement Date", NAMEOF('00 - Measures'[Retail In-Store Order Invoices Bike Invoices By Order Date]), 4)
+				}
+
+	annotation PBI_Id = e866fd21de8e4830ad5ec6ab9a233daf
+

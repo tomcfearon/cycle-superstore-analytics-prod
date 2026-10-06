@@ -1,0 +1,1 @@
+CREATE SCHEMA [raw_css2] AUTHORIZATION [dbo];

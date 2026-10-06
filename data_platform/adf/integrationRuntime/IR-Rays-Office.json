@@ -1,0 +1,13 @@
+{
+	"name": "IR-Rays-Office",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "Shared from Prod",
+		"typeProperties": {
+			"linkedInfo": {
+				"resourceId": "/subscriptions/734f5710-6460-44c1-bba0-61ad2be7fdec/resourcegroups/rg-css-analytics-prd/providers/Microsoft.DataFactory/factories/df-css-ana-prd-neu/integrationruntimes/IR-Rays-Office",
+				"authorizationType": "Rbac"
+			}
+		}
+	}
+}

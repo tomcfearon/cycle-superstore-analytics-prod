@@ -1,0 +1,25 @@
+{
+    "betterSvg.autoReveal": true,
+    "betterSvg.autoCollapse": false,
+    "workbench.editorAssociations": {
+        "*.svg": "imagePreview.previewEditor",
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "*.pbip": "default"
+    },
+    "[sql]": {
+        "editor.defaultFormatter": "ms-mssql.mssql",
+        "editor.formatOnSave": true
+    },
+    "chat.tools.terminal.autoApprove": {
+        "dotnet build": true
+    },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[shellscript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}

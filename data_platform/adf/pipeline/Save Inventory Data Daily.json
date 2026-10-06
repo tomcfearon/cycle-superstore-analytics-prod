@@ -1,0 +1,117 @@
+{
+	"name": "Save Inventory Data Daily",
+	"properties": {
+		"activities": [
+			{
+				"name": "CCData To DWH",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 22,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "WITH\n\n-- ──────────────────────────────────────────────────────\n-- STOCK KEY MAPPING (inlined from int.stock_code_to_stock_key_mapping)\n-- One row per StockCode in dbo.Stock, excluding SER-1-%.\n-- The CASE mirrors the warehouse mapping loader:\n--   - Bikes/frames (StockCode ≠ ModelNo + serial pattern) → strip serial → '-1'\n--   - BOX items with a SINGLE counterpart → '-SINGLE-0'\n--   - Everything else (sundry) → StockCode + '-0'\n-- ──────────────────────────────────────────────────────\nstock_map AS (\n    SELECT\n        s.StockCode AS product_id,\n        CASE\n            WHEN s.StockCode <> s.ModelNo\n                 AND (s.StockCode LIKE '%-1-%' OR s.StockCode LIKE '%-0-%')\n            THEN LEFT(\n                     s.StockCode,\n                     LEN(s.StockCode) - CHARINDEX('-', REVERSE(s.StockCode)) - 2\n                 ) + '-1'\n            WHEN s.StockCode LIKE '%-BOX'\n                 AND EXISTS (\n                     SELECT 1\n                     FROM dbo.Stock AS s2\n                     WHERE s2.StockCode = LEFT(\n                               s.StockCode,\n                               LEN(s.StockCode) - CHARINDEX('-', REVERSE(s.StockCode))\n                           ) + '-SINGLE'\n                       AND s2.StockCode NOT LIKE 'SER-1-%'\n                 )\n            THEN LEFT(\n                     s.StockCode,\n                     LEN(s.StockCode) - CHARINDEX('-', REVERSE(s.StockCode))\n                 ) + '-SINGLE-0'\n            ELSE s.StockCode + '-0'\n        END AS stock_key\n    FROM dbo.Stock AS s\n    WHERE s.StockCode NOT LIKE 'SER-1-%'\n),\n\n-- ──────────────────────────────────────────────────────\n-- BRANCH A: Bikes — COUNT physical units in dbo.Stock\n-- Replicates int.bike_stock_quantities:\n--   item_type = 0, date_sold IS NULL, INNER JOIN mapping.\n-- ──────────────────────────────────────────────────────\nbike_qty AS (\n    SELECT\n        m.stock_key,\n        s.StockLocation    AS location_name,\n        COUNT(*)           AS quantity_on_hand\n    FROM dbo.Stock AS s\n    INNER JOIN stock_map AS m ON m.product_id = s.StockCode\n    WHERE s.ItemType = 0\n      AND s.DateSold IS NULL\n    GROUP BY m.stock_key, s.StockLocation\n),\n\n-- ──────────────────────────────────────────────────────\n-- BRANCH B: Non-bikes — SUM QtyOnHand from StockCountedLocations\n-- Replicates int.non_bike_stock_quantities:\n--   stg.stock_counted_locations (excludes %-BOX) INNER JOIN mapping.\n-- ──────────────────────────────────────────────────────\nsundry_qty AS (\n    SELECT\n        m.stock_key,\n        sc.StockLocation   AS location_name,\n        SUM(sc.QtyOnHand)  AS quantity_on_hand\n    FROM dbo.StockCountedLocations AS sc\n    INNER JOIN stock_map AS m ON m.product_id = sc.StockCode\n    WHERE sc.StockCode NOT LIKE '%-BOX'\n    GROUP BY m.stock_key, sc.StockLocation\n),\n\n-- ──────────────────────────────────────────────────────\n-- COMBINED: replicates int.stock_quantities\n-- ──────────────────────────────────────────────────────\ncombined AS (\n    SELECT stock_key, location_name, quantity_on_hand FROM bike_qty\n    UNION ALL\n    SELECT stock_key, location_name, quantity_on_hand FROM sundry_qty\n)\n\nSELECT\n    c.stock_key,\n    ISNULL(SUM(CASE WHEN c.location_name = 'T1'   THEN c.quantity_on_hand END), 0) AS quantity_on_hand_t1,\n    ISNULL(SUM(CASE WHEN c.location_name = 'T2'   THEN c.quantity_on_hand END), 0) AS quantity_on_hand_t2,\n    ISNULL(SUM(CASE WHEN c.location_name = 'Cara' THEN c.quantity_on_hand END), 0) AS quantity_on_hand_cara,\n    CAST(GETDATE() AS DATE) AS query_date,\n    GETDATE() AS query_datetime\nFROM combined AS c\nGROUP BY c.stock_key\nHAVING\n    SUM(CASE WHEN c.location_name = 'T1'   THEN c.quantity_on_hand ELSE 0 END) > 0\n    OR SUM(CASE WHEN c.location_name = 'T2'   THEN c.quantity_on_hand ELSE 0 END) > 0\n    OR SUM(CASE WHEN c.location_name = 'Cara' THEN c.quantity_on_hand ELSE 0 END) > 0;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": true,
+							"keys": [
+								"stock_key",
+								"query_date"
+							]
+						},
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ccdata_tables",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "-placeholder",
+							"pTable": "-placeholder"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "raw_ccdata",
+							"pTable": "Inventory",
+							"ds_database_name": "@pipeline().globalParameters.DWH_DB_Name"
+						}
+					}
+				]
+			},
+			{
+				"name": "Log Load",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CCData To DWH",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"table_name": {
+							"value": "raw_ccdata.Inventory",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": {
+							"value": "@pipeline().globalParameters.DWH_DB_Name",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Snapshots"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-08-15T14:14:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

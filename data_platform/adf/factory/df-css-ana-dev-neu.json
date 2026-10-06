@@ -1,0 +1,33 @@
+{
+	"name": "df-css-ana-dev-neu",
+	"properties": {
+		"globalParameters": {
+			"DWH_DB_Name": {
+				"type": "string",
+				"value": "css-dwh-dev"
+			},
+			"PBI_Workspace_ID": {
+				"type": "string",
+				"value": "481f2869-2b2e-49c0-b5f9-8d970ce28991"
+			},
+			"PBI_Dataset_ID": {
+				"type": "string",
+				"value": "6cbe6e88-32c5-44dd-af20-e6d16ceb0c8b"
+			},
+			"Environment": {
+				"type": "string",
+				"value": "Dev"
+			}
+		},
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "northeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "a89d5184-a067-48cf-a6fb-fea889cbf38d",
+		"tenantId": "178cd43d-e68f-41dc-b423-978c613e4f0c"
+	}
+}

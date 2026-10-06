@@ -1,0 +1,91 @@
+CREATE
+-- OR ALTER
+VIEW [int].[product_source_non_bike]
+AS
+    WITH web_filtered_sundry AS
+    (
+        SELECT
+            stock_code,
+            web_product_id,
+            web_parent_product_id,
+            web_price,
+            web_list_price,
+            extended_warehouse_quantity,
+            web_is_active,
+            web_is_list_hidden,
+            size,
+            color,
+            product_options_last_refreshed,
+            item_groupings_last_refreshed,
+            brand_name,
+            web_link,
+            main_image_link,
+            additional_image_links,
+            web_category_id,
+            product_type,
+            gpc_path,
+            web_title,
+            web_item_group_title,
+            variant_descriptor,
+            web_html_details,
+            web_gender,
+            web_item_material,
+            is_bike_product
+        FROM [int].[web_product_integrated]
+        WHERE ISNULL(is_bike_product, 0) = 0
+    )
+    SELECT
+        s.product_key,
+        s.stock_code,
+        w.web_product_id,
+        w.web_parent_product_id,
+        s.brand AS raw_brand,
+        dbo.fn_NormalizeBrand(s.brand) AS brand,
+        s.title,
+        s.category,
+        COALESCE(s.subcategory, s.category) AS subcategory,
+        s.retail_price,
+        s.cost_price,
+        s.average_cost_price,
+        s.selling_price_1,
+        s.selling_price_2,
+        s.selling_price_3,
+        s.selling_price_4,
+        s.selling_price_5,
+        s.selling_price_6,
+        s.selling_price_7,
+        s.sale_price,
+        s.trade_sale_price,
+        s.is_active,
+        s.is_on_web,
+        s.is_discontinued,
+        w.web_price,
+        w.web_list_price,
+        w.extended_warehouse_quantity,
+        w.web_is_active,
+        w.web_is_list_hidden,
+        COALESCE(w.size, s.size) AS size, -- prefer web size; fall back to ERP size
+        w.color,
+        w.product_options_last_refreshed,
+        w.item_groupings_last_refreshed,
+        dbo.fn_NormalizeBrand(w.brand_name) AS brand_name,
+        w.web_link,
+        w.main_image_link,
+        w.additional_image_links,
+        w.web_category_id,
+        w.product_type,
+        w.gpc_path,
+        w.web_title,
+        w.web_item_group_title,
+        w.variant_descriptor,
+        w.web_html_details,
+        w.web_gender,
+        w.web_item_material,
+        w.is_bike_product AS web_is_bike_product,
+        s.model_year,
+        s.is_distribution,
+        s.main_sundry_repairs,
+        s.row_modified_datetime -- ERP-stamped datetime; flows from stg.product via int.non_bike_product
+    FROM [int].[non_bike_product] AS s
+        LEFT JOIN web_filtered_sundry AS w
+            ON s.temp_stock_code = w.stock_code;

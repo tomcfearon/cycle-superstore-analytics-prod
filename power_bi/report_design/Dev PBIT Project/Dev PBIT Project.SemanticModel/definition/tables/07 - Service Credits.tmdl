@@ -1,0 +1,209 @@
+table '07 - Service Credits'
+	lineageTag: d8bcc4bb-7bf6-48e0-81ec-3ef40d0517a5
+
+	column 'Credit Date'
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 87549cbc-3c2a-4ec1-b9dc-bd83846dbcc6
+		summarizeBy: none
+		sourceColumn: Credit Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Credit Time'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 581d53bd-8809-4572-b8f9-94ae64a7cc4e
+		summarizeBy: none
+		sourceColumn: Credit Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column 'Customer Code'
+		dataType: string
+		isHidden
+		lineageTag: 020b8ffc-7ba4-43e6-bfa1-6a42d6f53d29
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Creditor Key'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b0b5aa11-aca0-4431-b0db-165438a10b96
+		summarizeBy: none
+		sourceColumn: Creditor Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Approver Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 35b3f8ca-1a97-446e-8080-4d4dbf31d4b5
+		summarizeBy: count
+		sourceColumn: Approver Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Invoice Connection Number'
+		dataType: string
+		lineageTag: 2d5a475c-7506-41d6-a64d-e1285b248ce5
+		summarizeBy: none
+		sourceColumn: Invoice Connection Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Number'
+		dataType: string
+		lineageTag: 5912a1a8-b2c6-419d-afd0-aa93d6ddba49
+		summarizeBy: none
+		sourceColumn: Order Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Last Modified Datetime'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 8d95993a-85a2-4bf2-b72e-20fd9ce16149
+		summarizeBy: none
+		sourceColumn: Last Modified Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		isHidden
+		lineageTag: b9b992e2-55dd-446a-b93c-ab7d2d77da41
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Description
+		dataType: string
+		lineageTag: 8c9cbcc1-91fc-40cd-9fe4-bd8ee98550a7
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Sequence Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: f6e6d032-4f08-4bbc-aaeb-32f4307f2385
+		summarizeBy: sum
+		sourceColumn: Line Sequence Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b9f32b0-861c-4333-8144-91c55f436c75
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Price
+		dataType: double
+		formatString: Currency
+		lineageTag: 65a889d5-07c7-4ca8-acd2-17ee1e1eafff
+		summarizeBy: sum
+		sourceColumn: Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Cost
+		dataType: double
+		formatString: Currency
+		lineageTag: 70541f1a-fddf-4ffa-ac44-103943a5cfd6
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Order Channel'
+		dataType: string
+		isHidden
+		lineageTag: c12f2e62-43a0-4d89-8732-1f810b1603cb
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Order ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: a9f21461-ba2f-4f36-ae20-6520fb460f3d
+		summarizeBy: count
+		sourceColumn: Web Order ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VAT Amount'
+		dataType: double
+		formatString: Currency
+		lineageTag: 547f983b-9a3b-4146-a0a7-11ab340ab60e
+		summarizeBy: sum
+		sourceColumn: VAT Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Salesperson Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 795166d7-136a-4e41-9994-d8c7cf2d42de
+		summarizeBy: count
+		sourceColumn: Salesperson Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Transaction Key'
+		dataType: string
+		lineageTag: 1a007777-7777-4777-8777-777777777707
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Price Before Discount'
+		dataType: double
+		lineageTag: 1aace9ab-004b-4adf-9efd-699b32e84ef7
+		summarizeBy: sum
+		sourceColumn: Price Before Discount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '17 - Service Credits' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_17 - Service Credits" = #"css-dwh"{[Schema="dbo",Item="07 - Service Credits"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_17 - Service Credits", each [Credit Date] >= #"Data From")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+

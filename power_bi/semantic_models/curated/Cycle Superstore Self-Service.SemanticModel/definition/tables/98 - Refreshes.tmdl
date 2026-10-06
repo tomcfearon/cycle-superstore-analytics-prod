@@ -1,0 +1,68 @@
+table '98 - Refreshes'
+	isHidden
+	lineageTag: 8d579c9f-60e5-4a01-8f53-616e3f45a346
+
+	column 'Table Name'
+		dataType: string
+		isHidden
+		lineageTag: ec16568c-47c9-408f-b914-095de8a5afde
+		summarizeBy: none
+		sourceColumn: Table Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Layer Name'
+		dataType: string
+		isHidden
+		lineageTag: 5c006a5f-1c4a-4ab4-bbe1-79dddba75ade
+		summarizeBy: none
+		sourceColumn: Layer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Refresh
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a69ea058-4b3d-4f8f-bc2a-c98eb3ad2181
+		summarizeBy: sum
+		sourceColumn: Refresh
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Last Refresh Date'
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 4b943ce5-426f-492d-99e8-b48851bfbe34
+		summarizeBy: none
+		sourceColumn: Last Refresh Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Last Refresh UTC'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 750edc98-a2da-4896-9ec3-47fc0a676a17
+		summarizeBy: none
+		sourceColumn: Last Refresh UTC
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '98 - Refreshes' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_81 - Refreshes" = #"css-dwh"{[Schema="dbo",Item= "98 - Refreshes"]}[Data]
+				in
+				    #"dbo_81 - Refreshes"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

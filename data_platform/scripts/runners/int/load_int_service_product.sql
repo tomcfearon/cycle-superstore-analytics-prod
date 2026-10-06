@@ -1,0 +1,1 @@
+EXECUTE [int].[usp_load_service_product] @ForceFullLoad = 0;

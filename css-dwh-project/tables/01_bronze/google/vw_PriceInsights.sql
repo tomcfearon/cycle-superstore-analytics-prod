@@ -1,0 +1,27 @@
+CREATE TABLE [raw_google].[vw_PriceInsights] (
+    -- BigQuery view flattens the price STRUCT into separate value/currency columns (already in EUR, not micro-units)
+    [partition_date]                        DATE            NULL,
+    [aggregator_id]                         BIGINT          NULL,
+    [merchant_id]                           BIGINT          NULL,
+    [id]                                    NVARCHAR (MAX)  NULL,
+    [title]                                 NVARCHAR (MAX)  NULL,
+    [brand]                                 NVARCHAR (MAX)  NULL,
+    [predicted_impressions_change_fraction] FLOAT (53)      NULL,
+    [predicted_clicks_change_fraction]      FLOAT (53)      NULL,
+    [predicted_conversions_change_fraction] FLOAT (53)      NULL,
+    [offer_id]                              NVARCHAR (MAX)  NULL,
+    [product_type_l1]                       NVARCHAR (MAX)  NULL,
+    [product_type_l2]                       NVARCHAR (MAX)  NULL,
+    [product_type_l3]                       NVARCHAR (MAX)  NULL,
+    [product_type_l4]                       NVARCHAR (MAX)  NULL,
+    [product_type_l5]                       NVARCHAR (MAX)  NULL,
+    [category_l1]                           NVARCHAR (MAX)  NULL,
+    [category_l2]                           NVARCHAR (MAX)  NULL,
+    [category_l3]                           NVARCHAR (MAX)  NULL,
+    [category_l4]                           NVARCHAR (MAX)  NULL,
+    [category_l5]                           NVARCHAR (MAX)  NULL,
+    [price_value]                           DECIMAL (18, 4) NULL,
+    [price_currency]                        NVARCHAR (10)   NULL,
+    [suggested_price_value]                 DECIMAL (18, 4) NULL,
+    [suggested_price_currency]              NVARCHAR (10)   NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY];

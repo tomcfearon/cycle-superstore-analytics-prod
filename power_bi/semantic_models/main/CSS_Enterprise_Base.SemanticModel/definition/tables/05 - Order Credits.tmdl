@@ -1,0 +1,294 @@
+table '05 - Order Credits'
+	lineageTag: def8e7bf-435e-4d46-a716-e5660916b541
+
+	measure 'Order Credits Amount' =
+			
+			SUMX ( '05 - Order Credits', [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 4c845bf6-78b6-4c76-b04d-f46464396897
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Order Credits COGS' =
+			
+			SUMX ( '05 - Order Credits', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 3c750ee2-f2cd-4046-a111-3bab64f52828
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Order Credits Gross Loss' =
+			
+			SUMX ( '05 - Order Credits', [Price] - [VAT Amount] - [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 44ce1e93-a049-42f4-be24-05d38caa3f88
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Order Credits Note Count' =
+			
+			DISTINCTCOUNT ( '05 - Order Credits'[Transaction Key] )
+		formatString: #,0
+		displayFolder: _Direct Measures
+		lineageTag: 97e37596-a320-4eb6-ae6a-2315aa5c975d
+
+	measure 'Order Credits Units Credited' =
+			
+			SUM ( '05 - Order Credits'[Quantity] )
+		formatString: 0
+		displayFolder: _Direct Measures
+		lineageTag: e03f31cd-6710-43df-990c-27eabb94c50e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Order Credits Amount (Excl. VAT)' =
+			
+			SUMX ( '05 - Order Credits', [Price] - [VAT Amount] )
+		displayFolder: _Direct Measures
+		lineageTag: 33246950-fa85-48ad-af57-d2ec6597dd18
+
+	measure 'Order Credits Discount Amount' =
+			
+			SUMX ( '05 - Order Credits', [Price Before Discount] - [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: d1b06ec8-2475-4b0d-a9ff-c5a268fe870f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Order Credits Customer Count' =
+			
+			DISTINCTCOUNT ( '05 - Order Credits'[Customer Code] )
+		formatString: 0
+		displayFolder: _Direct Measures
+		lineageTag: 01363a90-b162-4b3d-a97f-5c9c69e39c99
+
+	column 'Credit Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: dcb74974-0273-4ad2-9b4c-8ef6514d1c8a
+		summarizeBy: none
+		sourceColumn: Credit Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: 77534951-ce0f-41b7-836d-35ea71d03011
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4b173de2-fb1a-41a6-917c-0697baa0a61e
+		summarizeBy: none
+		sourceColumn: Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Creditor Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 44bf5354-c075-461e-a81a-e21e82ab2bf6
+		summarizeBy: count
+		sourceColumn: Creditor Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		lineageTag: 141db827-a1f1-4a84-9f65-0e22fdec315e
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 589a707a-c28b-43d9-8e7a-00aa2f50affe
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Price
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 65ea9ac3-81e2-4a59-b10f-b44ed1a17f62
+		summarizeBy: sum
+		sourceColumn: Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Cost
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 5316afa3-5a20-44a1-84ba-fb9dc92b053f
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Price Before Discount'
+		dataType: double
+		formatString: Currency
+		lineageTag: 7f48da7e-6160-43b2-b671-b4209baa8b5c
+		summarizeBy: sum
+		sourceColumn: Price Before Discount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Approver Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5d472ab6-a32c-4a89-b890-bee2eb40c0b4
+		summarizeBy: count
+		sourceColumn: Approver Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: edc13f0f-63bb-48f9-ad07-2549f5e8411c
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Order Time'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 3148efa0-dffd-4e55-bbbd-b3a7443fb54f
+		summarizeBy: none
+		sourceColumn: Order Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column 'Is Dispatched'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 0a13f273-0e1f-4daf-a75b-5f1cc2a8b462
+		summarizeBy: none
+		sourceColumn: Is Dispatched
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Invoice Connection Number'
+		dataType: string
+		lineageTag: c4057a16-4686-4f80-910a-edb64e92a6d7
+		summarizeBy: none
+		sourceColumn: Invoice Connection Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Sequence Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: af99963a-f6a0-4ea0-8152-0ed5add96f7b
+		summarizeBy: sum
+		sourceColumn: Line Sequence Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Description
+		dataType: string
+		lineageTag: 03fc333c-e77b-47ea-ad80-3a3d97221962
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Last Modified Datetime'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: e0cbdbc7-ac06-4cc7-af4b-2af21cae7819
+		summarizeBy: none
+		sourceColumn: Last Modified Datetime
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Channel'
+		dataType: string
+		lineageTag: 7eacb02d-d054-40a9-832e-d92dc51ff134
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Collection Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: ef3f4fbf-c32b-45a0-b06b-534780137cfe
+		summarizeBy: count
+		sourceColumn: Collection Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VAT Amount'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: bccea99d-5b9c-4c69-951f-a03f97b512b0
+		summarizeBy: sum
+		sourceColumn: VAT Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Web Order ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 03048972-1378-4eff-adab-79350cddf9f6
+		summarizeBy: count
+		sourceColumn: Web Order ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Transaction Key'
+		dataType: string
+		lineageTag: 1a005555-5555-4555-8555-555555555505
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '05 - Order Credits' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_15 - Order Credits" = #"css-dwh"{[Schema="dbo",Item="05 - Order Credits"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_15 - Order Credits", each [Credit Date] >= #"Data From"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Price", Currency.Type}, {"VAT Amount", Currency.Type}, {"Cost", Currency.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,36 @@
+CREATE
+-- OR ALTER
+VIEW [dbo].[43 - Customer] AS
+SELECT
+    [customer_code]           AS [Customer Code],
+    [customer_name]           AS [Customer Name],
+    [customer_type]           AS [Customer Type],
+    [retail_trade]            AS [Retail/Trade],
+    [price_band]               AS [Price Band],
+    [company]                 AS [Company],
+    [is_on_stop]              AS [Is On Stop],
+    [is_archived]             AS [Is Archived],
+    [is_confirmed_female]     AS [Is Confirmed Female],
+    [credit_terms]            AS [Credit Terms],
+    [credit_limit]            AS [Credit Limit],
+    [credit_balance]          AS [Credit Balance],
+    [account_opened_date]     AS [Account Opened Date],
+    [last_modified_date]      AS [Last Modified Date],
+    [last_in_store_date]      AS [Last In Store Date],
+    [email]                   AS [Email],
+    [web_customer_id]         AS [Web Customer ID],
+    [web_cp_connection]       AS [Web Cp Connection],
+    [web_first_name]          AS [Web First Name],
+    [web_last_name]           AS [Web Last Name],
+    [web_company]             AS [Web Company],
+    [web_phone]               AS [Web Phone],
+    [web_address_line_1]      AS [Web Address Line 1],
+    [web_address_line_2]      AS [Web Address Line 2],
+    [web_postal_code]         AS [Web Postal Code],
+    [web_state_code]          AS [Web State Code],
+    [web_state]               AS [Web State],
+    [web_city]                AS [Web City],
+    [web_country_code]        AS [Web Country Code],
+    [web_customer_type]       AS [Web Customer Type],
+    [web_created_at]          AS [Web Created At]
+FROM [marts].[dim_customer]

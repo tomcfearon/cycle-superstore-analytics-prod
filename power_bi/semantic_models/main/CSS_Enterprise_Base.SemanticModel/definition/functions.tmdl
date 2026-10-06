@@ -1,0 +1,32 @@
+function 'TimeIntel.CalculateR12M' = ```
+		( BaseMeasure : MeasureRef ) =>
+		    VAR _last_completed_date =
+		        CALCULATE(
+		            MAX( '41 - Document Date'[Date] ),
+		            '41 - Document Date'[Is Completed Day] = TRUE
+		        )
+			VAR _period_end   = _last_completed_date
+		    VAR _period_start = EDATE( _period_end, -12 ) + 1 // Adds 1 day so you don't double-count the start/end day
+		    
+		    RETURN
+		        CALCULATE(
+		            BaseMeasure,
+		            DATESBETWEEN( '41 - Document Date'[Date], _period_start, _period_end ),
+		            '41 - Document Date'[Is Completed Day] = TRUE
+		        )
+		```
+	lineageTag: e19a39fa-ced0-40af-a73a-c86c5d72cdca
+
+function 'Formatting.PriceRange' =
+		( _MinPrice, _MaxPrice ) =>
+		    IF (
+		        ISBLANK(_MinPrice),
+		        BLANK(),
+		        IF (
+		            _MinPrice = _MaxPrice,
+		            FORMAT(_MinPrice, "€#,0.00"),
+		            FORMAT(_MinPrice, "€#,0.00") & " - " & FORMAT(_MaxPrice, "€#,0.00")
+		        )
+		    )
+	lineageTag: 154847bb-59d8-4e91-b27e-ecd0ff43a981
+

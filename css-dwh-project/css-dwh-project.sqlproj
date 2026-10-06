@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build">
+  <Sdk Name="Microsoft.Build.Sql" Version="2.2.0" />
+  
+  <PropertyGroup>
+    <Name>css-dwh-project</Name>
+    <ProjectGuid>{231F594C-D230-44C3-AA86-2096C9279CA2}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.SqlAzureV12DatabaseSchemaProvider</DSP>
+    <ModelCollation>1033, CI</ModelCollation>
+    <!-- SQL71502: Suppress unresolved column warnings on CTE/wildcard projections -->
+    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+
+  <!-- Pre/Post Deployment Entry Points -->
+  <ItemGroup>
+    <PreDeploy Include="PreDeployment.sql" />
+    <PostDeploy Include="PostDeployment.sql" />
+  </ItemGroup>
+
+  <!-- Exclude all post-deploy security scripts from offline model compilation -->
+  <ItemGroup>
+    <Build Remove="security\**\*.sql" />
+    <Build Remove="seeds\**\*.sql" />
+    <None Include="security\**\*.sql" />
+    <None Include="seeds\**\*.sql" />
+  </ItemGroup>
+
+  <!-- SQLCMD Variables & Fallback Defaults -->
+  <ItemGroup>
+    <SqlCmdVariable Include="AdfPrincipalName">
+      <DefaultValue>df-css-ana-dev-neu</DefaultValue>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="DeployAdfSecurity">
+      <DefaultValue>True</DefaultValue>
+    </SqlCmdVariable>
+  </ItemGroup>
+
+  <!-- Workaround: Clean project assets cache before building to ensure fresh compilation -->
+  <Target Name="BeforeBuild">
+    <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />
+  </Target>
+</Project>

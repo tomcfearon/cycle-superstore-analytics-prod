@@ -1,0 +1,36 @@
+# Power BI (PBIP)
+**/localSettings.json
+**/.pbi/cache.abf
+
+# Python virtual environment & Cache
+.venv/
+__pycache__/
+*.pyc
+
+# Temporary & Local Scratchpads
+.tmp/
+ad_hoc/scratch/
+
+# Recovered ERP archives and unpacked source
+docs/source_erp/
+docs/source_erp_unpacked/
+
+# SQL Database Projects / .NET Build Artifacts
+**/bin/
+**/obj/
+*.dacpac
+*.dbmdl
+*.Publish.xml
+
+data_platform/scripts/diagnostics
+
+# IDE and User-specific Files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS Generated Files
+.DS_Store
+Thumbs.db

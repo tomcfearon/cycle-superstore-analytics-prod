@@ -1,0 +1,79 @@
+table '10 - Inventory'
+	lineageTag: e6f391b9-394c-40b1-ac79-c7c55cec5d3f
+
+	measure 'T1 Inventory' =
+			
+			SUMX ( '10 - Inventory', [Quantity On Hand T1] )
+		formatString: #,0
+		displayFolder: _Direct Measures
+		lineageTag: 2365fbb3-a7ef-439f-a110-252a788ab297
+
+	measure 'Cara Inventory' =
+			
+			SUMX ( '10 - Inventory', [Quantity On Hand Cara] )
+		formatString: #,0
+		displayFolder: _Direct Measures
+		lineageTag: 5b04c7ad-c932-40ad-baf5-d54e7addb6cc
+
+	measure 'Total Inventory' =
+			
+			SUMX ( '10 - Inventory', [Quantity On Hand T1] + [Quantity On Hand Cara] )
+		formatString: #,0
+		displayFolder: _Direct Measures
+		lineageTag: 29cdd402-811e-4377-b68d-5142a919ff4b
+
+	column 'Product Key'
+		dataType: string
+		isHidden
+		lineageTag: 34244d3e-aed7-49c4-b1df-8e6e2236b7b2
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Quantity On Hand T1'
+		dataType: int64
+		formatString: 0
+		lineageTag: 525e767b-03c7-4473-8281-a4a325c04b7a
+		summarizeBy: sum
+		sourceColumn: Quantity On Hand T1
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Quantity On Hand Cara'
+		dataType: int64
+		formatString: 0
+		lineageTag: e5136bfd-3c15-4914-a8a3-765c9edd2a8e
+		summarizeBy: sum
+		sourceColumn: Quantity On Hand Cara
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Query Date'
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 7c08092a-52cc-4bbf-b836-be1fea1d64f1
+		summarizeBy: none
+		sourceColumn: Query Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition '20 - Inventory' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_20 - Inventory" = #"css-dwh"{[Schema="dbo",Item="10 - Inventory"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_20 - Inventory", each [Query Date] >= #"Data From")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

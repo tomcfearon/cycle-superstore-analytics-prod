@@ -1,0 +1,23 @@
+{
+	"name": "ds_rest_graph_messages",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "css_mail_365",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"relativeUrl": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().relativeUrl",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}

@@ -1,0 +1,362 @@
+relationship AutoDetected_c12976ad-476a-497b-aa5a-cecc3899d4b2
+	fromColumn: '01 - Order Invoices'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_98ba2990-4089-468e-8710-0719c2ab2d62
+	fromColumn: '06 - Till Credits'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_7a4fa99d-bb7b-4903-81fc-a224358542c6
+	fromColumn: '09 - Service Orders'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_b768b9fd-e8a0-4ae1-8350-4cc810baa442
+	fromColumn: '07 - Service Credits'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_ceb015c3-d61a-4a0d-8b82-4e280243097c
+	fromColumn: '11 - Emails'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_b9df449c-7b87-4d1a-bc80-7382d48c8ce4
+	fromColumn: '01 - Order Invoices'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_9bc6f38a-a04e-466f-b136-530d7b494bf2
+	fromColumn: '06 - Till Credits'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_65388b4d-0ad4-4e3f-ad59-58ebc4a9884b
+	fromColumn: '09 - Service Orders'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_53653c96-42c9-442a-ad1c-d248799f27ec
+	fromColumn: '07 - Service Credits'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_fc67c3ef-46b3-4178-80b3-6b14309a1fda
+	fromColumn: '10 - Inventory'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_952642d0-e616-4a1f-9059-bbd24a0f9e59
+	fromColumn: '12 - Purchase Orders'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_4dacd970-e6d3-4bb5-a6d1-0d975f3cd42c
+	fromColumn: '08 - Sales Orders'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_97689cf5-02e1-4faa-8dca-2f7f4f1aeb7e
+	fromColumn: '08 - Sales Orders'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_a5b7e256-04a2-47c8-bb57-c74fe806631f
+	fromColumn: '01 - Order Invoices'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship AutoDetected_cb7315a5-c781-4476-a708-ab752bef88c3
+	fromColumn: '06 - Till Credits'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship AutoDetected_025e3b8f-7961-47fe-a8fe-64e954456d0e
+	fromColumn: '08 - Sales Orders'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship 08afa889-5cbf-32e9-aab8-6054ff4271fc
+	fromColumn: '07 - Service Credits'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship 9fcca95c-e824-55ae-0a4e-8175e442d1f1
+	fromColumn: '67 - Model Year Selector'.Brand
+	toColumn: '65 - Brand Selector'.Brand
+
+relationship AutoDetected_9aa11584-a2d6-47a8-a264-a3fb1f76ae2c
+	fromColumn: '02 - Till Invoices'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_4362e8f2-a153-4dab-a41f-d5ddd273d8ed
+	fromColumn: '03 - Service Invoices'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_f33f1c96-41fa-45c9-934b-fd7cf815c492
+	fromColumn: '04 - Used Bikes'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_4606c4ed-99c7-4a32-ba3c-3159c87f4e5f
+	fromColumn: '05 - Order Credits'.'Customer Code'
+	toColumn: '43 - Customer'.'Customer Code'
+
+relationship AutoDetected_a00d3ca7-a988-45e3-908d-c0995a804ca3
+	fromColumn: '02 - Till Invoices'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_134bae08-c6f4-4195-b89a-d99085639da6
+	fromColumn: '03 - Service Invoices'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_2349c2c6-c732-40cf-b9b6-04ff5b44e729
+	fromColumn: '04 - Used Bikes'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_94601e2f-c9f9-41f0-96dc-46c69377e0a2
+	fromColumn: '05 - Order Credits'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship AutoDetected_fcb1742b-6776-4d0d-b57d-74b1137281c9
+	fromColumn: '02 - Till Invoices'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship AutoDetected_c893334d-99b3-40b9-a5c2-b3e5d6eb8857
+	fromColumn: '03 - Service Invoices'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship AutoDetected_0c9caf84-9ef4-47cc-82f0-492851535925
+	fromColumn: '04 - Used Bikes'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship AutoDetected_dd906f7a-d6d9-4844-9935-3980ced3983f
+	fromColumn: '05 - Order Credits'.'Order Channel'
+	toColumn: '45 - Order Channel'.'Order Channel'
+
+relationship 12a9b6d1-3ed9-ac43-64d4-f5ca1ae59de0
+	fromColumn: '14 - Google Product Performance'.'Product Key'
+	toColumn: '42 - Product'.'Product Key'
+
+relationship 47000c01-0001-4001-8001-000000470001
+	fromColumn: '01 - Order Invoices'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c02-0002-4002-8002-000000470002
+	fromColumn: '02 - Till Invoices'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c03-0003-4003-8003-000000470003
+	fromColumn: '03 - Service Invoices'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c05-0005-4005-8005-000000470005
+	fromColumn: '05 - Order Credits'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c06-0006-4006-8006-000000470006
+	fromColumn: '06 - Till Credits'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c07-0007-4007-8007-000000470007
+	fromColumn: '07 - Service Credits'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c08-0008-4008-8008-000000470008
+	fromColumn: '08 - Sales Orders'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship 47000c09-0009-4009-8009-000000470009
+	fromColumn: '09 - Service Orders'.'Transaction Key'
+	toColumn: '47 - Transaction'.'Transaction Key'
+
+relationship AutoDetected_f161cdf2-d2a4-4846-ae0a-e34d96ecb368
+	fromColumn: '03 - Service Invoices'.'Engineer Key'
+	toColumn: '48 - Engineer'.'Engineer Key'
+
+relationship AutoDetected_15345e1e-c7d4-4ced-9cd7-951407f9e4c5
+	fromColumn: '09 - Service Orders'.'Engineer Key'
+	toColumn: '48 - Engineer'.'Engineer Key'
+
+relationship AutoDetected_09f99928-db4a-4414-99b4-8343bc34f650
+	fromColumn: '16 - Service Engineer Performance'.'Engineer Key'
+	toColumn: '48 - Engineer'.'Engineer Key'
+
+relationship 9e112470-f10a-273f-f937-f72b751feb38
+	fromColumn: '13 - Google Campaign Conversions'.'Conversion Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship d4849e2b-02bf-b764-22f9-79c3f0d27bca
+	fromColumn: '10 - Inventory'.'Query Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship ce13439b-3a75-6895-463f-4f9e9ba7637c
+	fromColumn: '11 - Emails'.'Received Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship dcda83f7-4636-a962-104f-ecb2d7a9609a
+	fromColumn: '04 - Used Bikes'.'Memo Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 0ac0be42-1e71-7b85-a0e5-073f4549cecb
+	fromColumn: '07 - Service Credits'.'Credit Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship b8a61f0d-c61c-f134-f20d-6433bdeafba1
+	fromColumn: '14 - Google Product Performance'.'Performance Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 508dc781-1ab8-9c38-1539-58b3f460bfec
+	fromColumn: '01 - Order Invoices'.'Invoice Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 9841a753-752d-facb-5a70-296463b1e885
+	fromColumn: '02 - Till Invoices'.'Invoice Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 79ddba9a-a247-0e36-7f45-36858d447c4b
+	fromColumn: '03 - Service Invoices'.'Invoice Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 97865d65-6c4e-2c6b-e372-63959d2f9b7e
+	fromColumn: '05 - Order Credits'.'Credit Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 2cfec714-fb49-b0a0-f2d6-825ade3c303a
+	fromColumn: '06 - Till Credits'.'Credit Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship be82d087-c9a3-e4e2-39ec-0a70ebef22e7
+	fromColumn: '16 - Service Engineer Performance'.'Activity Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship d5f277c1-408e-def1-aeb2-699f6e241112
+	fromColumn: '09 - Service Orders'.'Order Date'
+	toColumn: '49 - Order Date'.Date
+
+relationship 4bb220be-e35e-41cd-37a4-61ea0676d9bd
+	fromColumn: '08 - Sales Orders'.'Order Date'
+	toColumn: '49 - Order Date'.Date
+
+relationship 95051d80-c3f6-cefe-b8c0-5908a8980f90
+	fromColumn: '01 - Order Invoices'.'Order Date'
+	toColumn: '49 - Order Date'.Date
+
+relationship a1244308-2426-6dbe-05bf-cc921f648a09
+	fromColumn: '03 - Service Invoices'.'Order Date'
+	toColumn: '49 - Order Date'.Date
+
+relationship 9a8483c5-91ab-c97c-970a-38ce9d58b6bc
+	fromColumn: '02 - Till Invoices'.'Order Date'
+	toColumn: '49 - Order Date'.Date
+
+relationship a7289525-ae22-d117-8ae5-744e0689e3a9
+	fromColumn: '05 - Order Credits'.'Order Date'
+	toColumn: '49 - Order Date'.Date
+
+relationship 6c20e79f-3caf-41f3-9d2b-0b9fc5d8744f
+	fromColumn: '01 - Order Invoices'.'Order Time'
+	toColumn: '46 - Order Time'.Time
+
+relationship AutoDetected_13bf63b4-d301-4c19-8740-1509365fe98b
+	fromColumn: '01 - Order Invoices'.'Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship AutoDetected_c7feee6d-9fd0-4725-905b-2b351d778a61
+	fromColumn: '02 - Till Invoices'.'Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship AutoDetected_49e9b65c-499a-456e-8255-d7665825d5c0
+	fromColumn: '08 - Sales Orders'.'Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 6101d2bb-4379-4ec4-dcb6-09fc7e04eca2
+	fromColumn: '12 - Purchase Orders'.'Purchase Order Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 4cafd080-9dcb-2d2d-39be-a0176485169a
+	fromColumn: '05 - Order Credits'.'Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 90e2bfe0-2612-a1cb-26a6-8309e906c358
+	fromColumn: '06 - Till Credits'.'Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship f24d7179-6d38-8532-b771-1a0623574e93
+	fromColumn: '04 - Used Bikes'.'Sold Salesperson Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship AutoDetected_e89b955f-b85e-449c-ad78-6001228ef6d6
+	fromColumn: '07 - Service Credits'.'Engineer Key'
+	toColumn: '48 - Engineer'.'Engineer Key'
+
+relationship 2511252d-77ec-bc38-80cb-2bb705104173
+	isActive: false
+	fromColumn: '01 - Order Invoices'.'Collection Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 4ba66119-1696-de27-ef6a-b74712aa3f6a
+	isActive: false
+	fromColumn: '05 - Order Credits'.'Collection Employee Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 0567421b-81f2-a195-88cf-69cb9c6be039
+	fromColumn: '03 - Service Invoices'.'Salesperson Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship ec0238d1-affc-d708-bd63-25313f218a71
+	fromColumn: '09 - Service Orders'.'Salesperson Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 37859248-4cfc-36df-673d-cc602879b1c5
+	fromColumn: '07 - Service Credits'.'Salesperson Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 2e91148f-2573-7b11-56e9-d768a84ddfd5
+	isActive: false
+	fromColumn: '05 - Order Credits'.'Order Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship a9bc4bea-f79a-e0eb-5359-e8e1bca7b56d
+	isActive: false
+	fromColumn: '01 - Order Invoices'.'Order Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship AutoDetected_17173d96-21ed-47a1-9ea4-d9a5ca249fdb
+	fromColumn: '03 - Service Invoices'.'Service Type Key'
+	toColumn: '50 - Service Type'.'Service Type Key'
+
+relationship AutoDetected_1fbf9331-e5ce-461f-9a2f-555883c71fbc
+	fromColumn: '09 - Service Orders'.'Service Type Key'
+	toColumn: '50 - Service Type'.'Service Type Key'
+
+relationship AutoDetected_303c1a54-cc97-40c2-a71c-31c2952cc0e3
+	fromColumn: '07 - Service Credits'.'Service Type Key'
+	toColumn: '50 - Service Type'.'Service Type Key'
+
+relationship 707cf9a4-9d59-531a-e516-fd51ec2edea3
+	fromColumn: '08 - Sales Orders'.'Order Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 2a818080-7ea8-1ca7-f9d5-7324fc01040c
+	isActive: false
+	fromColumn: '03 - Service Invoices'.'Order Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship ed8e42c4-d0f1-ef16-d6d2-91a93fb8d696
+	fromColumn: '12 - Purchase Orders'.'Document Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship 103a9af7-6792-7149-b831-eb0b5d67310f
+	fromColumn: '09 - Service Orders'.'Order Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship e261f571-e056-2ca4-04d7-3b0d4e0e2983
+	fromColumn: '16 - Service Engineer Performance'.'Engineer Key'
+	toColumn: '44 - Employee'.'Employee Key'
+
+relationship 560bd71b-2567-40e2-3766-27054dd459a7
+	fromColumn: '04 - Used Bikes'.'Salesperson1 Key'
+	toColumn: '48 - Engineer'.'Engineer Key'
+
+relationship AutoDetected_1dbd1ee5-239a-44d5-a368-2c2ae1da24fd
+	fromColumn: '13 - Google Campaign Conversions'.'Campaign ID'
+	toColumn: '51 - Google Ads Campaign'.'Campaign ID'
+
+relationship AutoDetected_fbe2b86b-ac13-460c-8b1d-c2ead43cf24f
+	fromColumn: '15 - Google Ads Campaign Stats'.'Campaign ID'
+	toColumn: '51 - Google Ads Campaign'.'Campaign ID'
+
+relationship 22be6faa-1bcb-fa4b-2a4f-a4ae0f708e88
+	fromColumn: '15 - Google Ads Campaign Stats'.'Stats Date'
+	toColumn: '41 - Document Date'.Date
+
+relationship bd2aa08a-098b-742a-d6d4-ea95a37067fd
+	isActive: false
+	fromColumn: '02 - Till Invoices'.'Order Date'
+	toColumn: '41 - Document Date'.Date
+

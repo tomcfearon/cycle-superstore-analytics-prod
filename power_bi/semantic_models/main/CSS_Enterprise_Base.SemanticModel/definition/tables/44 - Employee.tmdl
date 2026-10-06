@@ -1,0 +1,90 @@
+table '44 - Employee'
+	lineageTag: a40108fe-7d3c-456b-93b5-7ebd3e2f57cb
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: d5e87422-48d3-4205-8b9b-7b90ed1c341a
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Active'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ea9d78a0-c1a8-492c-a19a-582ea03c43cf
+		summarizeBy: none
+		sourceColumn: Is Active
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 8a34dfd4-1e39-47bd-9aab-cc62dba8f4cd
+		summarizeBy: none
+		sourceColumn: Start Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: ab445b39-ad86-4b28-9900-bd7561c44b83
+		summarizeBy: none
+		sourceColumn: Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Name'
+		dataType: string
+		lineageTag: 3198013a-9603-4975-b0d2-f859d5cfac0a
+		summarizeBy: none
+		sourceColumn: Employee Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Reference Number'
+		dataType: string
+		lineageTag: 2fee3038-6e9f-4abc-9322-aeb71e3136d5
+		summarizeBy: none
+		sourceColumn: Employee Reference Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Bonus
+		dataType: double
+		lineageTag: a1f53a4f-7d27-45f3-82f1-01cff50d5be2
+		summarizeBy: sum
+		sourceColumn: Bonus
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Bonus From Collections'
+		dataType: double
+		lineageTag: b9731bd0-499e-4482-b990-2bd01cad8104
+		summarizeBy: sum
+		sourceColumn: Bonus From Collections
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '54 - Employee' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name="css-dwh-dev"]}[Data],
+				    #"dbo_44 - Employee" = #"css-dwh-dev"{[Schema="dbo",Item="44 - Employee"]}[Data]
+				in
+				    #"dbo_44 - Employee"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

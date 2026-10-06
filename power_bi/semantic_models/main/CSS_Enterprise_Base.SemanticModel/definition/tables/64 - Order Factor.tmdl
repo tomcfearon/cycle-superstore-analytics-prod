@@ -1,0 +1,27 @@
+table '64 - Order Factor'
+	lineageTag: 8cf4db15-549c-45be-84be-da9505bee4a6
+
+	column 'Value %'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: c6f613e8-b0ba-4eb1-a2cc-94bf9b41992b
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition '64 - Order Factor' = calculated
+		mode: import
+		source = ```
+				
+				GENERATESERIES ( 0.20, 1.50, 0.05 )
+				
+				```
+
+	annotation PBI_Id = 0713168326584570a58f65bc7ba41e97
+

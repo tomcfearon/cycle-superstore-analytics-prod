@@ -1,0 +1,54 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "b81e7e92edb6b6763e8e",
+  "position": {
+    "x": 174,
+    "y": 402,
+    "z": 1000,
+    "height": 552,
+    "width": 908
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "05 - Order Credits"
+                    }
+                  },
+                  "Property": "Transaction Key"
+                }
+              },
+              "queryRef": "05 - Order Credits.Transaction Key",
+              "nativeQueryRef": "Transaction Key1"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "05 - Order Credits"
+                    }
+                  },
+                  "Property": "Order Credits Note Count"
+                }
+              },
+              "queryRef": "05 - Order Credits.Order Credits Note Count",
+              "nativeQueryRef": "Order Credits Note Count"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,23 @@
+table '65 - Brand Selector'
+	lineageTag: faf51b3f-2f0b-4471-9942-5cfa79a5a4b4
+
+	column Brand
+		lineageTag: 5eb11531-9523-49ba-9754-cb336572dc20
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: 42 - Product[Brand]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '65 - Brand Selector' = calculated
+		mode: import
+		source =
+				
+				FILTER(
+				    DISTINCT('42 - Product'[Brand]),
+				    NOT ISBLANK('42 - Product'[Brand])
+				        && TRIM('42 - Product'[Brand]) <> ""
+				)
+
+	annotation PBI_Id = ffff0eb0e0bd4c5595b2acc083d1d36b
+

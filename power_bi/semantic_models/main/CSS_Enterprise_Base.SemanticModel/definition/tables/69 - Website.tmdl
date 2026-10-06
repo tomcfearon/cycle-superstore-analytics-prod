@@ -1,0 +1,21 @@
+table '69 - Website'
+	lineageTag: db1ee5a5-9e94-49c4-9d62-bc8873331a4a
+
+	column Website
+		lineageTag: 90830942-c142-4e29-b3ef-a0df0290c2e9
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Website]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '69 - Website' = calculated
+		mode: import
+		source = ```
+				
+				DATATABLE("Website", STRING, {{"CSS"}, {"Caratrade"}})
+				
+				```
+
+	annotation PBI_Id = 565fb0a51de8482794d533f3ddca1b30
+

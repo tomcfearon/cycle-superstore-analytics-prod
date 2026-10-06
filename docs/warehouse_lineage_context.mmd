@@ -1,0 +1,629 @@
+%% Cycle Superstore warehouse lineage context
+%% Last refresh (UTC): 2026-10-06 11:23:47 UTC
+%% Canonical SQL project: css-dwh-project/
+%% Operational support: data_platform/
+%% Edge direction is downstream object -> dependency (right-to-left flow).
+flowchart RL
+  %% Layer class styles: bronze, silver, intermediate, gold, semantic
+  classDef bronze fill:#e2e8f0,stroke:#334155,color:#0f172a;
+  classDef silver fill:#f0fdf4,stroke:#166534,color:#14532d;
+  classDef intermediate fill:#fffbeb,stroke:#92400e,color:#78350f;
+  classDef gold fill:#fef2f2,stroke:#991b1b,color:#7f1d1d;
+  classDef semantic fill:#eff6ff,stroke:#0369a1,color:#0c4a6e;
+
+  %% Context nodes
+  ctx_project[css-dwh-project/: warehouse SQL source of truth]
+  ctx_platform[data_platform/: ADF, admin, ops, scripts, lineage tooling]
+  ctx_docs[docs/warehouse_lineage_context.mmd: AI lineage context artifact]
+
+  dbo_01___order_invoices[01 - Order Invoices]
+  dbo_02___till_invoices[02 - Till Invoices]
+  dbo_03___service_invoices[03 - Service Invoices]
+  dbo_04___used_bikes[04 - Used Bikes]
+  dbo_05___order_credits[05 - Order Credits]
+  dbo_06___till_credits[06 - Till Credits]
+  dbo_07___service_credits[07 - Service Credits]
+  dbo_08___sales_order[08 - Sales Order]
+  dbo_09___service_orders[09 - Service Orders]
+  dbo_10___inventory[10 - Inventory]
+  dbo_11___emails[11 - Emails]
+  dbo_12___purchase_orders[12 - Purchase Orders]
+  dbo_13___google_ads_campaign_conversions[13 - Google Ads Campaign Conversions]
+  dbo_14___google_product_performance[14 - Google Product Performance]
+  dbo_15___google_ads_campaign_stats[15 - Google Ads Campaign Stats]
+  dbo_16___service_engineer_performance[16 - Service Engineer Performance]
+  dbo_17___xero_bank_transaction_debits[17 - Xero Bank Transaction Debits]
+  dbo_18___xero_bank_transaction_credits[18 - Xero Bank Transaction Credits]
+  dbo_41___document_date[41 - Document Date]
+  dbo_42___product[42 - Product]
+  dbo_43___customer[43 - Customer]
+  dbo_44___employee[44 - Employee]
+  dbo_45___order_channel[45 - Order Channel]
+  dbo_46___order_time[46 - Order Time]
+  dbo_47___transaction[47 - Transaction]
+  dbo_48___engineer[48 - Engineer]
+  dbo_49___order_date[49 - Order Date]
+  dbo_50___service_type[50 - Service Type]
+  dbo_51___google_ads_campaign[51 - Google Ads Campaign]
+  dbo_98___refreshes[98 - Refreshes]
+  int_base_repair_details[int.base_repair_details]
+  int_base_repair_headers[int.base_repair_headers]
+  int_bike_product[int.bike_product]
+  int_consolidated_customers[int.consolidated_customers]
+  int_consolidated_product[int.consolidated_product]
+  int_customers[int.customers]
+  int_employees[int.employees]
+  int_exchange_emails_with_customer[int.exchange_emails_with_customer]
+  int_fact_repair_lines[int.fact_repair_lines]
+  int_google_ads_campaign_conversions[int.google_ads_campaign_conversions]
+  int_int_dim_transaction[int.int_dim_transaction]
+  int_int_order_credits[int.int_order_credits]
+  int_int_order_invoices[int.int_order_invoices]
+  int_int_pos_credits[int.int_pos_credits]
+  int_int_pos_invoices[int.int_pos_invoices]
+  int_int_sales_orders[int.int_sales_orders]
+  int_int_service_credits[int.int_service_credits]
+  int_int_service_invoices[int.int_service_invoices]
+  int_int_service_orders[int.int_service_orders]
+  int_non_bike_product[int.non_bike_product]
+  int_order_credit_details[int.order_credit_details]
+  int_order_credit_header[int.order_credit_header]
+  int_order_invoice_collections[int.order_invoice_collections]
+  int_order_invoice_details[int.order_invoice_details]
+  int_order_invoice_header[int.order_invoice_header]
+  int_pos_credit_notes_details[int.pos_credit_notes_details]
+  int_pos_credit_notes_header[int.pos_credit_notes_header]
+  int_pos_invoice_notes_details[int.pos_invoice_notes_details]
+  int_pos_invoice_notes_header[int.pos_invoice_notes_header]
+  int_product_code_to_product_key_mapping[int.product_code_to_product_key_mapping]
+  int_product_consolidated_base[int.product_consolidated_base]
+  int_product_consolidated_enriched[int.product_consolidated_enriched]
+  int_product_google_signals[int.product_google_signals]
+  int_product_source_bike[int.product_source_bike]
+  int_product_source_non_bike[int.product_source_non_bike]
+  int_product_source_special_keys[int.product_source_special_keys]
+  int_purchase_orders[int.purchase_orders]
+  int_sales_order_collections[int.sales_order_collections]
+  int_service_engineer_performance[int.service_engineer_performance]
+  int_service_product[int.service_product]
+  int_used_bikes_memo[int.used_bikes_memo]
+  int_vw_int_dim_google_ads_campaign[int.vw_int_dim_google_ads_campaign]
+  int_vw_int_google_ads_campaign_daily_stats[int.vw_int_google_ads_campaign_daily_stats]
+  int_vw_int_google_daily_product_performance[int.vw_int_google_daily_product_performance]
+  int_vw_int_product_code_to_product_key_mapping[int.vw_int_product_code_to_product_key_mapping]
+  int_vw_int_service_product[int.vw_int_service_product]
+  int_vw_web_product_integrated[int.vw_web_product_integrated]
+  int_web_product_integrated[int.web_product_integrated]
+  int_xero_bank_transactions[int.xero_bank_transactions]
+  marts_dim_customer[marts.dim_customer]
+  marts_dim_employee[marts.dim_employee]
+  marts_dim_product[marts.dim_product]
+  marts_dim_service_type[marts.dim_service_type]
+  marts_dim_transaction[marts.dim_transaction]
+  marts_fct_exchange_emails_with_customer[marts.fct_exchange_emails_with_customer]
+  marts_fct_google_ads_campaign_conversions[marts.fct_google_ads_campaign_conversions]
+  marts_fct_google_ads_campaign_daily_stats[marts.fct_google_ads_campaign_daily_stats]
+  marts_fct_google_daily_product_performance[marts.fct_google_daily_product_performance]
+  marts_fct_order_credits[marts.fct_order_credits]
+  marts_fct_order_invoices[marts.fct_order_invoices]
+  marts_fct_purchase_orders[marts.fct_purchase_orders]
+  marts_fct_sales_orders[marts.fct_sales_orders]
+  marts_fct_service_credits[marts.fct_service_credits]
+  marts_fct_service_engineer_performance[marts.fct_service_engineer_performance]
+  marts_fct_service_invoices[marts.fct_service_invoices]
+  marts_fct_service_orders[marts.fct_service_orders]
+  marts_fct_till_credits[marts.fct_till_credits]
+  marts_fct_till_invoices[marts.fct_till_invoices]
+  marts_fct_used_bikes_memo[marts.fct_used_bikes_memo]
+  marts_fct_xero_bank_transaction_credits[marts.fct_xero_bank_transaction_credits]
+  marts_fct_xero_bank_transaction_debits[marts.fct_xero_bank_transaction_debits]
+  marts_vw_dim_customer[marts.vw_dim_customer]
+  marts_vw_dim_employee[marts.vw_dim_employee]
+  marts_vw_dim_google_ads_campaign[marts.vw_dim_google_ads_campaign]
+  marts_vw_dim_order_channel[marts.vw_dim_order_channel]
+  marts_vw_dim_product[marts.vw_dim_product]
+  marts_vw_dim_service_type[marts.vw_dim_service_type]
+  marts_vw_dim_transaction[marts.vw_dim_transaction]
+  marts_vw_fct_exchange_emails_with_customer[marts.vw_fct_exchange_emails_with_customer]
+  marts_vw_fct_google_ads_campaign_conversions[marts.vw_fct_google_ads_campaign_conversions]
+  marts_vw_fct_google_ads_campaign_daily_stats[marts.vw_fct_google_ads_campaign_daily_stats]
+  marts_vw_fct_google_daily_product_performance[marts.vw_fct_google_daily_product_performance]
+  marts_vw_fct_order_credits[marts.vw_fct_order_credits]
+  marts_vw_fct_order_invoices[marts.vw_fct_order_invoices]
+  marts_vw_fct_purchase_orders[marts.vw_fct_purchase_orders]
+  marts_vw_fct_sales_orders[marts.vw_fct_sales_orders]
+  marts_vw_fct_service_credits[marts.vw_fct_service_credits]
+  marts_vw_fct_service_engineer_performance[marts.vw_fct_service_engineer_performance]
+  marts_vw_fct_service_invoices[marts.vw_fct_service_invoices]
+  marts_vw_fct_service_orders[marts.vw_fct_service_orders]
+  marts_vw_fct_till_credits[marts.vw_fct_till_credits]
+  marts_vw_fct_till_invoices[marts.vw_fct_till_invoices]
+  marts_vw_fct_used_bikes_memo[marts.vw_fct_used_bikes_memo]
+  marts_vw_fct_xero_bank_transaction_credits[marts.vw_fct_xero_bank_transaction_credits]
+  marts_vw_fct_xero_bank_transaction_debits[marts.vw_fct_xero_bank_transaction_debits]
+  raw_365_365_mail[raw_365.365_mail]
+  raw_ccdata_adminusers[raw_ccdata.adminusers]
+  raw_ccdata_category_map[raw_ccdata.category_map]
+  raw_ccdata_customer[raw_ccdata.customer]
+  raw_ccdata_customerphoneno[raw_ccdata.customerphoneno]
+  raw_ccdata_events[raw_ccdata.events]
+  raw_ccdata_inventory[raw_ccdata.inventory]
+  raw_ccdata_invoicedetails[raw_ccdata.invoicedetails]
+  raw_ccdata_invoiceheader[raw_ccdata.invoiceheader]
+  raw_ccdata_makes[raw_ccdata.makes]
+  raw_ccdata_products[raw_ccdata.products]
+  raw_ccdata_purchaseorderdetails[raw_ccdata.purchaseorderdetails]
+  raw_ccdata_purchaseorderheader[raw_ccdata.purchaseorderheader]
+  raw_ccdata_repairs[raw_ccdata.repairs]
+  raw_ccdata_repairsdetails[raw_ccdata.repairsdetails]
+  raw_ccdata_saleorderdetails[raw_ccdata.saleorderdetails]
+  raw_ccdata_saleorderheader[raw_ccdata.saleorderheader]
+  raw_ccdata_stock[raw_ccdata.stock]
+  raw_ccdata_sundrydetails[raw_ccdata.sundrydetails]
+  raw_ccdata_sundryheader[raw_ccdata.sundryheader]
+  raw_ccdata_usedbikes[raw_ccdata.usedbikes]
+  raw_css2_categories_products[raw_css2.categories_products]
+  raw_css2_customers[raw_css2.customers]
+  raw_css2_itemgroupings_t[raw_css2.itemgroupings_t]
+  raw_css2_productoptions_t[raw_css2.productoptions_t]
+  raw_css2_products[raw_css2.products]
+  raw_google_ads_campaignconversionstats_5605924582[raw_google.ads_campaignconversionstats_5605924582]
+  raw_google_ads_campaignlabel_5605924582[raw_google.ads_campaignlabel_5605924582]
+  raw_google_ads_campaignstats_5605924582[raw_google.ads_campaignstats_5605924582]
+  raw_google_vw_daily_product_performance[raw_google.vw_daily_product_performance]
+  raw_google_vw_pricecompetitiveness[raw_google.vw_pricecompetitiveness]
+  raw_google_vw_priceinsights[raw_google.vw_priceinsights]
+  raw_xero_banktransactions[raw_xero.banktransactions]
+  stg_bike_product[stg.bike_product]
+  stg_categories_products[stg.categories_products]
+  stg_category_map_temp[stg.category_map_temp]
+  stg_customer_numbers[stg.customer_numbers]
+  stg_customers[stg.customers]
+  stg_employees[stg.employees]
+  stg_events[stg.events]
+  stg_exchange_emails[stg.exchange_emails]
+  stg_google_ads_campaign_conversion_stats[stg.google_ads_campaign_conversion_stats]
+  stg_google_ads_campaign_label[stg.google_ads_campaign_label]
+  stg_google_ads_campaign_stats[stg.google_ads_campaign_stats]
+  stg_google_daily_product_performance[stg.google_daily_product_performance]
+  stg_google_price_competitiveness[stg.google_price_competitiveness]
+  stg_google_price_insights[stg.google_price_insights]
+  stg_inventory[stg.inventory]
+  stg_invoice_details[stg.invoice_details]
+  stg_invoice_header[stg.invoice_header]
+  stg_makes[stg.makes]
+  stg_product[stg.product]
+  stg_purchase_order_details[stg.purchase_order_details]
+  stg_purchase_order_header[stg.purchase_order_header]
+  stg_repairs_details[stg.repairs_details]
+  stg_repairs_header[stg.repairs_header]
+  stg_sales_order_details[stg.sales_order_details]
+  stg_sales_order_header[stg.sales_order_header]
+  stg_sundry_details[stg.sundry_details]
+  stg_sundry_header[stg.sundry_header]
+  stg_used_bike_memo[stg.used_bike_memo]
+  stg_web_customers[stg.web_customers]
+  stg_web_item_groupings[stg.web_item_groupings]
+  stg_web_product[stg.web_product]
+  stg_web_product_options[stg.web_product_options]
+  stg_xero_bank_transaction_details[stg.xero_bank_transaction_details]
+  stg_xero_bank_transaction_header[stg.xero_bank_transaction_header]
+
+  dbo_01___order_invoices --> marts_fct_order_invoices
+  dbo_02___till_invoices --> marts_fct_till_invoices
+  dbo_03___service_invoices --> marts_fct_service_invoices
+  dbo_04___used_bikes --> marts_fct_used_bikes_memo
+  dbo_05___order_credits --> marts_fct_order_credits
+  dbo_06___till_credits --> marts_fct_till_credits
+  dbo_07___service_credits --> marts_fct_service_credits
+  dbo_08___sales_order --> marts_fct_sales_orders
+  dbo_09___service_orders --> marts_fct_service_orders
+  dbo_10___inventory --> stg_inventory
+  dbo_11___emails --> marts_fct_exchange_emails_with_customer
+  dbo_12___purchase_orders --> marts_fct_purchase_orders
+  dbo_13___google_ads_campaign_conversions --> marts_fct_google_ads_campaign_conversions
+  dbo_14___google_product_performance --> marts_fct_google_daily_product_performance
+  dbo_15___google_ads_campaign_stats --> marts_fct_google_ads_campaign_daily_stats
+  dbo_16___service_engineer_performance --> marts_fct_service_engineer_performance
+  dbo_17___xero_bank_transaction_debits --> marts_fct_xero_bank_transaction_debits
+  dbo_18___xero_bank_transaction_credits --> marts_fct_xero_bank_transaction_credits
+  dbo_42___product --> marts_dim_product
+  dbo_43___customer --> marts_dim_customer
+  dbo_44___employee --> marts_dim_employee
+  dbo_45___order_channel --> marts_vw_dim_order_channel
+  dbo_47___transaction --> marts_dim_transaction
+  dbo_48___engineer --> marts_dim_employee
+  dbo_51___google_ads_campaign --> marts_vw_dim_google_ads_campaign
+  int_base_repair_details --> stg_repairs_details
+  int_base_repair_headers --> int_service_product
+  int_base_repair_headers --> stg_repairs_header
+  int_bike_product --> stg_bike_product
+  int_bike_product --> stg_category_map_temp
+  int_bike_product --> stg_makes
+  int_consolidated_customers --> int_customers
+  int_consolidated_customers --> stg_web_customers
+  int_consolidated_product --> int_product_consolidated_enriched
+  int_customers --> stg_customer_numbers
+  int_customers --> stg_customers
+  int_employees --> stg_employees
+  int_exchange_emails_with_customer --> int_consolidated_customers
+  int_exchange_emails_with_customer --> stg_exchange_emails
+  int_fact_repair_lines --> int_base_repair_details
+  int_fact_repair_lines --> int_base_repair_headers
+  int_fact_repair_lines --> int_employees
+  int_fact_repair_lines --> int_product_code_to_product_key_mapping
+  int_google_ads_campaign_conversions --> stg_google_ads_campaign_conversion_stats
+  int_google_ads_campaign_conversions --> stg_google_ads_campaign_label
+  int_int_dim_transaction --> int_base_repair_headers
+  int_int_dim_transaction --> int_order_credit_header
+  int_int_dim_transaction --> int_order_invoice_header
+  int_int_dim_transaction --> int_pos_credit_notes_header
+  int_int_dim_transaction --> int_pos_invoice_notes_header
+  int_int_dim_transaction --> stg_sales_order_header
+  int_int_order_credits --> int_base_repair_headers
+  int_int_order_credits --> int_employees
+  int_int_order_credits --> int_order_credit_details
+  int_int_order_credits --> int_order_credit_header
+  int_int_order_credits --> int_order_invoice_header
+  int_int_order_credits --> int_product_code_to_product_key_mapping
+  int_int_order_invoices --> int_employees
+  int_int_order_invoices --> int_order_invoice_details
+  int_int_order_invoices --> int_order_invoice_header
+  int_int_order_invoices --> int_product_code_to_product_key_mapping
+  int_int_pos_credits --> int_employees
+  int_int_pos_credits --> int_pos_credit_notes_details
+  int_int_pos_credits --> int_pos_credit_notes_header
+  int_int_pos_credits --> int_pos_invoice_notes_details
+  int_int_pos_credits --> int_pos_invoice_notes_header
+  int_int_pos_credits --> int_product_code_to_product_key_mapping
+  int_int_pos_invoices --> int_employees
+  int_int_pos_invoices --> int_pos_credit_notes_details
+  int_int_pos_invoices --> int_pos_credit_notes_header
+  int_int_pos_invoices --> int_pos_invoice_notes_details
+  int_int_pos_invoices --> int_pos_invoice_notes_header
+  int_int_pos_invoices --> int_product_code_to_product_key_mapping
+  int_int_sales_orders --> int_employees
+  int_int_sales_orders --> int_product_code_to_product_key_mapping
+  int_int_sales_orders --> int_sales_order_collections
+  int_int_sales_orders --> stg_sales_order_details
+  int_int_sales_orders --> stg_sales_order_header
+  int_int_service_credits --> int_base_repair_headers
+  int_int_service_credits --> int_employees
+  int_int_service_credits --> int_order_credit_details
+  int_int_service_credits --> int_order_credit_header
+  int_int_service_credits --> int_order_invoice_header
+  int_int_service_credits --> int_product_code_to_product_key_mapping
+  int_int_service_invoices --> int_fact_repair_lines
+  int_int_service_orders --> int_fact_repair_lines
+  int_non_bike_product --> stg_category_map_temp
+  int_non_bike_product --> stg_makes
+  int_non_bike_product --> stg_product
+  int_order_credit_details --> stg_invoice_details
+  int_order_credit_header --> int_order_invoice_collections
+  int_order_credit_header --> stg_invoice_header
+  int_order_invoice_collections --> stg_events
+  int_order_invoice_details --> stg_invoice_details
+  int_order_invoice_header --> int_order_invoice_collections
+  int_order_invoice_header --> stg_invoice_header
+  int_pos_credit_notes_details --> stg_sundry_details
+  int_pos_credit_notes_header --> stg_sundry_header
+  int_pos_invoice_notes_details --> stg_sundry_details
+  int_pos_invoice_notes_header --> stg_sundry_header
+  int_product_code_to_product_key_mapping --> int_vw_int_product_code_to_product_key_mapping
+  int_product_consolidated_base --> int_product_source_bike
+  int_product_consolidated_base --> int_product_source_non_bike
+  int_product_consolidated_base --> int_product_source_special_keys
+  int_product_consolidated_enriched --> int_product_consolidated_base
+  int_product_consolidated_enriched --> int_product_google_signals
+  int_product_consolidated_enriched --> stg_makes
+  int_product_google_signals --> stg_google_price_competitiveness
+  int_product_google_signals --> stg_google_price_insights
+  int_product_source_bike --> int_bike_product
+  int_product_source_bike --> int_web_product_integrated
+  int_product_source_non_bike --> int_non_bike_product
+  int_product_source_non_bike --> int_web_product_integrated
+  int_product_source_special_keys --> int_product_code_to_product_key_mapping
+  int_product_source_special_keys --> stg_bike_product
+  int_purchase_orders --> int_employees
+  int_purchase_orders --> int_product_code_to_product_key_mapping
+  int_purchase_orders --> stg_purchase_order_details
+  int_purchase_orders --> stg_purchase_order_header
+  int_sales_order_collections --> stg_events
+  int_service_engineer_performance --> int_base_repair_headers
+  int_service_engineer_performance --> int_employees
+  int_service_engineer_performance --> stg_events
+  int_service_product --> int_vw_int_service_product
+  int_used_bikes_memo --> int_product_code_to_product_key_mapping
+  int_used_bikes_memo --> stg_used_bike_memo
+  int_vw_int_dim_google_ads_campaign --> stg_google_ads_campaign_label
+  int_vw_int_google_ads_campaign_daily_stats --> stg_google_ads_campaign_label
+  int_vw_int_google_ads_campaign_daily_stats --> stg_google_ads_campaign_stats
+  int_vw_int_google_daily_product_performance --> int_consolidated_product
+  int_vw_int_google_daily_product_performance --> stg_google_daily_product_performance
+  int_vw_int_google_daily_product_performance --> stg_web_product
+  int_vw_int_product_code_to_product_key_mapping --> stg_bike_product
+  int_vw_int_product_code_to_product_key_mapping --> stg_product
+  int_vw_int_service_product --> stg_product
+  int_vw_web_product_integrated --> stg_categories_products
+  int_vw_web_product_integrated --> stg_web_item_groupings
+  int_vw_web_product_integrated --> stg_web_product
+  int_vw_web_product_integrated --> stg_web_product_options
+  int_web_product_integrated --> int_vw_web_product_integrated
+  int_xero_bank_transactions --> stg_xero_bank_transaction_details
+  int_xero_bank_transactions --> stg_xero_bank_transaction_header
+  marts_dim_customer --> marts_vw_dim_customer
+  marts_dim_employee --> marts_vw_dim_employee
+  marts_dim_product --> marts_vw_dim_product
+  marts_dim_service_type --> marts_vw_dim_service_type
+  marts_dim_transaction --> marts_vw_dim_transaction
+  marts_fct_exchange_emails_with_customer --> marts_vw_fct_exchange_emails_with_customer
+  marts_fct_google_ads_campaign_conversions --> marts_vw_fct_google_ads_campaign_conversions
+  marts_fct_google_ads_campaign_daily_stats --> marts_vw_fct_google_ads_campaign_daily_stats
+  marts_fct_google_daily_product_performance --> marts_vw_fct_google_daily_product_performance
+  marts_fct_order_credits --> marts_vw_fct_order_credits
+  marts_fct_order_invoices --> marts_vw_fct_order_invoices
+  marts_fct_purchase_orders --> marts_vw_fct_purchase_orders
+  marts_fct_sales_orders --> marts_vw_fct_sales_orders
+  marts_fct_service_credits --> marts_vw_fct_service_credits
+  marts_fct_service_engineer_performance --> marts_vw_fct_service_engineer_performance
+  marts_fct_service_invoices --> marts_vw_fct_service_invoices
+  marts_fct_service_orders --> marts_vw_fct_service_orders
+  marts_fct_till_credits --> marts_vw_fct_till_credits
+  marts_fct_till_invoices --> marts_vw_fct_till_invoices
+  marts_fct_used_bikes_memo --> marts_vw_fct_used_bikes_memo
+  marts_fct_xero_bank_transaction_credits --> marts_vw_fct_xero_bank_transaction_credits
+  marts_fct_xero_bank_transaction_debits --> marts_vw_fct_xero_bank_transaction_debits
+  marts_vw_dim_customer --> int_consolidated_customers
+  marts_vw_dim_employee --> int_employees
+  marts_vw_dim_google_ads_campaign --> int_vw_int_dim_google_ads_campaign
+  marts_vw_dim_product --> int_consolidated_product
+  marts_vw_dim_transaction --> int_int_dim_transaction
+  marts_vw_fct_exchange_emails_with_customer --> int_exchange_emails_with_customer
+  marts_vw_fct_google_ads_campaign_conversions --> int_google_ads_campaign_conversions
+  marts_vw_fct_google_ads_campaign_daily_stats --> int_vw_int_google_ads_campaign_daily_stats
+  marts_vw_fct_google_daily_product_performance --> int_vw_int_google_daily_product_performance
+  marts_vw_fct_order_credits --> int_int_order_credits
+  marts_vw_fct_order_invoices --> int_int_order_invoices
+  marts_vw_fct_purchase_orders --> int_purchase_orders
+  marts_vw_fct_sales_orders --> int_int_sales_orders
+  marts_vw_fct_service_credits --> int_int_service_credits
+  marts_vw_fct_service_engineer_performance --> int_service_engineer_performance
+  marts_vw_fct_service_invoices --> int_int_service_invoices
+  marts_vw_fct_service_orders --> int_int_service_orders
+  marts_vw_fct_till_credits --> int_int_pos_credits
+  marts_vw_fct_till_invoices --> int_int_pos_invoices
+  marts_vw_fct_used_bikes_memo --> int_used_bikes_memo
+  marts_vw_fct_xero_bank_transaction_credits --> int_xero_bank_transactions
+  marts_vw_fct_xero_bank_transaction_debits --> int_xero_bank_transactions
+  stg_bike_product --> raw_ccdata_products
+  stg_categories_products --> raw_css2_categories_products
+  stg_category_map_temp --> raw_ccdata_category_map
+  stg_customer_numbers --> raw_ccdata_customerphoneno
+  stg_customers --> raw_ccdata_customer
+  stg_employees --> raw_ccdata_adminusers
+  stg_events --> raw_ccdata_events
+  stg_exchange_emails --> raw_365_365_mail
+  stg_google_ads_campaign_conversion_stats --> raw_google_ads_campaignconversionstats_5605924582
+  stg_google_ads_campaign_label --> raw_google_ads_campaignlabel_5605924582
+  stg_google_ads_campaign_stats --> raw_google_ads_campaignstats_5605924582
+  stg_google_daily_product_performance --> raw_google_vw_daily_product_performance
+  stg_google_price_competitiveness --> raw_google_vw_pricecompetitiveness
+  stg_google_price_insights --> raw_google_vw_priceinsights
+  stg_inventory --> raw_ccdata_inventory
+  stg_invoice_details --> raw_ccdata_invoicedetails
+  stg_invoice_header --> raw_ccdata_invoiceheader
+  stg_makes --> raw_ccdata_makes
+  stg_product --> raw_ccdata_stock
+  stg_purchase_order_details --> raw_ccdata_purchaseorderdetails
+  stg_purchase_order_header --> raw_ccdata_purchaseorderheader
+  stg_repairs_details --> raw_ccdata_repairsdetails
+  stg_repairs_header --> raw_ccdata_repairs
+  stg_sales_order_details --> raw_ccdata_saleorderdetails
+  stg_sales_order_header --> raw_ccdata_saleorderheader
+  stg_sundry_details --> raw_ccdata_sundrydetails
+  stg_sundry_header --> raw_ccdata_sundryheader
+  stg_used_bike_memo --> raw_ccdata_usedbikes
+  stg_web_customers --> raw_css2_customers
+  stg_web_item_groupings --> raw_css2_itemgroupings_t
+  stg_web_product --> raw_css2_products
+  stg_web_product_options --> raw_css2_productoptions_t
+  stg_xero_bank_transaction_details --> raw_xero_banktransactions
+  stg_xero_bank_transaction_header --> raw_xero_banktransactions
+
+  %% Layer assignments
+  class dbo_01___order_invoices semantic;
+  class dbo_02___till_invoices semantic;
+  class dbo_03___service_invoices semantic;
+  class dbo_04___used_bikes semantic;
+  class dbo_05___order_credits semantic;
+  class dbo_06___till_credits semantic;
+  class dbo_07___service_credits semantic;
+  class dbo_08___sales_order semantic;
+  class dbo_09___service_orders semantic;
+  class dbo_10___inventory semantic;
+  class dbo_11___emails semantic;
+  class dbo_12___purchase_orders semantic;
+  class dbo_13___google_ads_campaign_conversions semantic;
+  class dbo_14___google_product_performance semantic;
+  class dbo_15___google_ads_campaign_stats semantic;
+  class dbo_16___service_engineer_performance semantic;
+  class dbo_17___xero_bank_transaction_debits semantic;
+  class dbo_18___xero_bank_transaction_credits semantic;
+  class dbo_41___document_date semantic;
+  class dbo_42___product semantic;
+  class dbo_43___customer semantic;
+  class dbo_44___employee semantic;
+  class dbo_45___order_channel semantic;
+  class dbo_46___order_time semantic;
+  class dbo_47___transaction semantic;
+  class dbo_48___engineer semantic;
+  class dbo_49___order_date semantic;
+  class dbo_50___service_type semantic;
+  class dbo_51___google_ads_campaign semantic;
+  class dbo_98___refreshes semantic;
+  class int_base_repair_details intermediate;
+  class int_base_repair_headers intermediate;
+  class int_bike_product intermediate;
+  class int_consolidated_customers intermediate;
+  class int_consolidated_product intermediate;
+  class int_customers intermediate;
+  class int_employees intermediate;
+  class int_exchange_emails_with_customer intermediate;
+  class int_fact_repair_lines intermediate;
+  class int_google_ads_campaign_conversions intermediate;
+  class int_int_dim_transaction intermediate;
+  class int_int_order_credits intermediate;
+  class int_int_order_invoices intermediate;
+  class int_int_pos_credits intermediate;
+  class int_int_pos_invoices intermediate;
+  class int_int_sales_orders intermediate;
+  class int_int_service_credits intermediate;
+  class int_int_service_invoices intermediate;
+  class int_int_service_orders intermediate;
+  class int_non_bike_product intermediate;
+  class int_order_credit_details intermediate;
+  class int_order_credit_header intermediate;
+  class int_order_invoice_collections intermediate;
+  class int_order_invoice_details intermediate;
+  class int_order_invoice_header intermediate;
+  class int_pos_credit_notes_details intermediate;
+  class int_pos_credit_notes_header intermediate;
+  class int_pos_invoice_notes_details intermediate;
+  class int_pos_invoice_notes_header intermediate;
+  class int_product_code_to_product_key_mapping intermediate;
+  class int_product_consolidated_base intermediate;
+  class int_product_consolidated_enriched intermediate;
+  class int_product_google_signals intermediate;
+  class int_product_source_bike intermediate;
+  class int_product_source_non_bike intermediate;
+  class int_product_source_special_keys intermediate;
+  class int_purchase_orders intermediate;
+  class int_sales_order_collections intermediate;
+  class int_service_engineer_performance intermediate;
+  class int_service_product intermediate;
+  class int_used_bikes_memo intermediate;
+  class int_vw_int_dim_google_ads_campaign intermediate;
+  class int_vw_int_google_ads_campaign_daily_stats intermediate;
+  class int_vw_int_google_daily_product_performance intermediate;
+  class int_vw_int_product_code_to_product_key_mapping intermediate;
+  class int_vw_int_service_product intermediate;
+  class int_vw_web_product_integrated intermediate;
+  class int_web_product_integrated intermediate;
+  class int_xero_bank_transactions intermediate;
+  class marts_dim_customer gold;
+  class marts_dim_employee gold;
+  class marts_dim_product gold;
+  class marts_dim_service_type gold;
+  class marts_dim_transaction gold;
+  class marts_fct_exchange_emails_with_customer gold;
+  class marts_fct_google_ads_campaign_conversions gold;
+  class marts_fct_google_ads_campaign_daily_stats gold;
+  class marts_fct_google_daily_product_performance gold;
+  class marts_fct_order_credits gold;
+  class marts_fct_order_invoices gold;
+  class marts_fct_purchase_orders gold;
+  class marts_fct_sales_orders gold;
+  class marts_fct_service_credits gold;
+  class marts_fct_service_engineer_performance gold;
+  class marts_fct_service_invoices gold;
+  class marts_fct_service_orders gold;
+  class marts_fct_till_credits gold;
+  class marts_fct_till_invoices gold;
+  class marts_fct_used_bikes_memo gold;
+  class marts_fct_xero_bank_transaction_credits gold;
+  class marts_fct_xero_bank_transaction_debits gold;
+  class marts_vw_dim_customer gold;
+  class marts_vw_dim_employee gold;
+  class marts_vw_dim_google_ads_campaign gold;
+  class marts_vw_dim_order_channel gold;
+  class marts_vw_dim_product gold;
+  class marts_vw_dim_service_type gold;
+  class marts_vw_dim_transaction gold;
+  class marts_vw_fct_exchange_emails_with_customer gold;
+  class marts_vw_fct_google_ads_campaign_conversions gold;
+  class marts_vw_fct_google_ads_campaign_daily_stats gold;
+  class marts_vw_fct_google_daily_product_performance gold;
+  class marts_vw_fct_order_credits gold;
+  class marts_vw_fct_order_invoices gold;
+  class marts_vw_fct_purchase_orders gold;
+  class marts_vw_fct_sales_orders gold;
+  class marts_vw_fct_service_credits gold;
+  class marts_vw_fct_service_engineer_performance gold;
+  class marts_vw_fct_service_invoices gold;
+  class marts_vw_fct_service_orders gold;
+  class marts_vw_fct_till_credits gold;
+  class marts_vw_fct_till_invoices gold;
+  class marts_vw_fct_used_bikes_memo gold;
+  class marts_vw_fct_xero_bank_transaction_credits gold;
+  class marts_vw_fct_xero_bank_transaction_debits gold;
+  class raw_365_365_mail bronze;
+  class raw_ccdata_adminusers bronze;
+  class raw_ccdata_category_map bronze;
+  class raw_ccdata_customer bronze;
+  class raw_ccdata_customerphoneno bronze;
+  class raw_ccdata_events bronze;
+  class raw_ccdata_inventory bronze;
+  class raw_ccdata_invoicedetails bronze;
+  class raw_ccdata_invoiceheader bronze;
+  class raw_ccdata_makes bronze;
+  class raw_ccdata_products bronze;
+  class raw_ccdata_purchaseorderdetails bronze;
+  class raw_ccdata_purchaseorderheader bronze;
+  class raw_ccdata_repairs bronze;
+  class raw_ccdata_repairsdetails bronze;
+  class raw_ccdata_saleorderdetails bronze;
+  class raw_ccdata_saleorderheader bronze;
+  class raw_ccdata_stock bronze;
+  class raw_ccdata_sundrydetails bronze;
+  class raw_ccdata_sundryheader bronze;
+  class raw_ccdata_usedbikes bronze;
+  class raw_css2_categories_products bronze;
+  class raw_css2_customers bronze;
+  class raw_css2_itemgroupings_t bronze;
+  class raw_css2_productoptions_t bronze;
+  class raw_css2_products bronze;
+  class raw_google_ads_campaignconversionstats_5605924582 bronze;
+  class raw_google_ads_campaignlabel_5605924582 bronze;
+  class raw_google_ads_campaignstats_5605924582 bronze;
+  class raw_google_vw_daily_product_performance bronze;
+  class raw_google_vw_pricecompetitiveness bronze;
+  class raw_google_vw_priceinsights bronze;
+  class raw_xero_banktransactions bronze;
+  class stg_bike_product silver;
+  class stg_categories_products silver;
+  class stg_category_map_temp silver;
+  class stg_customer_numbers silver;
+  class stg_customers silver;
+  class stg_employees silver;
+  class stg_events silver;
+  class stg_exchange_emails silver;
+  class stg_google_ads_campaign_conversion_stats silver;
+  class stg_google_ads_campaign_label silver;
+  class stg_google_ads_campaign_stats silver;
+  class stg_google_daily_product_performance silver;
+  class stg_google_price_competitiveness silver;
+  class stg_google_price_insights silver;
+  class stg_inventory silver;
+  class stg_invoice_details silver;
+  class stg_invoice_header silver;
+  class stg_makes silver;
+  class stg_product silver;
+  class stg_purchase_order_details silver;
+  class stg_purchase_order_header silver;
+  class stg_repairs_details silver;
+  class stg_repairs_header silver;
+  class stg_sales_order_details silver;
+  class stg_sales_order_header silver;
+  class stg_sundry_details silver;
+  class stg_sundry_header silver;
+  class stg_used_bike_memo silver;
+  class stg_web_customers silver;
+  class stg_web_item_groupings silver;
+  class stg_web_product silver;
+  class stg_web_product_options silver;
+  class stg_xero_bank_transaction_details silver;
+  class stg_xero_bank_transaction_header silver;
+
+  %% Context linkage
+  ctx_project --> ctx_platform
+  ctx_platform --> ctx_docs

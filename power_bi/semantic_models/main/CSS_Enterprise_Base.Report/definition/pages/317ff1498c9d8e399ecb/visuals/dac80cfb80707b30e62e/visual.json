@@ -1,0 +1,111 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "dac80cfb80707b30e62e",
+  "position": {
+    "x": 102,
+    "y": 806,
+    "z": 6,
+    "height": 160,
+    "width": 1060
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Sales Invoice Note Count"
+                }
+              },
+              "queryRef": "00 - Measures.Sales Invoice Note Count",
+              "nativeQueryRef": "Sales Invoice Note Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Sales Credit Note Count"
+                }
+              },
+              "queryRef": "00 - Measures.Sales Credit Note Count",
+              "nativeQueryRef": "Sales Credit Note Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Service Credit Note Count"
+                }
+              },
+              "queryRef": "00 - Measures.Service Credit Note Count",
+              "nativeQueryRef": "Service Credit Note Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Service Invoice Note Count"
+                }
+              },
+              "queryRef": "00 - Measures.Service Invoice Note Count",
+              "nativeQueryRef": "Service Invoice Note Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Service Invoice Gross Profit"
+                }
+              },
+              "queryRef": "00 - Measures.Service Invoice Gross Profit",
+              "nativeQueryRef": "Service Invoice Gross Profit"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "00 - Measures"
+                  }
+                },
+                "Property": "Sales Invoice Note Count"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

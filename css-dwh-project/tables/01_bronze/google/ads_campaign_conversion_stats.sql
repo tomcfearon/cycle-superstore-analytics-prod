@@ -1,0 +1,22 @@
+CREATE TABLE [raw_google].[ads_CampaignConversionStats_5605924582] (
+    [campaign_id]                                BIGINT         NULL,
+    [customer_id]                                BIGINT         NULL,
+    [campaign_base_campaign]                     NVARCHAR (MAX) NULL,
+    [metrics_conversions]                        FLOAT          NULL,
+    [metrics_conversions_value]                  FLOAT          NULL,
+    [metrics_value_per_conversion]               FLOAT          NULL,
+    [segments_ad_network_type]                   NVARCHAR (MAX) NULL,
+    [segments_conversion_action]                 NVARCHAR (MAX) NULL,
+    [segments_conversion_action_category]        NVARCHAR (MAX) NULL,
+    [segments_conversion_action_name]            NVARCHAR (MAX) NULL,
+    [segments_conversion_attribution_event_type] NVARCHAR (MAX) NULL,
+    [segments_date]                              DATETIME2 (7)  NULL,
+    [segments_day_of_week]                       NVARCHAR (MAX) NULL,
+    [segments_month]                             DATETIME2 (7)  NULL,
+    [segments_quarter]                           DATETIME2 (7)  NULL,
+    [segments_slot]                              NVARCHAR (MAX) NULL,
+    [segments_week]                              DATETIME2 (7)  NULL,
+    [segments_year]                              BIGINT         NULL,
+    [_LATEST_DATE]                               DATETIME2 (7)  NULL,
+    [_DATA_DATE]                                 DATETIME2 (7)  NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY];

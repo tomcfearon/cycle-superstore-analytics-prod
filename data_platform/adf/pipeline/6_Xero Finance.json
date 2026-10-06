@@ -1,0 +1,1099 @@
+{
+	"name": "6_Xero Finance",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Refresh Token",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://css-key-vault-weu.vault.azure.net/secrets/xero-refresh-token?api-version=7.4",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get Client Secret",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get Refresh Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://css-key-vault-weu.vault.azure.net/secrets/xero-client-secret?api-version=7.4",
+					"body": "",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Exchange Token with Xero",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get Client Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"url": "https://identity.xero.com/connect/token",
+					"body": {
+						"value": "@concat('grant_type=refresh_token&client_id=CED8D5BF878C44369F613AD78407C065&client_secret=', activity('Get Client Secret').output.value, '&refresh_token=', activity('Get Refresh Token').output.value)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Update Key Vault with New Token",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Exchange Token with Xero",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "PUT",
+					"headers": {
+						"content-type": "application/json"
+					},
+					"url": "https://css-key-vault-weu.vault.azure.net/secrets/xero-refresh-token?api-version=7.4",
+					"body": {
+						"value": "@concat('{\"value\": \"', activity('Exchange Token with Xero').output.refresh_token, '\"}')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get Last Row Modified Invoices",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 60,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT COALESCE(DATEADD(hour, -1, MAX(last_refresh_utc)), DATEADD(day, -30, SYSUTCDATETIME())) AS last_refresh_utc\nFROM [meta].[refresh_metadata]\nWHERE table_name = 'raw_xero.Invoices'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "[meta]",
+							"pTable": "[refresh_metadata]",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "Get Last Row Modified Bank Transactions",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 60,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT COALESCE(DATEADD(hour, -1, MAX(last_refresh_utc)), DATEADD(day, -30, SYSUTCDATETIME())) AS last_refresh_utc\nFROM [meta].[refresh_metadata]\nWHERE table_name = 'raw_xero.BankTransactions'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "[meta]",
+							"pTable": "[refresh_metadata]",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "Until Invoices Complete",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Update Key Vault with New Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Get Last Row Modified Invoices",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(contains(activity('Get Invoices Page').output.firstRow, 'Invoices'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get Invoices Page",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"additionalHeaders": {
+										"Authorization": {
+											"value": "@concat('Bearer ', activity('Exchange Token with Xero').output.access_token)",
+											"type": "Expression"
+										},
+										"Xero-Tenant-Id": "d4710e18-0731-4f44-a828-e76f11d1b6ea"
+									}
+								},
+								"dataset": {
+									"referenceName": "ds_xero_rest_parameterized",
+									"type": "DatasetReference",
+									"parameters": {
+										"pRelativeUrl": {
+											"value": "@concat('Invoices?page=', string(add(length(variables('vInvoicePageMarkers')), 1)), '&where=UpdatedDateUTC>=DateTime(', formatDateTime(activity('Get Last Row Modified Invoices').output.firstRow.last_refresh_utc, 'yyyy, MM, dd, HH, mm, ss'), ')')",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						{
+							"name": "Pull Invoices to SQL",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Get Invoices Page",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"additionalHeaders": {
+										"Authorization": {
+											"value": "@concat('Bearer ', activity('Exchange Token with Xero').output.access_token)",
+											"type": "Expression"
+										},
+										"Xero-Tenant-Id": "d4710e18-0731-4f44-a828-e76f11d1b6ea"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"InvoiceID"
+										]
+									},
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['InvoiceID']"
+											},
+											"sink": {
+												"name": "InvoiceID",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['InvoiceNumber']"
+											},
+											"sink": {
+												"name": "InvoiceNumber",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Reference']"
+											},
+											"sink": {
+												"name": "Reference",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Type']"
+											},
+											"sink": {
+												"name": "Type",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Status']"
+											},
+											"sink": {
+												"name": "Status",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['DateString']"
+											},
+											"sink": {
+												"name": "InvoiceDate",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['DueDateString']"
+											},
+											"sink": {
+												"name": "DueDate",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['SubTotal']"
+											},
+											"sink": {
+												"name": "SubTotal",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['TotalTax']"
+											},
+											"sink": {
+												"name": "TotalTax",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['Total']"
+											},
+											"sink": {
+												"name": "Total",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['AmountDue']"
+											},
+											"sink": {
+												"name": "AmountDue",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['AmountPaid']"
+											},
+											"sink": {
+												"name": "AmountPaid",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['AmountCredited']"
+											},
+											"sink": {
+												"name": "AmountCredited",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['CurrencyCode']"
+											},
+											"sink": {
+												"name": "CurrencyCode",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['CurrencyRate']"
+											},
+											"sink": {
+												"name": "CurrencyRate",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['UpdatedDateUTC']"
+											},
+											"sink": {
+												"name": "UpdatedDateUTC",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Contact']['ContactID']"
+											},
+											"sink": {
+												"name": "ContactID",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Contact']['Name']"
+											},
+											"sink": {
+												"name": "ContactName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['LineItems']"
+											},
+											"sink": {
+												"name": "LineItems",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['Invoices']",
+									"mapComplexValuesToString": true
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_xero_rest_parameterized",
+									"type": "DatasetReference",
+									"parameters": {
+										"pRelativeUrl": {
+											"value": "@concat('Invoices?page=', string(add(length(variables('vInvoicePageMarkers')), 1)), '&where=UpdatedDateUTC>=DateTime(', formatDateTime(activity('Get Last Row Modified Invoices').output.firstRow.last_refresh_utc, 'yyyy, MM, dd, HH, mm, ss'), ')')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": "raw_xero",
+										"pTable": "Invoices",
+										"ds_database_name": {
+											"value": "@pipeline().globalParameters.DWH_DB_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Increment Invoice Page",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "Pull Invoices to SQL",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "vInvoicePageMarkers",
+								"value": 1
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			},
+			{
+				"name": "Until Bank Transactions Complete",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Update Key Vault with New Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Get Last Row Modified Bank Transactions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(contains(activity('Get Bank Transactions Page').output.firstRow, 'BankTransactions'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get Bank Transactions Page",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"additionalHeaders": {
+										"Authorization": {
+											"value": "@concat('Bearer ', activity('Exchange Token with Xero').output.access_token)",
+											"type": "Expression"
+										},
+										"Xero-Tenant-Id": "d4710e18-0731-4f44-a828-e76f11d1b6ea"
+									}
+								},
+								"dataset": {
+									"referenceName": "ds_xero_rest_parameterized",
+									"type": "DatasetReference",
+									"parameters": {
+										"pRelativeUrl": {
+											"value": "@concat('BankTransactions?page=', string(add(length(variables('vBankTransactionPageMarkers')), 1)), '&where=UpdatedDateUTC>=DateTime(', formatDateTime(activity('Get Last Row Modified Bank Transactions').output.firstRow.last_refresh_utc, 'yyyy, MM, dd, HH, mm, ss'), ')')",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						{
+							"name": "Pull Bank Transactions to SQL",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Get Bank Transactions Page",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"additionalHeaders": {
+										"Authorization": {
+											"value": "@concat('Bearer ', activity('Exchange Token with Xero').output.access_token)",
+											"type": "Expression"
+										},
+										"Xero-Tenant-Id": "d4710e18-0731-4f44-a828-e76f11d1b6ea"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"BankTransactionID"
+										]
+									},
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['BankTransactionID']"
+											},
+											"sink": {
+												"name": "BankTransactionID",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Type']"
+											},
+											"sink": {
+												"name": "Type",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Contact']['ContactID']"
+											},
+											"sink": {
+												"name": "ContactID",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Contact']['Name']"
+											},
+											"sink": {
+												"name": "ContactName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['BankAccount']['Code']"
+											},
+											"sink": {
+												"name": "BankAccountCode",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['BankAccount']['Name']"
+											},
+											"sink": {
+												"name": "BankAccountName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['DateString']"
+											},
+											"sink": {
+												"name": "Date",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['Reference']"
+											},
+											"sink": {
+												"name": "Reference",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['CurrencyCode']"
+											},
+											"sink": {
+												"name": "CurrencyCode",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['CurrencyRate']"
+											},
+											"sink": {
+												"name": "CurrencyRate",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['SubTotal']"
+											},
+											"sink": {
+												"name": "SubTotal",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['TotalTax']"
+											},
+											"sink": {
+												"name": "TotalTax",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['Total']"
+											},
+											"sink": {
+												"name": "Total",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['Status']"
+											},
+											"sink": {
+												"name": "Status",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['UpdatedDateUTC']"
+											},
+											"sink": {
+												"name": "UpdatedDateUTC",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['LineItems']"
+											},
+											"sink": {
+												"name": "LineItems",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['BankTransactions']",
+									"mapComplexValuesToString": true
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_xero_rest_parameterized",
+									"type": "DatasetReference",
+									"parameters": {
+										"pRelativeUrl": {
+											"value": "@concat('BankTransactions?page=', string(add(length(variables('vBankTransactionPageMarkers')), 1)), '&where=UpdatedDateUTC>=DateTime(', formatDateTime(activity('Get Last Row Modified Bank Transactions').output.firstRow.last_refresh_utc, 'yyyy, MM, dd, HH, mm, ss'), ')')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": "raw_xero",
+										"pTable": "BankTransactions",
+										"ds_database_name": {
+											"value": "@pipeline().globalParameters.DWH_DB_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Increment Bank Transaction Page",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "Pull Bank Transactions to SQL",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "vBankTransactionPageMarkers",
+								"value": 1
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			},
+			{
+				"name": "Pull Accounts to SQL",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Update Key Vault with New Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "@concat('Bearer ', activity('Exchange Token with Xero').output.access_token)",
+								"type": "Expression"
+							},
+							"Xero-Tenant-Id": "d4710e18-0731-4f44-a828-e76f11d1b6ea"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": true,
+							"keys": [
+								"AccountID"
+							]
+						},
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['AccountID']"
+								},
+								"sink": {
+									"name": "AccountID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['Code']"
+								},
+								"sink": {
+									"name": "Code",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['Name']"
+								},
+								"sink": {
+									"name": "Name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['Type']"
+								},
+								"sink": {
+									"name": "Type",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['Class']"
+								},
+								"sink": {
+									"name": "Class",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['Status']"
+								},
+								"sink": {
+									"name": "Status",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['UpdatedDateUTC']"
+								},
+								"sink": {
+									"name": "UpdatedDateUTC",
+									"type": "String"
+								}
+							}
+						],
+						"collectionReference": "$['Accounts']",
+						"mapComplexValuesToString": true
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_xero_rest_parameterized",
+						"type": "DatasetReference",
+						"parameters": {
+							"pRelativeUrl": "Accounts"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "raw_xero",
+							"pTable": "Accounts",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Log Refresh Invoices",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Until Invoices Complete",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"table_name": {
+							"value": "raw_xero.Invoices",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+					}
+				}
+			},
+			{
+				"name": "Log Refresh Bank Transactions",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Until Bank Transactions Complete",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"table_name": {
+							"value": "raw_xero.BankTransactions",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+					}
+				}
+			},
+			{
+				"name": "Log Refresh Accounts",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Pull Accounts to SQL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"table_name": {
+							"value": "raw_xero.Accounts",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+					}
+				}
+			}
+		],
+		"variables": {
+			"vInvoicePageMarkers": {
+				"type": "Array"
+			},
+			"vBankTransactionPageMarkers": {
+				"type": "Array"
+			}
+		},
+		"annotations": []
+	}
+}

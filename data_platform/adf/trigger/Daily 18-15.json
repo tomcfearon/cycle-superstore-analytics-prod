@@ -1,0 +1,44 @@
+{
+	"name": "Daily 18-15",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "1_Main ERP",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"ForceFullLoadIntMarts": false
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Week",
+				"interval": 1,
+				"startTime": "2026-05-27T21:22:00",
+				"timeZone": "GMT Standard Time",
+				"schedule": {
+					"minutes": [
+						15
+					],
+					"hours": [
+						18
+					],
+					"weekDays": [
+						"Sunday",
+						"Monday",
+						"Tuesday",
+						"Wednesday",
+						"Thursday",
+						"Friday",
+						"Saturday"
+					]
+				}
+			}
+		}
+	}
+}

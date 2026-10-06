@@ -1,0 +1,85 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "lineage: generate warehouse diagram",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}/data_platform/warehouse_lineage/render_lineage_svg.ps1"
+			],
+			"problemMatcher": [],
+			"detail": "Rebuilds warehouse lineage DOT and renders SVG"
+		},
+		{
+			"label": "sqlproj: Build css-dwh-project",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"${workspaceFolder}/cycle-superstore-analytics/css-dwh-project/css-dwh-project.sqlproj"
+			],
+			"problemMatcher": "$sqlproj-problem-matcher",
+			"isBackground": true,
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Builds the css-dwh-project SQL project"
+		},
+		{
+			"label": "database tests: run css-dwh-test",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}/data_platform/tests/run_database_tests.ps1",
+				"-ServerName",
+				"${input:testSqlServer}",
+				"-ResetConfirmation",
+				"${input:testResetConfirmation}",
+				"-Publish"
+			],
+			"problemMatcher": [],
+			"detail": "Publishes, resets, seeds, loads, and validates the disposable css-dwh-test database"
+		},
+		{
+			"label": "sqlproj: Publish to Dev",
+			"type": "process",
+			"command": "sqlpackage",
+			"args": [
+				"/Action:Publish",
+				"/SourceFile:${workspaceFolder}/css-dwh-project/bin/Debug/css-dwh-project.dacpac",
+				"/TargetServerName:css-sql-prd-neu.database.windows.net",
+				"/TargetDatabaseName:css-dwh-dev",
+				"/UniversalAuthentication:True",
+				"/p:DropObjectsNotInSource=False",
+				"/p:DropPermissionsNotInSource=False",
+				"/p:DropRoleMembersNotInSource=False"
+			],
+			"dependsOn": "sqlproj: Build css-dwh-project",
+			"problemMatcher": [],
+			"detail": "Builds and deploys the DACPAC directly to css-dwh-dev using Microsoft Entra ID"
+		}
+	],
+	"inputs": [
+		{
+			"id": "testSqlServer",
+			"type": "promptString",
+			"description": "Azure SQL server hosting css-dwh-test",
+			"default": "css-sql-prd-neu.database.windows.net"
+		},
+		{
+			"id": "testResetConfirmation",
+			"type": "promptString",
+			"description": "Type RESET css-dwh-test to confirm destructive test cleanup"
+		}
+	]
+}

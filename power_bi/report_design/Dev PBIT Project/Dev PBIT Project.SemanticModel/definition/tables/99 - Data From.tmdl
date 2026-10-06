@@ -1,0 +1,34 @@
+table '99 - Data From'
+	lineageTag: 4e6a846e-f56a-4a5c-a248-f1ec0ab02307
+
+	column 'Earliest Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: f102b053-a1a3-4170-95d0-923e454a61ba
+		summarizeBy: none
+		sourceColumn: Earliest Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition '99 - Data From' = m
+		mode: import
+		source = ```
+				let
+				    // 1. Call the parameter (assuming it is exactly named "Date From")
+				    Source = #"Data From",
+				    
+				    // 2. Convert that single value into a table so DAX can see it
+				    ConvertedToTable = Table.FromValue(Source),
+				    
+				    // 3. (Optional) Rename the column to "Value" for easy DAX referencing
+				    RenamedColumns = Table.RenameColumns(ConvertedToTable,{{"Value", "Earliest Date"}})
+				in
+				    RenamedColumns
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

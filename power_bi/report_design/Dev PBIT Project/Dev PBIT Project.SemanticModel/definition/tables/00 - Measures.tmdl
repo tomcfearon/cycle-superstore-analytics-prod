@@ -1,0 +1,4260 @@
+table '00 - Measures'
+	lineageTag: 1202a719-5925-4433-a7fc-0b8ccbf885dd
+
+	measure 'Cara Inventory Daily AVG' =
+			
+			AVERAGEX ( VALUES ( '10 - Inventory'[Query Date] ), [Latest Inventory] )
+		formatString: #,0
+		displayFolder: __Internal\__Internal\Time Intelligence
+		lineageTag: c7a5f9e9-333a-4115-ae97-a6ff3fe05822
+
+	measure 'Current Year Week' =
+			
+			VAR d =
+			    TODAY ()
+			RETURN
+			    IF (
+			        ISBLANK ( d ),
+			        BLANK (),
+			        FORMAT ( d, "dddd" ) & ", Week " & FORMAT ( WEEKNUM ( d, 2 ), "00" ) -- non-ISO: week starts Monday, week 1 starts Jan 1
+			        & " ("
+			            & FORMAT ( YEAR ( d ), "0000" ) & ")"
+			    )
+		displayFolder: 20 - Utilities/Hidden\Display Text
+		lineageTag: 279ce6e9-a5d4-4cfa-9f2f-0b87003c1dab
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Transaction URL' =
+			
+			VAR Mode =
+			    SELECTEDVALUE ( '62 - Link Mode'[Mode], "Internal" ) -- Resolve document identity from the Transaction dimension
+			VAR DocType =
+			    SELECTEDVALUE ( '47 - Transaction'[Document Type] )
+			VAR DocNum =
+			    SELECTEDVALUE ( '47 - Transaction'[Document Number] )
+			VAR PurchOrd =
+			    SELECTEDVALUE ( '12 - Purchase Orders'[Order Number] ) -- 1. Determine the Base IP/URL based on the selected mode
+			VAR BaseURL =
+			    SWITCH (
+			        Mode,
+			        "VPN", "http://192.168.195.210/",
+			        "Internal", "http://10.1.1.4/",
+			        BLANK ()
+			    ) -- 2. Build the specific link depending on document type
+			RETURN
+			    IF (
+			        ISBLANK ( BaseURL ),
+			        BLANK (),
+			        SWITCH (
+			            TRUE (),
+			            -- Order Invoices
+			            DocType = "Order Invoice",
+			                BaseURL & "SalesInvoicing.aspx#ID/" & SUBSTITUTE ( DocNum, "/", "%2F" ),
+			            -- Till Invoices (Requires the /3 suffix)
+			            DocType = "Till Invoice",
+			                BaseURL & "POS.aspx#ID/" & SUBSTITUTE ( DocNum, "/", "%2F" ) & "/3",
+			            -- Service Invoices
+			            DocType = "Service Invoice",
+			                BaseURL & "Service.aspx#ID/" & SUBSTITUTE ( DocNum, "/", "%2F" ),
+			            -- Order Credits
+			            DocType = "Order Credit",
+			                BaseURL & "CreditNote.aspx#ID/" & SUBSTITUTE ( DocNum, "/", "%2F" ),
+			            -- Till Credits (Requires the /4 suffix)
+			            DocType = "Till Credit",
+			                BaseURL & "POS.aspx#ID/" & SUBSTITUTE ( DocNum, "/", "%2F" ) & "/4",
+			            -- Sales Orders
+			            DocType = "Sales Order",
+			                BaseURL & "SaleOrders.aspx#ID/" & SUBSTITUTE ( DocNum, "/", "%2F" ),
+			            -- Purchase Orders (not in dim_transaction — use direct SELECTEDVALUE)
+			            NOT ISBLANK ( PurchOrd ),
+			                BaseURL & "PurchaseOrders.aspx#ID/" & SUBSTITUTE ( PurchOrd, "/", "%2F" ),
+			            -- Fallback if nothing is in scope
+			            BLANK ()
+			        )
+			    )
+		displayFolder: 20 - Utilities/Hidden\Links
+		lineageTag: ff3aadc9-cdf8-4907-88a5-b2b1036832d1
+		dataCategory: WebUrl
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'CCData Last Refresh (Text)' =
+			
+			VAR _LatestRefresh = [CCData Last Refresh UTC]
+			RETURN
+			    IF (
+			        ISBLANK ( _LatestRefresh ),
+			        "No Data",
+			        "Last Refreshed: " & FORMAT ( _LatestRefresh, "dd/mm/yy HH:mm" ) & " UTC"
+			    )
+		displayFolder: 20 - Utilities/Hidden\Display Text\Refreshes
+		lineageTag: 5cbd1132-1663-4ebb-99dd-58a83bb5d8c8
+
+	/// handles divide by 0
+	/// 
+	measure 'Sales Average Credit Amount' =
+			
+			DIVIDE ( [Sales Credit Amount], [Sales Credit Note Count] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Credit
+		lineageTag: 0c5eaaaa-e8e1-4602-90df-75408c34eaa7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// handles div 0
+	measure 'Sales Average Invoice Amount' =
+			
+			DIVIDE ( [Sales Invoice Amount], [Sales Invoice Note Count] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Invoice
+		lineageTag: 68c0adb4-140d-468a-b79f-b587b2a72d0d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Average Units Credited' =
+			
+			DIVIDE ( [Sales Units Credited], [Sales Credit Note Count] )
+		formatString: 0
+		displayFolder: __Internal\2 - Standard\Credit
+		lineageTag: 58eb6e0f-867c-457c-99eb-d1811befbb62
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Average Units Invoiced' =
+			
+			DIVIDE ( [Sales Units Invoiced], [Sales Invoice Note Count] )
+		formatString: 0
+		displayFolder: __Internal\2 - Standard\Invoice
+		lineageTag: f57b6890-6b09-4aae-af34-d8a26660cebe
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Credit COGS' =
+			
+			[Order Credits COGS] + [Till Credits COGS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: 1d89dc6c-1578-42e8-8dec-7592b10bb56a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Credit Gross Loss' =
+			
+			[Order Credits Gross Loss] + [Till Credits Gross Loss]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: a7ae317c-7882-402d-9018-505aeb784cf3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Credit Note Count' =
+			
+			[Order Credits Note Count] + [Till Credits Note Count]
+		formatString: #,0
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: 6cdf30ca-db39-42c0-aeb4-8411041e5584
+
+	measure '.' =
+			
+			[Till Credits VAT] + [Order Credits VAT]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: 77362482-7da8-4cce-86cc-6ea0b3c1c66e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Credit Amount' =
+			
+			[Order Credits Amount] + [Till Credits Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: 9e59e77d-0165-4d4f-82ca-5daacd68fe61
+
+	measure 'Sales Gross Credits Amount (Ex VAT)' =
+			
+			[Sales Credit Amount] - [.]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Credit
+		lineageTag: d1e146b0-9d74-4420-84a1-81707be4f6e5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Invoice Amount' =
+			
+			[Till Invoices Amount] + [Order Invoices Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: b99d0e48-61d5-4513-a85a-efd08a0e7b00
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Gross Invoices Amount (Ex VAT)' =
+			
+			[Sales Invoice Amount] - [Invoice VAT]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Invoice
+		lineageTag: 0e9aaa4d-b0f2-45c0-a94a-b61d632ad1c3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Gross Profit' =
+			
+			[Sales Invoice Gross Profit] - [Sales Credit Gross Loss]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: fd3a0e61-609e-4947-a569-12dfe01cd520
+
+	measure 'Sales Invoice COGS' =
+			
+			[Order Invoices COGS] + [Till Invoices COGS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: ba505e31-bfda-4eaa-8ded-5db77416230c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Invoice Gross Profit' =
+			
+			[Order Invoices Gross Profit] + [Till Invoices Gross Profit]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: cc9386db-77db-42f0-929b-2ac172e0df44
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Invoice Note Count' =
+			
+			[Order Invoices Note Count] + [Till Invoices Note Count]
+		formatString: #,0
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: fcf2c5db-4c35-45a4-adae-4f3f6215ef9b
+
+	/// avergae units of either a credit or invoice
+	/// 
+	measure 'Sales Net Average Units Per Note' =
+			
+			DIVIDE ( [Sales Net Units Sold], [Sales Net Note Count] )
+		formatString: 0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 43de235a-e911-4fc0-817e-d47d5e670b57
+
+	measure 'Sales Net COGS' =
+			
+			( [Order Invoices COGS] - [Order Credits COGS] ) + ( [Till Invoices COGS] - [Till Credits COGS] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 61237382-601c-4711-ad5c-1e67d330cbd7
+
+	measure 'Sales Net Margin %' =
+			
+			IF (
+			    ISBLANK ( [Sales Gross Profit] ) && ISBLANK ( [Sales Net Sales (Ex VAT)] ),
+			    BLANK (),
+			    COALESCE ( DIVIDE ( [Sales Gross Profit 1], [Sales Net Sales (Ex VAT)] ), 0 )
+			)
+		formatString: 0%;-0%;0%
+		displayFolder: __Internal\2 - Standard\Key Measures
+		lineageTag: c8774d03-e717-4431-a888-62edb7823e9c
+
+	measure 'Sales Net Note Count' =
+			
+			[Sales Invoice Note Count] + [Sales Credit Note Count]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: a89b04e0-20cf-4c7d-9e06-6cc031c603fe
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Net Sales' =
+			
+			[55 - Order Revenue (Non Collections)] + [55 - Order Revenue (Collections)] + [Till Net Sales]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Key Measures
+		lineageTag: db94a036-be98-492e-8c55-9500a397441b
+
+	measure 'Sales Net Sales (Ex VAT)' =
+			
+			[Sales Gross Invoices Amount (Ex VAT)] - [Sales Gross Credits Amount (Ex VAT)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Key Measures
+		lineageTag: 4f400a27-50ea-404a-bbdd-b141b8d5c842
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Net Units Sold' =
+			
+			[Sales Units Invoiced] - [Sales Units Credited]
+		formatString: 0
+		displayFolder: __Internal\2 - Standard\Key Measures
+		lineageTag: 5b7464be-ad28-4957-8698-5e98488d8579
+
+	/// the return rate in value terms
+	measure 'Sales Sales Amount Return Rate' =
+			
+			DIVIDE ( [Sales Credit Amount], [Sales Invoice Amount] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 5e810db7-c6f5-4989-9bf8-822c824a9b6a
+
+	measure 'Sales Unit Return Rate' =
+			
+			DIVIDE ( [Sales Units Credited], [Sales Units Invoiced] )
+		formatString: #,0%;-#,0%;#,0%
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: ea8a035f-f4b6-440b-98eb-d2737b143958
+
+	measure 'Sales Units Credited' =
+			
+			[Order Credits Units Credited] + [Till Credits Units Credited]
+		formatString: 0
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: d5491ffe-f2a6-4280-bf85-64df9e3283e1
+
+	measure 'Sales Units Invoiced' =
+			
+			[Order Invoices Units Invoiced] + [Till Invoices Units Invoiced]
+		formatString: 0
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: bb27f828-6efd-4027-893b-bd897d9f2871
+
+	measure 'Retail Bikes Net Units Sold' =
+			
+			CALCULATE (
+			    [Sales Net Units Sold],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '42 - Product'[Bike/Sundry] = "Bike"
+			)
+		formatString: 0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: f056a4c3-20ca-4a40-85f4-d991c3dcf627
+
+	measure 'Retail Goods Orders Gross Order Amount' =
+			
+			CALCULATE ( [Sales Orders Amount], '43 - Customer'[Retail/Trade] = "Retail" )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: 95ddf4cc-cf92-4ffe-abe4-016f89e25866
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Goods Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: 6875cb89-1b10-4d7c-b6a3-090d08718cc2
+
+	measure 'Retail Gross Profit' =
+			
+			CALCULATE ( [Sales Gross Profit 1], '43 - Customer'[Retail/Trade] = "Retail" )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: bac5ce12-d9fc-4c52-87eb-1c3e54d24dfe
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail In-Store Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Gross Profit 1],
+			    -- customer filter (note the required quotes around the table name)
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    -- apply web-order exclusion to each fact table involved
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 4bbee218-7e76-4cd7-8efb-25260fa2956e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// no invoice sent
+	measure 'Retail In-Store Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "In-Store"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: 0d610296-2933-4c8a-899f-0130373516fb
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail In-Store Orders Gross Profit YTD CY' =
+			
+			CALCULATE (
+			    [Retail In-Store Orders Gross Profit],
+			    DATESYTD ( '41 - Date'[Date] )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: e22abe64-da24-4850-9225-4f5956a9d6bf
+
+	measure 'Retail Sales Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: a78fb2b6-6d29-4780-9157-0dc5a7a149fe
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Web Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Gross Profit 1],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 6e8e3299-7a9f-491e-92a8-0dd665119a97
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Web Sales Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: 6a8df635-7b58-41f2-851b-9a33aa6dd7e7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Average Credit Amount' =
+			
+			DIVIDE ( [Service Credit Amount], [Service Credit Note Count] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\Credit
+		lineageTag: a41229be-cbf0-4e6a-8f35-b22a073104b9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Average Invoice Amount' =
+			
+			DIVIDE ( [Service Invoice Amount], [Service Invoice Note Count] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\Invoice
+		lineageTag: a2d1b202-440d-41d0-b458-7d1f410bc117
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Average Repair Time Amount' =
+			
+			DIVIDE ( [Service Invoice Repair Time (Minutes)], [Service Invoice Note Count] )
+		formatString: #,0
+		displayFolder: __Internal\__Internal\Invoice
+		lineageTag: 6f666d0c-485c-4f18-b5b0-106db2697625
+
+	measure 'Service Gross Profit' =
+			
+			[Service Invoice Gross Profit] - [Service Credit Gross Loss]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: a0e9fd13-2d81-442d-80cc-b21f354073af
+
+	measure 'Service Invoice Average Gross Profit Amount' =
+			
+			AVERAGEX (
+			    VALUES ( '03 - Service Invoices'[Transaction Key] ),
+			    [Service Invoice Gross Profit]
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\Invoice
+		lineageTag: dba42630-b403-4cf1-bd4c-c520e746dc69
+
+	measure 'Service Invoices Profit Per Hour' =
+			
+			DIVIDE (
+			    [Service Invoice Gross Profit],
+			    [Service Invoice Repair Time (Minutes)]
+			) * 60
+		formatString: #,0
+		displayFolder: __Internal\__Internal\Invoice\Net
+		lineageTag: 722ef859-68ec-4079-9e30-fa3ff6935997
+
+	measure 'Service Net COS' =
+			
+			[Service Invoice COGS] - [Service Credit COS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\Net
+		lineageTag: 989ef79e-f962-407e-bcff-12de5d56e226
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Net Sales' =
+			
+			[Service Invoice Amount] - [Service Credit Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\Key Measures
+		lineageTag: 0949261c-8904-4a78-8c79-bafbc4eac094
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'Show Value For Dates' =
+			
+			VAR LastDateWithData =
+			    CALCULATE ( MAX ( '01 - Order Invoices'[Order Date] ), REMOVEFILTERS () )
+			VAR FirstDateVisible =
+			    MIN ( '41 - Date'[Date] )
+			VAR Result = FirstDateVisible <= LastDateWithData
+			RETURN
+			    Result
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		displayFolder: __Internal
+		lineageTag: 617e3f66-cad7-4e79-9be4-2fd04d5878a8
+
+	measure 'Total Gross Profit' =
+			
+			[Sales Gross Profit] + [Service Gross Profit]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 01 - Enterprise\_Net
+		lineageTag: 1931f6f0-bd7e-4275-8b24-b26cdca2bbb3
+
+	measure 'Trade Gross Profit' =
+			
+			CALCULATE ( [Sales Gross Profit 1], '43 - Customer'[Retail/Trade] = "Trade" )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 29e3c602-ea0d-4111-864c-1e2cb5a27001
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Trade Sales Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '43 - Customer'[Retail/Trade] = "Trade"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: 949b7bd6-4fb9-424e-be89-2a97a02e2aaf
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Trade Service Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Service Orders Gross Profit],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Service
+		lineageTag: 1ae78b37-d3b0-4d37-97c0-022b2f5a069c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bikes Gross Profit' =
+			
+			( ( [Used Bike Revenue] - [Used Bike COGS] ) / 1.23 ) - ( ( [Used Bike COS] / 1.23 ) / 2 )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 10 - Used Bikes
+		lineageTag: 91a23a81-6e46-4189-8a5c-3edc756a4a62
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bikes Gross Sales' =
+			
+			IF (
+			    CALCULATE (
+			        SUMX ( '04 - Used Bikes', [Sold Price] ),
+			        '04 - Used Bikes'[Used Bike Status] IN { "Sold" /*", "Scrap"*/
+			            }
+			    ) = 0,
+			    BLANK ()
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\3 - Used Bikes Memo
+		lineageTag: cacc29fb-02f8-417c-bee0-c92323acf72a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bikes Total Cost' =
+			
+			[Used Bike COGS] + [Used Bike COS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\3 - Used Bikes Memo
+		lineageTag: cf0d80f8-2974-4dbf-a96c-f7f44250bc6f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Web Link' =
+			
+			VAR Mode =
+			    SELECTEDVALUE ( '62 - Link Mode'[Mode], "Internal" ) -- Use Transaction dim for all doc types; Purchase Orders remain separate
+			VAR RawInv =
+			    COALESCE (
+			        SELECTEDVALUE ( '47 - Transaction'[Document Number] ),
+			        SELECTEDVALUE ( '12 - Purchase Orders'[Order Number] )
+			    )
+			RETURN
+			    IF ( NOT ISBLANK ( RawInv ), IF ( Mode = "VPN", "VPN Link", "Link" ), BLANK () )
+		displayFolder: 20 - Utilities/Hidden\Display Text
+		lineageTag: 6702afb5-3544-409e-9d81-528532af4b35
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Web Sales Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Sales
+		lineageTag: 968adf44-8f88-4998-bdd0-906ea1dbf8d9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Web Service Orders Gross Profit' =
+			
+			CALCULATE (
+			    [Service Average Credit Amount],
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Service
+		lineageTag: a5fda839-0975-4ec1-b1c6-f888979ad862
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Till Net Sales' =
+			
+			[Till Invoices Amount] - [Till Credits Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 213b5781-dfd2-4757-9fc0-dad8679458d0
+
+	measure '55 - Order Revenue (Non Collections)' =
+			
+			VAR OrderInvoicesNoCollection =
+			    CALCULATE (
+			        [Order Invoices Amount],
+			        KEEPFILTERS ( '01 - Order Invoices'[Collection Employee Key] = -1 )
+			    )
+			VAR OrderCreditsNoCollection =
+			    CALCULATE (
+			        [Order Credits Amount],
+			        KEEPFILTERS ( '05 - Order Credits'[Collection Employee Key] = -1 )
+			    )
+			RETURN
+			    OrderInvoicesNoCollection - OrderCreditsNoCollection
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: e2301411-a758-4492-b144-50a5fb210088
+
+	measure '55 - Order Revenue (Collections)' =
+			
+			VAR OrderInvoicesWithCollection =
+			    CALCULATE (
+			        [Order Invoices Amount],
+			        KEEPFILTERS ( '01 - Order Invoices'[Collection Employee Key] <> -1 )
+			    )
+			VAR OrderCreditsWithCollection =
+			    CALCULATE (
+			        [Order Credits Amount],
+			        KEEPFILTERS ( '05 - Order Credits'[Collection Employee Key] <> -1 )
+			    )
+			RETURN
+			    OrderInvoicesWithCollection - OrderCreditsWithCollection
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: 3e7349fb-b210-4ed1-8d91-bd115fb3c7de
+
+	measure '55 - Order Revenue' =
+			
+			VAR CollectionInvoicesMade =
+			    CALCULATE (
+			        [Order Invoices Amount],
+			        USERELATIONSHIP ( '01 - Order Invoices'[Collection Employee Key], '44 - Employee'[Employee Key] ),
+			        KEEPFILTERS ( '01 - Order Invoices'[Collection Employee Key] <> -1 )
+			    )
+			VAR CollectionCreditsMade =
+			    CALCULATE (
+			        [Order Credits Amount],
+			        USERELATIONSHIP ( '05 - Order Credits'[Collection Employee Key], '44 - Employee'[Employee Key] ),
+			        KEEPFILTERS ( '05 - Order Credits'[Collection Employee Key] <> -1 )
+			    )
+			RETURN
+			    CollectionInvoicesMade - CollectionCreditsMade
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: 89397bfa-00ad-42a1-9c00-bd6a2bb10318
+
+	measure 'Orders Net Sales' =
+			
+			[Order Invoices Amount] - [Order Credits Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Net
+		lineageTag: 612d7bfe-4fed-420b-a99d-1da342637983
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '55 - Bonus Calculated' =
+			
+			SUMX (
+			    VALUES ( '44 - Employee'[Employee Key] ),
+			    VAR BonusRate =
+			        CALCULATE ( SELECTEDVALUE ( '44 - Employee'[Bonus], 0 ) )
+			    VAR CollectionRate =
+			        CALCULATE ( SELECTEDVALUE ( '44 - Employee'[Bonus From Collections], 0 ) )
+			    VAR TotalSalesBase =
+			        [Sales Net Sales] + COALESCE ( [55 - Used Bikes Revenue], 0 )
+			    VAR BaseCommission = TotalSalesBase * BonusRate
+			    VAR CollectorDeductionInvoices =
+			        CALCULATE (
+			            SUMX (
+			                FILTER (
+			                    '01 - Order Invoices',
+			                    '01 - Order Invoices'[Collection Employee Key] <> -1
+			                ),
+			                VAR CollectorKey = '01 - Order Invoices'[Collection Employee Key]
+			                VAR CollectorRateForLine =
+			                    LOOKUPVALUE (
+			                        '44 - Employee'[Bonus From Collections],
+			                        '44 - Employee'[Employee Key], CollectorKey,
+			                        0
+			                    )
+			                RETURN
+			                    '01 - Order Invoices'[Price] * CollectorRateForLine
+			            )
+			        )
+			    VAR CollectorDeductionCredits =
+			        CALCULATE (
+			            SUMX (
+			                FILTER (
+			                    '05 - Order Credits',
+			                    '05 - Order Credits'[Collection Employee Key] <> -1
+			                ),
+			                VAR CollectorKey = '05 - Order Credits'[Collection Employee Key]
+			                VAR CollectorRateForLine =
+			                    LOOKUPVALUE (
+			                        '44 - Employee'[Bonus From Collections],
+			                        '44 - Employee'[Employee Key], CollectorKey,
+			                        0
+			                    )
+			                RETURN
+			                    '05 - Order Credits'[Price] * CollectorRateForLine
+			            )
+			        )
+			    VAR CollectionsMadeBonus = [55 - Order Revenue] * CollectionRate
+			    RETURN
+			        BaseCommission - CollectorDeductionInvoices + CollectorDeductionCredits + CollectionsMadeBonus
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: b50e4bec-9758-4804-93cd-6a2b5938c7f1
+
+	measure '55 - P1' =
+			
+			VAR SalesActivity =
+			    [Sales Net Sales] + COALESCE ( [55 - Used Bikes Revenue], 0 )
+			        + COALESCE ( [55 - Order Revenue], 0 )
+			        + COALESCE ( [55 - Order Revenue (Collections)], 0 )
+			        + COALESCE ( [55 - Order Revenue (Non Collections)], 0 )
+			        + COALESCE ( [Sales Gross Profit], 0 )
+			RETURN
+			    IF ( SalesActivity <> 0, 1, 0 )
+		formatString: #,0
+		displayFolder: 55 - Reconciliation Report\0 - Visual Filters
+		lineageTag: a5fc7d59-15ab-45c4-8101-5cf224d45b3e
+
+	measure '55 - Used Bikes Revenue' =
+			
+			CALCULATE (
+			    SUMX (
+			        FILTER ( '04 - Used Bikes', '04 - Used Bikes'[Used Bike Status] = "Sold" ),
+			        [Sold Price]
+			    ),
+			    KEEPFILTERS ( '44 - Employee'[Employee Key] <> -1 ),
+			    REMOVEFILTERS ( '42 - Product' ),
+			    REMOVEFILTERS ( '43 - Customer' ),
+			    REMOVEFILTERS ( '45 - Order Channel' )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: 8a8bfb14-9790-4b71-8110-59cf8318d5d0
+
+	measure '55 - Order Invoices COGS' =
+			
+			CALCULATE (
+			    [Order Invoices COGS],
+			    KEEPFILTERS ( '01 - Order Invoices'[Is Credited] = FALSE ),
+			    KEEPFILTERS ( '01 - Order Invoices'[Price] <> 0 ),
+			    KEEPFILTERS ( '01 - Order Invoices'[Product Key] <> "MISC-3" )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: ff5e9ec5-707b-46e3-ab26-a6d67af05413
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '55 - Till Invoices COGS' =
+			
+			CALCULATE (
+			    [Till Invoices COGS],
+			    KEEPFILTERS ( '01 - Order Invoices'[Is Credited] = FALSE ),
+			    KEEPFILTERS ( '01 - Order Invoices'[Price] <> 0 ),
+			    KEEPFILTERS ( '01 - Order Invoices'[Product Key] <> "MISC-3" )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: f01304de-9565-4047-92d2-60d2775044c8
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '55 - Order Invoices Gross Profit' =
+			
+			CALCULATE (
+			    [Order Invoices Amount (Excl. VAT)],
+			    KEEPFILTERS ( '01 - Order Invoices'[Is Credited] = FALSE ),
+			    KEEPFILTERS ( '01 - Order Invoices'[Price] <> 0 )
+			) - [55 - Order Invoices COGS]
+		formatString: "€"#,0.###############;-"€"#,0.###############;"€"#,0.###############
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: b1369db7-9042-47a4-a75e-bfc990959ca4
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-IE"}
+
+	measure '55 - Till Invoices Gross Profit' =
+			
+			CALCULATE (
+			    [Till Invoices Amount (Excl. VAT)],
+			    KEEPFILTERS ( '01 - Order Invoices'[Is Credited] = FALSE ),
+			    KEEPFILTERS ( '01 - Order Invoices'[Price] <> 0 )
+			) - [55 - Till Invoices COGS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: 6053cb7f-72d1-4881-9ef5-ca0fe7163b63
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '55 - Sales Gross Profit' =
+			
+			[55 - Order Invoices Gross Profit] + [55 - Till Invoices Gross Profit]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: b6b1d505-365e-413b-ab2e-efe0e4998a51
+
+	measure 'Stock Value' =
+			
+			VAR LastAvailableDate =
+			    LASTDATE ( '41 - Date'[Date] )
+			RETURN
+			    CALCULATE (
+			        SUMX ( '42 - Product', [Total Inventory] * '42 - Product'[Cost Price] ),
+			        '10 - Inventory'[Query Date] = LastAvailableDate
+			    )
+		displayFolder: 05 - Inventory\Valuations
+		lineageTag: 3b653a31-ee63-4bb6-ba75-c147fdda54e1
+
+	measure 'Net Margin % (Of Group)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    )
+			VAR BaseResult =
+			    CALCULATE (
+			        [Sales Net Margin %],
+			        DATESINPERIOD ( '41 - Date'[Date], AsOfDate, -12, MONTH ),
+			        KEEPFILTERS ( '41 - Date'[Month Number] IN { 9, 10, 11, 12, 1, 2 } ),
+			        REMOVEFILTERS ( '42 - Product'[Title] ) -- key part (prevents Show Title from changing it)
+			    )
+			RETURN
+			    IF ( ISINSCOPE ( '42 - Product'[Title] ), BLANK (), BaseResult )
+		formatString: 0%;-0%;0%
+		displayFolder: 52 - Order Planner\Base
+		lineageTag: 8edfa5c9-5ca9-42a3-82dd-02f711d7c392
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Net Units Sold (Last Sep–Feb Period) (Group)' =
+			
+			IF (
+			    NOT ISINSCOPE ( '42 - Product'[Title] ),
+			    SUMX (
+			        VALUES ( '42 - Product'[Title] ),
+			        [Net Units Sold (Last Sep–Feb Period) (Title)]
+			    )
+			)
+		formatString: 0
+		displayFolder: 52 - Order Planner
+		lineageTag: 5d412617-8d8c-4adf-89fb-60f60da35fc4
+
+	measure 'Sold Units (Last Sep–Feb, Ignore Title)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    )
+			VAR Result =
+			    IF (
+			        NOT ISINSCOPE ( '42 - Product'[Title] ),
+			        CALCULATE (
+			            [Sales Net Units Sold],
+			            DATESINPERIOD ( '41 - Date'[Date], AsOfDate, -12, MONTH ),
+			            KEEPFILTERS ( '41 - Date'[Month Number] IN { 9, 10, 11, 12, 1, 2 } ),
+			            REMOVEFILTERS ( '42 - Product'[Title] ),
+			            REMOVEFILTERS ( '42 - Product'[Model Year] )
+			        )
+			    )
+			RETURN
+			    IF ( NOT ISINSCOPE ( '42 - Product'[Title] ), COALESCE ( Result, 0 ), BLANK () )
+		formatString: 0
+		displayFolder: 52 - Order Planner\Base
+		lineageTag: 2dbc5aee-35ed-4cb2-aee3-31bdacd2bef9
+
+	measure Amount =
+			
+			SUMX (
+			    VALUES ( '42 - Product'[Title] ),
+			    VAR Qty = [setad ofSuggested Order (Title)]
+			    VAR Cost = [Unit Cost]
+			    RETURN
+			        IF ( NOT ISBLANK ( Qty ) && NOT ISBLANK ( Cost ), Qty * Cost )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner\Derived
+		lineageTag: bf7215cf-7326-4b9d-a6a6-8eb001e6b634
+
+	measure 'setad ofSuggested Order (Title)' =
+			
+			VAR Factor =
+			    COALESCE ( SELECTEDVALUE ( '64 - Order Factor'[Value %] ), 1 )
+			VAR ThisStatus = [Product Status (Ungated)]
+			RETURN
+			    IF (
+			        NOT ISINSCOPE ( '42 - Product'[Title] ),
+			        BLANK (),
+			        IF (
+			            ThisStatus = "Discontinued",
+			            BLANK (),
+			            VAR SoldTitle = [Net Units Sold (Last Sep–Feb Period) (Title)]
+			            VAR BaseOrder =
+			                ROUND ( SoldTitle * Factor, 0 )
+			            VAR TitlesInBucket =
+			                CALCULATETABLE (
+			                    VALUES ( '42 - Product'[Title] ),
+			                    REMOVEFILTERS ( '42 - Product'[Title] )
+			                )
+			            VAR EligibleTitles =
+			                FILTER (
+			                    TitlesInBucket,
+			                    CALCULATE ( [Product Status (Ungated)] ) <> "Discontinued"
+			                )
+			            VAR EligibleCount =
+			                COUNTROWS ( EligibleTitles )
+			            RETURN
+			                IF (
+			                    EligibleCount = 0,
+			                    BLANK (),
+			                    VAR SoldDiscontinuedBucket =
+			                        SUMX (
+			                            FILTER (
+			                                TitlesInBucket,
+			                                CALCULATE ( [Product Status (Ungated)] ) = "Discontinued"
+			                            ),
+			                            [Net Units Sold (Last Sep–Feb Period) (Title)]
+			                        )
+			                    VAR ReplacementDemand =
+			                        ROUND ( MAX ( 0, SoldDiscontinuedBucket ) * Factor, 0 )
+			                    VAR Cycles =
+			                        QUOTIENT ( ReplacementDemand, EligibleCount )
+			                    VAR Remainder = ReplacementDemand - ( Cycles * EligibleCount )
+			                    VAR RankForRemainder =
+			                        RANKX (
+			                            EligibleTitles,
+			                            VAR CostT =
+			                                COALESCE ( [Unit Cost], 999999 )
+			                            VAR StatusT =
+			                                CALCULATE ( [Product Status (Ungated)] )
+			                            VAR SoldT = [Net Units Sold (Last Sep–Feb Period) (Title)]
+			                            VAR BaseT =
+			                                ROUND ( SoldT * Factor, 0 )
+			                            VAR IsNewT =
+			                                IF ( StatusT = "New Product", 1, 0 )
+			                            VAR NotBoughtT =
+			                                IF ( BaseT = 0, 1, 0 )
+			                            VAR KeyT =
+			                                COALESCE ( CALCULATE ( MIN ( '42 - Product'[Product ID] ) ), 0 ) --instead of index column
+			                            RETURN
+			                                CostT * 1000000 - IsNewT * 1000 - NotBoughtT + KeyT * 0.000001,
+			                            ,
+			                            ASC,
+			                            DENSE
+			                        )
+			                    VAR Extra =
+			                        IF ( Remainder > 0 && RankForRemainder <= Remainder, 1, 0 )
+			                    VAR ReplacementShare = Cycles + Extra
+			                    RETURN
+			                        MAX ( 0, BaseOrder + ReplacementShare )
+			                )
+			        )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner\Derived
+		lineageTag: 9c13aece-3087-4b89-9130-d4557c6b54fd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Net Units Sold (From Equivalent Day LY to Sep 1)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    )
+			VAR AsOfYear =
+			    YEAR ( AsOfDate )
+			VAR LY = AsOfYear - 1 -- “Equivalent day of year” (same day-of-year number as AsOfDate, but in last year)
+			VAR AsOfDOY =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Day Of Year Number] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Date] = AsOfDate
+			    )
+			VAR Sep1_LY =
+			    DATE ( LY, 9, 1 )
+			RETURN
+			    CALCULATE (
+			        [Sales Net Units Sold],
+			        REMOVEFILTERS ( '42 - Product'[Model Year] ),
+			        FILTER (
+			            ALL ( '41 - Date' ),
+			            '41 - Date'[Year] = LY && '41 - Date'[Day Of Year Number] >= AsOfDOY
+			                && '41 - Date'[Date] < Sep1_LY
+			        )
+			    )
+		formatString: 0
+		displayFolder: 52 - Order Planner
+		lineageTag: b9f58f9a-add0-4cf1-8046-fdc12921d1c0
+
+	measure 'Net Units Sold (Last Sep–Feb, Size,Gender,Category Level)' =
+			
+			IF (
+			    ISINSCOPE ( '42 - Product'[Title] ),
+			    CALCULATE (
+			        [Net Units Sold (Last Sep–Feb Period) (Group)],
+			        ALLEXCEPT (
+			            '42 - Product',
+			            '42 - Product'[Size],
+			            '42 - Product'[Category],
+			            '42 - Product'[Subcategory],
+			            '42 - Product'[Brand]
+			        )
+			    )
+			)
+		formatString: 0
+		displayFolder: 52 - Order Planner\Base
+		lineageTag: f2ee4f96-09ba-411f-9080-91b080878e50
+
+	measure 'Unit Price (Discontinued, Ignore Model Year)' =
+			
+			CALCULATE (
+			    MAX ( '42 - Product'[Cost Price] ),
+			    KEEPFILTERS ( '42 - Product'[Is Discontinued] = TRUE () ),
+			    REMOVEFILTERS ( '42 - Product'[Model Year] )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: c23bdd73-66d4-4e98-90c2-e6fdd7800046
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Count Of Products' =
+			
+			COUNTROWS ( VALUES ( '42 - Product'[Title] ) )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner\Base
+		lineageTag: 25514c44-1d82-4198-9c99-a393d881aeba
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Count Of New Products' =
+			
+			CALCULATE (
+			    COUNTROWS ( VALUES ( '42 - Product'[Title] ) ),
+			    '42 - Product'[Is New] = TRUE ()
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner\Base
+		lineageTag: 8b5f51a1-5c43-49ab-9464-6e4b5d3976c7
+
+	measure 'Product Status' =
+			
+			IF (
+			    ISINSCOPE ( '42 - Product'[Title] ),
+			    VAR IsNew =
+			        COALESCE ( SELECTEDVALUE ( '42 - Product'[Is New] ), FALSE () )
+			    VAR SelMY =
+			        SELECTEDVALUE ( '67 - Model Year Selector'[Model Year] )
+			    VAR ThisMY =
+			        CALCULATE ( MAX ( '42 - Product'[Model Year] ) )
+			    RETURN
+			        SWITCH (
+			            TRUE (),
+			            IsNew, "New Product",
+			            NOT ISBLANK ( SelMY ) && NOT ISBLANK ( ThisMY ) && ThisMY <> SelMY, "Discontinued",
+			            "Current Product"
+			        )
+			)
+		displayFolder: 52 - Order Planner
+		lineageTag: 96568cd9-901a-497e-96cb-9dd977759ffe
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Debug New Product' =
+			
+			"SelectedValue: "
+			    & COALESCE ( FORMAT ( SELECTEDVALUE ( '42 - Product'[Is New] ), "" ), "<blank>" )
+		displayFolder: 52 - Order Planner
+		lineageTag: eb792bb7-9e52-4e66-8783-89985637fa99
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Unit Cost' =
+			
+			CALCULATE (
+			    IF ( ISINSCOPE ( '42 - Product'[Title] ), MAX ( '42 - Product'[Cost Price] ) ),
+			    REMOVEFILTERS ( '42 - Product'[Model Year] )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: 55f87888-57de-493a-b2c3-0b6d5251c978
+
+	measure 'Unit Margin %' =
+			
+			IF (
+			    ISINSCOPE ( '42 - Product'[Title] ),
+			    VAR VatRate = 0.23
+			    VAR Cost =
+			        MAX ( '42 - Product'[Cost Price] )
+			    VAR SellIncVat =
+			        MAX ( '42 - Product'[Selling Price 1] )
+			    VAR SellExVat =
+			        DIVIDE ( SellIncVat, 1 + VatRate )
+			    VAR Margin = SellExVat - Cost
+			    RETURN
+			        DIVIDE ( Margin, SellExVat )
+			)
+		formatString: 0%;-0%;0%
+		displayFolder: 52 - Order Planner
+		lineageTag: 92ba7048-96a9-410d-8772-4baa98bd8226
+
+	measure 'Avg Unit Margin %' =
+			
+			AVERAGEX ( VALUES ( '42 - Product'[Title] ), [Unit Margin %] )
+		formatString: 0%;-0%;0%
+		displayFolder: 52 - Order Planner
+		lineageTag: b427915f-95b8-4b1b-be24-567a556211ed
+
+	measure 'Unit Margin % (Weighted)' =
+			
+			VAR VatRate = 0.23
+			RETURN
+			    DIVIDE (
+			        SUMX (
+			            VALUES ( '42 - Product'[Product Key] ),
+			            DIVIDE ( MAX ( '42 - Product'[Selling Price 1] ), 1 + VatRate )
+			                - MAX ( '42 - Product'[Cost Price] )
+			        ),
+			        SUMX (
+			            VALUES ( '42 - Product'[Product Key] ),
+			            DIVIDE ( MAX ( '42 - Product'[Selling Price 1] ), 1 + VatRate )
+			        )
+			    )
+		formatString: 0%;-0%;0%
+		displayFolder: 52 - Order Planner
+		lineageTag: 1f620770-eaac-4edc-9f14-b015ea7a2629
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Unit Price' =
+			
+			IF (
+			    ISINSCOPE ( '42 - Product'[Title] ),
+			    MAX ( '42 - Product'[Selling Price 1] )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: 56952580-e7ad-4849-aa7c-c1e5ba0eeb44
+
+	measure 'Forecasted Requirement (Of Group)' =
+			
+			VAR result = [Net Units Sold (Last Sep–Feb Period) (Group)] /*-  [Winter Stock Estimate (Of Group)]*/
+			RETURN
+			    IF ( NOT ISINSCOPE ( '42 - Product'[Title] ), MAX ( 0, result ) )
+		formatString: #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: f7b657c4-9cc9-45d1-b7ef-87057b6e002b
+
+	measure 'Weighted Requirement' =
+			
+			VAR Factor =
+			    COALESCE ( SELECTEDVALUE ( '64 - Order Factor'[Value %] ), 1 )
+			VAR Result =
+			    ROUND (
+			        ( [Net Units Sold (Last Sep–Feb Period) (Group)] * Factor ) /* - [Winter Stock Estimate (Of Group)]*/
+			        ,
+			        0
+			    )
+			RETURN
+			    IF ( NOT ISINSCOPE ( '42 - Product'[Title] ), MAX ( 0, Result ) )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: 53e19752-dd37-4116-b748-9432986d5207
+
+	measure SKU =
+			
+			IF ( ISINSCOPE ( '42 - Product'[Title] ), MAX ( '42 - Product'[Stock Code] ) )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner\Derived
+		lineageTag: 7667f533-eb56-476d-a771-b52db872fdd5
+
+	measure 'Net COGS (Last Sep–Feb Period)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    )
+			VAR Result =
+			    CALCULATE (
+			        [Sales Net COGS],
+			        DATESINPERIOD ( '41 - Date'[Date], AsOfDate, -12, MONTH ),
+			        KEEPFILTERS ( '41 - Date'[Month Number] IN { 9, 10, 11, 12, 1, 2 } ),
+			        -- critical: don't let the matrix "shown titles" restrict COGS
+			        REMOVEFILTERS ( '42 - Product'[Title] )
+			    )
+			RETURN
+			    IF (
+			        NOT ISINSCOPE ( '42 - Product'[Title] ),
+			        MAX ( 0, COALESCE ( Result, 0 ) )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: ca36f368-463b-4174-af8c-8601bd34c4a2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Show Title (Sold Sep–Feb OR Selected MY)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    ) -- sold in your Sep–Feb window, IGNORE model year
+			VAR UnitsSepFeb =
+			    CALCULATE (
+			        [Sales Net Units Sold],
+			        DATESINPERIOD ( '41 - Date'[Date], AsOfDate, -12, MONTH ),
+			        KEEPFILTERS ( '41 - Date'[Month Number] IN { 9, 10, 11, 12, 1, 2 } ),
+			        REMOVEFILTERS ( '42 - Product'[Model Year] )
+			    ) -- model year chosen in the disconnected slicer
+			VAR SelMY =
+			    SELECTEDVALUE ( '67 - Model Year Selector'[Model Year] ) -- this title’s model year (if multiple rows per title, MAX is the practical choice)
+			VAR ThisMY =
+			    CALCULATE ( MAX ( '42 - Product'[Model Year] ) )
+			VAR InSelectedMY =
+			    NOT ISBLANK ( SelMY ) && ThisMY = SelMY
+			RETURN
+			    IF ( COALESCE ( UnitsSepFeb, 0 ) > 0 || InSelectedMY, 1, 0 )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: 32c5ea47-4674-4e6c-87a4-6474c875fdaf
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Dbg Sel MY' =
+			
+			SELECTEDVALUE ( '42 - Product'[Model Year] )
+		displayFolder: 52 - Order Planner
+		lineageTag: 544747e8-8b0b-4e59-b74e-7e9f6056559d
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Dbg Sel MY (Count)' =
+			
+			COUNTROWS ( VALUES ( '42 - Product'[Model Year] ) )
+		formatString: #,0
+		displayFolder: 52 - Order Planner
+		lineageTag: eb3f020c-a385-41aa-a3db-e97b23796254
+
+	measure 'Net Units Sold (Last Sep–Feb Period) (title level)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    )
+			VAR Result =
+			    CALCULATE (
+			        [Sales Net Units Sold],
+			        DATESINPERIOD ( '41 - Date'[Date], AsOfDate, -12, MONTH ),
+			        KEEPFILTERS ( '41 - Date'[Month Number] IN { 9, 10, 11, 12, 1, 2 } )
+			    )
+			VAR Units0 =
+			    MAX ( 0, COALESCE ( Result, 0 ) )
+			RETURN
+			    IF (
+			        ISINSCOPE ( '42 - Product'[Title] ),
+			        IF ( [Product Status] = "New Product", BLANK (), Units0 )
+			    )
+		formatString: 0
+		displayFolder: 52 - Order Planner
+		lineageTag: 61efa5c5-5fbc-4d52-a046-5576e4af336d
+
+	measure 'Product Status (Ungated)' =
+			
+			VAR IsNew =
+			    COALESCE ( SELECTEDVALUE ( '42 - Product'[Is New] ), FALSE () )
+			VAR SelMY =
+			    SELECTEDVALUE ( '67 - Model Year Selector'[Model Year] )
+			VAR ThisMY =
+			    CALCULATE ( MAX ( '42 - Product'[Model Year] ) )
+			VAR IsDiscontinued =
+			    NOT ISBLANK ( SelMY ) && NOT ISBLANK ( ThisMY ) && ThisMY <> SelMY
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        IsNew, "New Product",
+			        IsDiscontinued, "Discontinued",
+			        BLANK ()
+			    )
+		displayFolder: 52 - Order Planner
+		lineageTag: 97af2cfe-27a6-4b8c-95c6-72e6e2919fac
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Net Units Sold (Last Sep–Feb Period) (Title)' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        REMOVEFILTERS ( '41 - Date' ),
+			        '41 - Date'[Is Completed Day] = TRUE ()
+			    )
+			VAR Result =
+			    CALCULATE (
+			        [Sales Net Units Sold],
+			        DATESINPERIOD ( '41 - Date'[Date], AsOfDate, -12, MONTH ),
+			        KEEPFILTERS ( '41 - Date'[Month Number] IN { 9, 10, 11, 12, 1, 2 } )
+			    )
+			RETURN
+			    MAX ( 0, COALESCE ( Result, 0 ) )
+		formatString: 0
+		displayFolder: 52 - Order Planner\Derived
+		lineageTag: 330ab875-d5cf-49f5-979a-d629879450dd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Show Row (Status Selector)' =
+			
+			VAR Wanted =
+			    SELECTEDVALUE ( '68 - Product Status Selector'[Status] )
+			VAR Actual = [Product Status]
+			RETURN
+			    IF ( ISBLANK ( Wanted ) || Wanted = Actual, 1, 0 )
+		formatString: 0
+		displayFolder: 52 - Order Planner
+		lineageTag: 98c2c837-1006-4999-9289-ceb07b2878cf
+
+	measure 'Suggested Order' =
+			
+			SUMX ( VALUES ( '42 - Product'[Title] ), [setad ofSuggested Order (Title)] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 52 - Order Planner\Derived
+		lineageTag: ea04193b-7770-4ab4-a5b2-37b35e77d1da
+
+	measure 'Days To Completion (Per Invoice)' =
+			
+			SUMX (
+			    VALUES ( '03 - Service Invoices'[Transaction Key] ),
+			    VAR OrderDate =
+			        CALCULATE ( MIN ( '03 - Service Invoices'[Order Date] ) )
+			    VAR CompletionDate =
+			        CALCULATE ( MIN ( '03 - Service Invoices'[Completion Date] ) )
+			    VAR Days =
+			        IF (
+			            NOT ISBLANK ( OrderDate ) && NOT ISBLANK ( CompletionDate ),
+			            DATEDIFF ( OrderDate, CompletionDate, DAY )
+			        )
+			    RETURN
+			        Days
+			)
+		formatString: #,0
+		displayFolder: 54 - Service Report
+		lineageTag: 4c746988-3c1d-406f-9633-a905d2fc950f
+
+	measure 'Selected Engineer' =
+			
+			CALCULATE (
+			    SELECTEDVALUE ( '44 - Employee'[Employee Name] ),
+			    USERELATIONSHIP ( '03 - Service Invoices'[Engineer Key], '44 - Employee'[Employee Key] ),
+			    CROSSFILTER ( '03 - Service Invoices'[Engineer Key], '44 - Employee'[Employee Key], BOTH )
+			)
+		displayFolder: 54 - Service Report
+		lineageTag: 72ad0feb-6a1f-4ca4-8e66-79894744bc9b
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	measure 'Sales Gross Profit (Used Bikes Button)' =
+			
+			VAR ButtonOn =
+			    ISFILTERED ( '63 - Used Bikes Invoices Toggle'[Include Used Bike Invoices] )
+			RETURN
+			    IF (
+			        ButtonOn,
+			        CALCULATE ( [Sales Gross Profit] ),
+			        CALCULATE (
+			            [Sales Gross Profit],
+			            '01 - Order Invoices'[Is Used Bike Invoice] = FALSE ()
+			        )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\1_Base\Core
+		lineageTag: 36a275a0-524f-42af-9895-38542ef84baa
+
+	measure 'Total Gross Profit (Used Bikes Button)' =
+			
+			VAR ButtonOn =
+			    ISFILTERED ( '63 - Used Bikes Invoices Toggle'[Include Used Bike Invoices] )
+			RETURN
+			    IF (
+			        ButtonOn,
+			        CALCULATE ( [Total Gross Profit] ),
+			        CALCULATE (
+			            [Total Gross Profit],
+			            '01 - Order Invoices'[Is Used Bike Invoice] = FALSE ()
+			        )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\1_Base\Core
+		lineageTag: dddd17a6-375c-4e1e-bdaf-d7a692175650
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Gross Profit (Used Bikes Button)' =
+			
+			CALCULATE (
+			    [Sales Gross Profit (Used Bikes Button)],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\1_Base\Filtered
+		lineageTag: 2cd87c2b-d8ca-4a2e-9e2e-ce1ae381bd1a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail In-Store Gross Profit (Used Bikes Button)' =
+			
+			CALCULATE (
+			    [Sales Gross Profit (Used Bikes Button)],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "In-Store"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\1_Base\Filtered
+		lineageTag: 4ac4150f-51c0-416b-83f5-db5b14333bec
+
+	measure 'Retail Web Gross Profit (Used Bikes Button)' =
+			
+			CALCULATE (
+			    [Sales Gross Profit (Used Bikes Button)],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\1_Base\Filtered
+		lineageTag: 57645f61-8d2d-4a71-95d2-1655e3839582
+
+	measure 'Trade Gross Profit (Used Bikes Button)' =
+			
+			CALCULATE (
+			    [Sales Gross Profit (Used Bikes Button)],
+			    '43 - Customer'[Retail/Trade] = "Trade"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\1_Base\Filtered
+		lineageTag: b71b7629-0a0b-4640-b761-2336d4b2b2a2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Gross Profit YTD Change %' =
+			
+			DIVIDE ( [Retail Gross Profit YTD Change], [Retail Gross Profit YTD LY] )
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: b3300803-0e8a-4e0e-8f2d-593832fd1e17
+
+	measure 'Retail In-Store Gross Profit YTD Change %' =
+			
+			DIVIDE (
+			    [Retail In-Store Gross Profit YTD Change],
+			    [Retail In-Store Gross Profit YTD LY]
+			)
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: f15dd91a-dbd9-4449-a0c6-d1ae6324da90
+
+	measure 'Retail Web Gross Profit YTD Change %' =
+			
+			DIVIDE (
+			    [Retail Web Gross Profit YTD Change],
+			    [Retail Web Gross Profit YTD LY]
+			)
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: 77fbe421-77b7-4fdc-b4dd-741c6bb8c635
+
+	measure 'Service Gross Profit YTD Change %' =
+			
+			DIVIDE ( [Service Gross Profit YTD Change], [Service Gross Profit YTD LY] )
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: f40a6ebc-1740-42ea-a2d5-b08f6f33d1b9
+
+	measure 'Total Gross Profit YTD Change %' =
+			
+			DIVIDE ( [Total Gross Profit YTD Change], [Total Gross Profit YTD LY] )
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: de078fd6-b28a-453f-9dfa-c78d6575929e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Trade Gross Profit YTD Change %' =
+			
+			DIVIDE ( [Trade Gross Profit YTD Change], [Trade Gross Profit YTD LY] )
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: 72a051e3-28d4-43c2-b9e5-99bfd7030f70
+
+	measure 'Used Bikes Gross Profit YTD Change %' =
+			
+			DIVIDE (
+			    [Used Bikes Gross Profit YTD Change],
+			    [Used Bikes Gross Profit YTD LY]
+			)
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change % CW
+		lineageTag: 0c2e3ff3-d791-43cf-a223-9dd3b3287037
+
+	measure 'Retail Gross Profit YTD Change' =
+			
+			[Retail Gross Profit YTD CY] - [Retail Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: cc4ff908-8cb8-450e-8f1b-386271688553
+
+	measure 'Retail In-Store Gross Profit YTD Change' =
+			
+			[Retail In-Store Gross Profit YTD CY] - [Retail In-Store Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: eaae25db-e6dc-4fe9-b3da-a86323e1eeac
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Web Gross Profit YTD Change' =
+			
+			[Retail Web Gross Profit YTD CY] - [Retail Web Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: eab27407-d7dc-4e84-af40-3166433840f7
+
+	measure 'Service Gross Profit YTD Change' =
+			
+			[Service Gross Profit YTD CY] - [Service Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: 3ee27b97-d9f9-4cc2-8691-8ea0570c4d6e
+
+	measure 'Total Gross Profit YTD Change' =
+			
+			[Total Gross Profit YTD CY] - [Total Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: 31b66402-0f23-4dfe-bd9b-3cbd3efcd146
+
+	measure 'Trade Gross Profit YTD Change' =
+			
+			[Trade Gross Profit YTD CY] - [Trade Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: 3f770248-8af2-48ab-be1e-80ce6af7b4ae
+
+	measure 'Used Bikes Gross Profit YTD Change' =
+			
+			[Used Bikes Gross Profit YTD CY] - [Used Bikes Gross Profit YTD LY]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD Change CW
+		lineageTag: 29c02af9-6744-474c-acfc-592af1932db4
+
+	measure 'Sales Gross Profit YTD CY' =
+			
+			VAR UpToCY =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR StartCY =
+			    DATE ( YEAR ( UpToCY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Sales Gross Profit (Used Bikes Button)],
+			        -- base measure, not the YTD wrapper
+			        DATESBETWEEN (
+			            '41 - Date'[Date],
+			            StartCY,
+			            UpToCY
+			        )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: 18a2dcab-1c5d-4f58-9289-e734b5e2d238
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Gross Profit YTD LY' =
+			
+			VAR AsOfCY =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR AsOfLY =
+			    EDATE ( AsOfCY, -12 )
+			VAR StartLY =
+			    DATE ( YEAR ( AsOfLY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Sales Gross Profit (Used Bikes Button)],
+			        -- base measure, not the YTD wrapper
+			        DATESBETWEEN (
+			            '41 - Date'[Date],
+			            StartLY,
+			            AsOfLY
+			        )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: cc73a174-c01b-4946-8dc6-6dc16cfee729
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Gross Profit YTD CY' =
+			
+			VAR UpToCY =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR StartCY =
+			    DATE ( YEAR ( UpToCY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Service Gross Profit],
+			        DATESBETWEEN ( '41 - Date'[Date], StartCY, UpToCY )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: 10b66462-9b63-4174-8050-5b09128bb81a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Gross Profit YTD LY' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR AsOfDate_LY =
+			    EDATE ( AsOfDate, -12 )
+			VAR StartOfYear_LY =
+			    DATE ( YEAR ( AsOfDate_LY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Service Gross Profit],
+			        DATESBETWEEN ( '41 - Date'[Date], StartOfYear_LY, AsOfDate_LY )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: 893c1a2c-003d-4ac2-8faa-a943b96652ab
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Gross Profit YTD CY' =
+			
+			VAR UpToCY =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR StartCY =
+			    DATE ( YEAR ( UpToCY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Total Gross Profit (Used Bikes Button)],
+			        DATESBETWEEN ( '41 - Date'[Date], StartCY, UpToCY )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: 496b3ea6-b367-487c-b6a1-f9d4b011fd8b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Gross Profit YTD LY' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR AsOfDate_LY =
+			    EDATE ( AsOfDate, -12 )
+			VAR StartOfYear_LY =
+			    DATE ( YEAR ( AsOfDate_LY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Total Gross Profit (Used Bikes Button)],
+			        DATESBETWEEN ( '41 - Date'[Date], StartOfYear_LY, AsOfDate_LY )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: 8c92420e-f6cc-4e0d-b6a8-fc7ba04fa4a6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bikes Gross Profit YTD CY' =
+			
+			VAR UpToCY =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR StartCY =
+			    DATE ( YEAR ( UpToCY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Used Bikes Gross Profit],
+			        DATESBETWEEN ( '41 - Date'[Date], StartCY, UpToCY )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: bec298d8-891a-4ef1-8d18-540ac5b383b4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bikes Gross Profit YTD LY' =
+			
+			VAR AsOfDate =
+			    CALCULATE (
+			        MAX ( '41 - Date'[Date] ),
+			        '41 - Date'[Is Completed Week] = TRUE ()
+			    )
+			VAR AsOfDate_LY =
+			    EDATE ( AsOfDate, -12 )
+			VAR StartOfYear_LY =
+			    DATE ( YEAR ( AsOfDate_LY ), 1, 1 )
+			RETURN
+			    CALCULATE (
+			        [Used Bikes Gross Profit],
+			        DATESBETWEEN ( '41 - Date'[Date], StartOfYear_LY, AsOfDate_LY )
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Core
+		lineageTag: 47fdc119-427f-4c4a-a752-f506631ec710
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Gross Profit YTD CY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD CY],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: 3b9c6650-b65a-4ba9-b79a-790665d63e24
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Gross Profit YTD LY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD LY],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: 1e4bf2f6-fc86-48d9-9310-cd10a5c7f8a9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail In-Store Gross Profit YTD CY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD CY],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "In-Store"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: 48bd5a27-95ae-497e-99cc-2de2703296c1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail In-Store Gross Profit YTD LY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD LY],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "In-Store"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: a372e16d-19d7-4e0f-90bc-0a96913054e8
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Web Gross Profit YTD CY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD CY],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: 1207d2a9-5919-4125-ba00-0048c56e24ce
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Web Gross Profit YTD LY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD LY],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '45 - Order Channel'[Order Channel] = "Web"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: bda1d60e-d841-495c-a14b-f63d5a7bd0fd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Trade Gross Profit YTD CY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD CY],
+			    '43 - Customer'[Retail/Trade] = "Trade"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: 76c96b5d-3e7d-4995-b40d-509f72a0de02
+
+	measure 'Trade Gross Profit YTD LY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit YTD LY],
+			    '43 - Customer'[Retail/Trade] = "Trade"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\2_Derived\YTD CY/LY CW\Filtered
+		lineageTag: 1ad9e66e-ec45-445a-a478-bf4926771cfb
+
+	measure 'Retail In-Store Gross Profit YTD CY (Order Date)' =
+			
+			CALCULATE (
+			    [Retail In-Store Gross Profit YTD CY],
+			    USERELATIONSHIP ( '41 - Date'[Date], '01 - Order Invoices'[Order Date] ),
+			    USERELATIONSHIP ( '41 - Date'[Date], '05 - Order Credits'[Order Date] )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\3_Retail Sales Order Date\Core
+		lineageTag: d83c114e-ef9a-4691-8ce3-ef335674ec7c
+
+	measure 'Retail In-Store Gross Profit YTD LY (Order Date)' =
+			
+			CALCULATE (
+			    [Retail In-Store Gross Profit YTD LY],
+			    USERELATIONSHIP ( '41 - Date'[Date], '01 - Order Invoices'[Order Date] ),
+			    USERELATIONSHIP ( '41 - Date'[Date], '05 - Order Credits'[Order Date] )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\3_Retail Sales Order Date\Core
+		lineageTag: 4906c52d-4c1f-491d-a843-5a156a62da99
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail In-Store Orders Gross Profit (.80 Weighting)' =
+			
+			VAR MaxVisibleDate =
+			    MAX ( '41 - Date'[Date] )
+			RETURN
+			    CALCULATE (
+			        [Retail In-Store Orders Gross Profit] * 0.8,
+			        '41 - Date'[Date] < MaxVisibleDate
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\3_Retail Sales Order Date\Core
+		lineageTag: 9bc2cc9b-afab-4e29-8470-85bb1bd1fb98
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Estimated In-Store Retail Profit YTD Change' =
+			
+			[Retail In-Store Gross Profit YTD CY (Order Date)] + [Retail In-Store Orders Gross Profit (.80 Weighting)] - [Retail In-Store Gross Profit YTD LY (Order Date)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\3_Retail Sales Order Date
+		lineageTag: 9c558108-d2b7-4a0d-9661-fdfae9b93524
+
+	measure 'Retail In-Store Gross Profit YTD Change (Order Date)' =
+			
+			[Retail In-Store Gross Profit YTD CY (Order Date)] - [Retail In-Store Gross Profit YTD LY (Order Date)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\3_Retail Sales Order Date
+		lineageTag: 65fa4122-b369-4218-8457-99ad6ff0f2ec
+
+	measure 'Gross Profit Percentage (Category Levels)' =
+			
+			VAR Numerator = [Sales Gross Profit]
+			VAR Denominator =
+			    SWITCH (
+			        TRUE (),
+			        -- If we're at Title level, parent is Product Group Title
+			        ISINSCOPE ( '42 - Product'[Title] ), CALCULATE ( [Sales Gross Profit], REMOVEFILTERS ( '42 - Product'[Title] ) ),
+			        -- If we're at Product Group Title, parent is Subcategory
+			        ISINSCOPE ( '42 - Product'[Product Group Title] ),
+			            CALCULATE (
+			                [Sales Gross Profit],
+			                REMOVEFILTERS ( '42 - Product'[Product Group Title] )
+			            ),
+			        -- If we're at Subcategory, parent is Category
+			        ISINSCOPE ( '42 - Product'[Subcategory] ),
+			            CALCULATE (
+			                [Sales Gross Profit],
+			                REMOVEFILTERS ( '42 - Product'[Subcategory] )
+			            ),
+			        -- If we're at Category, parent is the total within selection
+			        ISINSCOPE ( '42 - Product'[Category] ), CALCULATE ( [Sales Gross Profit], ALLSELECTED ( '42 - Product' ) ),
+			        -- Fallback
+			        CALCULATE ( [Sales Gross Profit], ALLSELECTED ( '42 - Product' ) )
+			    )
+			RETURN
+			    DIVIDE ( Numerator, Denominator )
+		formatString: 0%;-0%;0%
+		displayFolder: 51 - Gross Profit Report\4_Product
+		lineageTag: 62076cdd-b209-4a25-a90d-0f0852561edd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Retail Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Retail Gross Profit YTD Change]
+			VAR PctVal = [Retail Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: 80dd794d-1507-4f48-b9d2-184431464001
+
+	measure 'Retail In-Store Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Retail In-Store Gross Profit YTD Change]
+			VAR PctVal = [Retail In-Store Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: 9ff78933-42a3-484d-9ea3-51cbea71222f
+
+	measure 'Retail Web Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Retail Web Gross Profit YTD Change]
+			VAR PctVal = [Retail Web Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: 08f438fa-448f-4abe-9cd0-b6beeb931f56
+
+	measure 'Service Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Service Gross Profit YTD Change]
+			VAR PctVal = [Service Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: ff49538f-19d0-488a-bc0a-a8a83c6febff
+
+	measure 'Total Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Total Gross Profit YTD Change]
+			VAR PctVal = [Total Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: 619bf71c-3296-479a-aedd-0638fb66e438
+
+	measure 'Trade Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Trade Gross Profit YTD Change]
+			VAR PctVal = [Trade Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: fb72c0f2-2098-40cd-8ed9-0ae89f4e2c19
+
+	measure 'Used Bikes Gross Profit YTD Change (Formatted)' =
+			
+			VAR ChangeVal = [Used Bikes Gross Profit YTD Change]
+			VAR PctVal = [Used Bikes Gross Profit YTD Change %]
+			VAR ChangeSign =
+			    IF ( ChangeVal > 0, "+", "" )
+			VAR PctText =
+			    IF (
+			        ISBLANK ( PctVal ),
+			        UNICHAR ( 8734 ),
+			        -- "∞"
+			        IF ( PctVal > 0, "+", "" ) & FORMAT ( PctVal, "0.0%" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( ChangeVal ),
+			        "No Sales to Date",
+			        ChangeSign & FORMAT ( ChangeVal, "€#,##0" ) & " (" & PctText & ")"
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\7_Formatted
+		lineageTag: 0427352e-79ec-4409-95b0-ab3637220073
+
+	measure 'Average Daily Sales Orders Customers Count' =
+			
+			CALCULATE (
+			    AVERAGEX (
+			        VALUES ( '41 - Date'[Date] ),
+			        [Order Invoices Customer Count] + 0 -- The "+ 0" forces blank rows to count as zero
+			    ),
+			    USERELATIONSHIP ( '01 - Order Invoices'[Order Date], '41 - Date'[Date] )
+			)
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 9dc78212-6510-4d08-8511-66c50743975b
+
+	measure 'Average Daily Service Orders Customers Count' =
+			
+			CALCULATE (
+			    AVERAGEX (
+			        VALUES ( '41 - Date'[Date] ),
+			        [Service Invoice Customer Count] + 0 -- The "+ 0" forces blank rows to count as zero
+			    ),
+			    USERELATIONSHIP ( '03 - Service Invoices'[Order Date], '41 - Date'[Date] )
+			)
+			--
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 72811edf-8078-4d2a-b49d-60363e4448d2
+
+	measure 'Average Goods Customer Count By Hour' =
+			
+			AVERAGEX (
+			    CROSSJOIN (
+			        VALUES ( '41 - Date'[Date] ),
+			        VALUES ( '46 - Time'[Store Hours Category] )
+			    ),
+			    [Order Invoices Customer Count] + 0 -- The "+ 0" forces blank rows to count as zero
+			)
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 0e55c931-c36e-436a-8d3c-2554a88cf6cc
+
+	measure 'Average Sales Order Count By Hour' =
+			
+			CALCULATE (
+			    AVERAGEX (
+			        CROSSJOIN (
+			            VALUES ( '41 - Date'[Date] ),
+			            VALUES ( '46 - Time'[Store Hours Category] )
+			        ),
+			        [Order Invoices Note Count] + 0
+			    ),
+			    USERELATIONSHIP ( '41 - Date'[Date], '01 - Order Invoices'[Order Date] ),
+			    '01 - Order Invoices'[Order Channel] = "In-Store",
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 71aa1e4b-9bf5-4798-8ca0-a3baeee211d2
+
+	measure 'Average Sales Order Gross Profit By Hour' =
+			
+			CALCULATE (
+			    AVERAGEX (
+			        CROSSJOIN (
+			            VALUES ( '41 - Date'[Date] ),
+			            VALUES ( '46 - Time'[Store Hours Category] )
+			        ),
+			        [Order Invoices Gross Profit] + 0
+			    ),
+			    USERELATIONSHIP ( '41 - Date'[Date], '01 - Order Invoices'[Order Date] ),
+			    '01 - Order Invoices'[Order Channel] = "In-Store",
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: c94f05fd-ff29-44ce-8f5e-7da504967e21
+
+	measure Choice =
+			
+			SWITCH (
+			    TRUE (),
+			    SELECTEDVALUE ( '61 - Metric Selection'[Value3] ) = 1, [Average Sales Order Count By Hour],
+			    SELECTEDVALUE ( '61 - Metric Selection'[Value3] ) = 2, [Average Sales Order Gross Profit By Hour],
+			    BLANK ()
+			)
+		displayFolder: 53 - Activity Report
+		lineageTag: 31de9fd8-87c3-4fed-874f-807fc2543b86
+
+		formatStringDefinition = ```
+					SWITCH(
+						TRUE(),
+						SELECTEDVALUE(
+							'61 - Metric Selection'[Value3],
+							1
+						) = 1, "#,##0.00",
+						SELECTEDVALUE(
+							'61 - Metric Selection'[Value3],
+							1
+						) = 2, "€#,##0.00"
+					)
+				```
+
+	measure 'Sales Invoices Customer Count (Order Date)' =
+			
+			CALCULATE (
+			    [Order Invoices Customer Count],
+			    USERELATIONSHIP ( '41 - Date'[Date], '01 - Order Invoices'[Order Date] )
+			)
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 1b1e5624-c93f-4aa4-97a1-f8ff19127077
+
+	measure 'Service Invoices Customer Count (Order Date)' =
+			
+			CALCULATE (
+			    [Service Invoice Customer Count],
+			    USERELATIONSHIP ( '41 - Date'[Date], '03 - Service Invoices'[Order Date] )
+			)
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 6520cb82-1cb5-4940-b7de-89b0cf102f17
+
+	measure 'Total Customers' =
+			
+			[Service Invoices Customer Count (Order Date)] + [Sales Invoices Customer Count (Order Date)]
+		formatString: #,0
+		displayFolder: 53 - Activity Report
+		lineageTag: 2c2aefff-b7b4-4e62-abcd-76b0c2f8d614
+
+	measure 'Retail In-Store Order Invoices Bike Invoices By Order Date' =
+			
+			CALCULATE (
+			    [Order Invoices Units Invoiced],
+			    '42 - Product'[Bike/Sundry] = "Bikes",
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '01 - Order Invoices'[Order Channel] = "In-Store",
+			    USERELATIONSHIP ( '01 - Order Invoices'[Order Date], '41 - Date'[Date] )
+			)
+		formatString: #,0
+		displayFolder: 56 - Marketing Report
+		lineageTag: 4dcfba79-41b1-451c-8459-4f3d62170818
+
+	measure 'Retail In-Store Order Invoice Customer Count By Order Date' =
+			
+			CALCULATE (
+			    [Order Invoices Customer Count],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '01 - Order Invoices'[Order Channel] = "In-Store",
+			    USERELATIONSHIP ( '03 - Service Invoices'[Order Date], '41 - Date'[Date] )
+			)
+		formatString: #,0
+		displayFolder: 56 - Marketing Report
+		lineageTag: fe938d7f-e39c-4003-b003-25b6baa076d0
+
+	measure 'Store Visits + 4 Days' =
+			
+			CALCULATE (
+			    [Bottom Funnel Store Visit Amount],
+			    DATEADD ( '41 - Date'[Date], 4, DAY )
+			)
+		formatString: #,0
+		displayFolder: 56 - Marketing Report
+		lineageTag: b5c82125-ba54-4ae5-bed7-f2985b8530dc
+
+	measure 'Till Customer Count' =
+			
+			CALCULATE (
+			    [Till Invoices Customer Count],
+			    '43 - Customer'[Retail/Trade] = "Retail"
+			)
+		formatString: #,0
+		displayFolder: 56 - Marketing Report
+		lineageTag: 711d71a2-82b2-4789-9bae-be5c4414e481
+
+	measure 'Retail In-Store Service Invoice Customer Count By Order Date' =
+			
+			CALCULATE (
+			    [Service Invoice Customer Count],
+			    '43 - Customer'[Retail/Trade] = "Retail",
+			    '01 - Order Invoices'[Order Channel] = "In-Store",
+			    USERELATIONSHIP ( '03 - Service Invoices'[Order Date], '41 - Date'[Date] )
+			)
+		formatString: #,0
+		displayFolder: 56 - Marketing Report
+		lineageTag: 874c39c0-7b33-4888-a319-cf65a22897c1
+
+	measure 'Retail In-Store Order/Service Invoices Customer Count By Order Date' =
+			
+			[Retail In-Store Order Invoice Customer Count By Order Date] + [Retail In-Store Service Invoice Customer Count By Order Date]
+		formatString: #,0
+		displayFolder: 56 - Marketing Report
+		lineageTag: 8b7dbb9f-1078-4314-9de6-2cee05f12e32
+
+	measure 'Correlation Coefficient' =
+			
+			VAR _Table =
+			    -- Summarize the data at the same granularity as your chart (Year Week)
+			    SUMMARIZE (
+			        '41 - Date',
+			        '41 - Date'[Year Week],
+			        "MetricX", [Store Visits + 4 Days],
+			        "MetricY", [Chosen Metric] -- Replace with your actual measure
+			    )
+			VAR _AvgX =
+			    AVERAGEX ( _Table, [MetricX] )
+			VAR _AvgY =
+			    AVERAGEX ( _Table, [MetricY] ) -- Calculate the Covariance (the numerator)
+			VAR _Covariance =
+			    SUMX ( _Table, ( [MetricX] - _AvgX ) * ( [MetricY] - _AvgY ) ) -- Calculate the Standard Deviations (the denominator)
+			VAR _StdDevX =
+			    SQRT ( SUMX ( _Table, ( [MetricX] - _AvgX ) ^ 2 ) )
+			VAR _StdDevY =
+			    SQRT ( SUMX ( _Table, ( [MetricY] - _AvgY ) ^ 2 ) )
+			VAR _Denominator = _StdDevX * _StdDevY
+			RETURN
+			    -- Divide Covariance by the Denominator, handling divide-by-zero errors
+			    DIVIDE (
+			        _Covariance,
+			        _Denominator
+			    )
+		displayFolder: 56 - Marketing Report
+		lineageTag: ff5c411f-d95e-4bc9-8d87-66f903149bf5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Chosen Metric' =
+			
+			SWITCH (
+			    TRUE (),
+			    SELECTEDVALUE ( '61 - Metric Selection'[Value1] ) = "In-Store Sales Order Customers By Commencement Date", [Retail In-Store Order Invoice Customer Count By Order Date],
+			    SELECTEDVALUE ( '61 - Metric Selection'[Value1] ) = "In-Store Bikes Sold By Commencement Date", [Retail In-Store Order Invoices Bike Invoices By Order Date]
+			)
+		displayFolder: 56 - Marketing Report
+		lineageTag: 1d5f87ac-ba58-40a4-b081-7282ec32e898
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Stock Turn' =
+			
+			DIVIDE ( [Sales COGS], [Average Stock Value], 0 )
+		displayFolder: 05 - Inventory\Efficiency
+		lineageTag: d47561fc-26d6-45a4-9f9c-a1681b1de2c0
+
+	measure 'T1 Stock' =
+			
+			SUM ( '42 - Product'[Quantity On Hand T1] )
+		formatString: #,0
+		displayFolder: __Internal\__Internal\Stock
+		lineageTag: 3105395f-b1f2-4d86-b289-6a60ae75f1bf
+
+	measure 'Cara Stock'
+		displayFolder: __Internal\__Internal\Stock
+		lineageTag: e311c58b-8ee9-420e-8e3b-364339a6258d
+
+	measure 'Service Net Margin %' =
+			
+			IF (
+			    ISBLANK ( [Service Gross Profit 1] ) && ISBLANK ( [Service Net Sales (Ex VAT)] ),
+			    BLANK (),
+			    COALESCE (
+			        DIVIDE ( [Service Gross Profit 1], [Service Net Sales (Ex VAT)] ),
+			        0
+			    )
+			)
+		formatString: 0%;-0%;0%
+		displayFolder: __Internal\__Internal\Invoice\Net
+		lineageTag: 19bb18dc-6e49-4df5-887d-513d32d2c8ea
+
+	measure 'Service Net Sales (Ex VAT)' =
+			
+			[Service Invoices Amount (Ex VAT)] - [Service Credits Gross Credits Amount (Ex VAT)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\Invoice\Net
+		lineageTag: e8019683-c708-4802-aa99-297fb95a89cf
+
+	measure '55 - Service Bonus Calculated' =
+			
+			SUMX (
+			    VALUES ( '44 - Employee'[Employee Name] ),
+			    [Service Net Sales] * CALCULATE ( MAX ( '44 - Employee'[Bonus] ) )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\3 - Service by Salesperson
+		lineageTag: 2dcf2c67-1091-4587-bffb-9323372dd1ee
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'Child Level List' =
+			
+			VAR MaxItems = 5
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        -- 1. If at Subcategory level (bottom), show nothing (or you could show related brands)
+			        ISINSCOPE ( '42 - Product'[Subcategory] ), BLANK (),
+			        -- 2. If at Category level, show top 5 Subcategories
+			        ISINSCOPE ( '42 - Product'[Category] ),
+			            VAR SubCatCount =
+			                DISTINCTCOUNT ( '42 - Product'[Subcategory] )
+			            VAR TopSubCats =
+			                CONCATENATEX (
+			                    TOPN ( MaxItems, VALUES ( '42 - Product'[Subcategory] ) ),
+			                    '42 - Product'[Subcategory],
+			                    ", "
+			                )
+			            RETURN
+			                IF ( SubCatCount > MaxItems, TopSubCats & " and more...", TopSubCats ),
+			        -- 3. If at Cat Type level, show top 5 Categories
+			        ISINSCOPE ( '42 - Product'[Category Type] ),
+			            VAR CatCount =
+			                DISTINCTCOUNT ( '42 - Product'[Category] )
+			            VAR TopCats =
+			                CONCATENATEX (
+			                    TOPN ( MaxItems, VALUES ( '42 - Product'[Category] ) ),
+			                    '42 - Product'[Category],
+			                    ", "
+			                )
+			            RETURN
+			                IF ( CatCount > MaxItems, TopCats & " and more...", TopCats ),
+			        BLANK ()
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\4_Product
+		lineageTag: de5498e2-bb01-4715-a7db-ab4ede3dbff7
+
+	measure 'Estimated In-Store Retail Profit YTD Change (Last Week Filtered)' =
+			
+			VAR LatestWeekFiltered =
+			    CALCULATE ( MAX ( '41 - Date'[Week] ), ALLSELECTED ( '41 - Date' ) )
+			VAR CurrentWeekInContext =
+			    SELECTEDVALUE ( '41 - Date'[Week] )
+			RETURN
+			    IF (
+			        CurrentWeekInContext = LatestWeekFiltered,
+			        [Retail In-Store Gross Profit YTD CY (Order Date)] + [Retail In-Store Orders Gross Profit (.80 Weighting)] - [Retail In-Store Gross Profit YTD LY (Order Date)],
+			        BLANK ()
+			    )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 51 - Gross Profit Report\3_Retail Sales Order Date
+		lineageTag: 97d8ae5d-41c2-4734-9fcc-8b1fd264434a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '55 - Qty Invoice Orders' =
+			
+			COALESCE (
+			    DISTINCTCOUNT ( '01 - Order Invoices'[Transaction Key] )
+			        + DISTINCTCOUNT ( '05 - Order Credits'[Transaction Key] )
+			        + DISTINCTCOUNT ( '07 - Service Credits'[Transaction Key] ),
+			    --erp has a bug showing servcredits,
+			    0
+			)
+		formatString: #,0
+		displayFolder: 55 - Reconciliation Report\6 - Transactions Report
+		lineageTag: 690457a6-705f-4cc4-bfc7-99d1c2cf0b02
+
+	/// ERP counts one row per SundryHeader document.
+	/// A partially-credited doc appears in BOTH Till Invoices and Till Credits.
+	/// UNION de-duplicates so each document is counted once.
+	measure '55 - Qty Till Transactions' =
+			
+			COALESCE (
+			    COUNTROWS (
+			        DISTINCT (
+			            UNION (
+			                VALUES ( '02 - Till Invoices'[Transaction Key] ),
+			                VALUES ( '06 - Till Credits'[Transaction Key] )
+			            )
+			        )
+			    ),
+			    0
+			)
+		formatString: #,0
+		displayFolder: 55 - Reconciliation Report\6 - Transactions Report
+		lineageTag: 9c1b81cb-cd36-493e-afd2-be8dd3f747ce
+
+	/// ERP counts ALL Repairs rows by FaultDate.
+	/// Service Invoices = invoiced repairs (switch to Order Date = FaultDate).
+	/// Service Orders = uninvoiced repairs (Order Date = FaultDate is active).
+	/// Service Credits are InvoiceHeader records — already counted in Qty Invoice.
+	measure '55 - Qty Service Orders' =
+			
+			COALESCE (
+			    CALCULATE (
+			        DISTINCTCOUNT ( '03 - Service Invoices'[Order Number] ),
+			        USERELATIONSHIP ( '03 - Service Invoices'[Order Date], '41 - Date'[Date] )
+			    )
+			        + DISTINCTCOUNT ( '09 - Service Orders'[Transaction Key] ),
+			    0
+			)
+		formatString: 0
+		displayFolder: 55 - Reconciliation Report\6 - Transactions Report
+		lineageTag: 6703c52e-875b-412f-98ef-89819ed9f335
+
+	measure 'CCData Last Refresh UTC' =
+			
+			CALCULATE (
+			    MAX ( '98 - Refreshes'[Last Refresh UTC] ),
+			    REMOVEFILTERS ( '41 - Date' ),
+			    '98 - Refreshes'[Layer Name] = "raw_ccdata"
+			)
+		formatString: General Date
+		displayFolder: 20 - Utilities/Hidden\Refreshes
+		lineageTag: 221d5981-4fa8-4c20-aa0d-d1436a11a8e6
+
+	measure 'Inventory Last Refresh UTC' =
+			
+			CALCULATE (
+			    MAX ( '98 - Refreshes'[Last Refresh UTC] ),
+			    REMOVEFILTERS ( '41 - Date' ),
+			    '98 - Refreshes'[Layer Name] = "raw_inventory"
+			)
+		formatString: General Date
+		displayFolder: 20 - Utilities/Hidden\Refreshes
+		lineageTag: 696487f0-2dbe-43fc-9447-e4d5af7abb86
+
+	/// used bike button logic added
+	/// 
+	measure 'Sales Gross Profit 1' =
+			
+			VAR NetRevenueExVat = ( [Order Invoices Amount] - [Order Credits Amount] - [Order Invoices VAT] + [Order Credits VAT] ) + ( [Till Invoices Amount] - [Till Credits Amount] - [Till Invoices VAT] + [Till Credits VAT] )
+			RETURN
+			    NetRevenueExVat - [Sales Net COGS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\2 - Standard\Key Measures
+		lineageTag: d8f2d19d-a4e8-4788-bc84-d29ad6859a3d
+
+	measure '55 - Stock Value' =
+			
+			-- Physical bikes: Quantity On Hand T1 already includes ItemType-6 reserved bikes.
+			-- Physical sundry: sum T1 + T2 + Cara, exclude Labour Charges.
+			VAR _PhysicalStock =
+			    SUMX (
+			        FILTER ( '42 - Product', '42 - Product'[Subcategory] <> "Labour Charges" ),
+			        ( [Quantity On Hand Cara] + [Quantity On Hand T1] + [Quantity On Hand T2] )
+			            * IF ( '42 - Product'[Main/Sundry] = "Main", [Cost Price], [Average Cost Price] )
+			    ) -- Sundry on open Sales Orders (QtyTaken * AveCostPrice, exclude Labour Charges)
+			-- Bikes on SO are already counted in dim_stock quantities (ItemType=6 rows).
+			VAR _SundryOpenSalesOrders =
+			    CALCULATE (
+			        SUMX (
+			            FILTER (
+			                '08 - Sales Orders',
+			                RIGHT ( '08 - Sales Orders'[Product Key], 2 ) = "-0"
+			                    && RELATED ( '42 - Product'[Subcategory] ) <> "Labour Charges"
+			            ),
+			            '08 - Sales Orders'[Quantity Taken]
+			                * RELATED ( '42 - Product'[Average Cost Price] )
+			        ),
+			        REMOVEFILTERS ( '41 - Date' )
+			    ) -- Sundry on open Service Jobs (uninvoiced only).
+			VAR _SundryOpenServiceJobs =
+			    CALCULATE (
+			        SUMX (
+			            FILTER (
+			                '09 - Service Orders',
+			                RIGHT ( '09 - Service Orders'[Product Key], 2 ) = "-0"
+			                    && RELATED ( '42 - Product'[Subcategory] ) <> "Labour Charges"
+			            ),
+			            '09 - Service Orders'[Quantity] * RELATED ( '42 - Product'[Average Cost Price] )
+			        ),
+			        REMOVEFILTERS ( '41 - Date' )
+			    )
+			RETURN
+			    _PhysicalStock + _SundryOpenSalesOrders + _SundryOpenServiceJobs
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: 7a07f491-8a01-4b83-b1c7-73e4a229ed9a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Inventory Last Refresh (Text)' =
+			
+			VAR _LatestRefresh = [Inventory Last Refresh UTC]
+			RETURN
+			    IF (
+			        ISBLANK ( _LatestRefresh ),
+			        "No Data",
+			        "Last Refreshed: " & FORMAT ( _LatestRefresh, "dd/mm/yy HH:mm" ) & " UTC"
+			    )
+		displayFolder: 20 - Utilities/Hidden\Display Text\Refreshes
+		lineageTag: 584aab4e-02be-4f3e-adb8-616e23e0120c
+
+	measure SelectionMessage =
+			
+			IF (
+			    ISFILTERED ( '42 - Product'[ERP Brand] ),
+			    BLANK (),
+			    "Select a brand to filter"
+			)
+		displayFolder: 55 - Reconciliation Report\5 - Stock - Makes
+		lineageTag: 4db7f83d-b296-4ca1-8595-c8052ebce23a
+
+	measure OverlayBackground =
+			
+			IF (
+			    ISFILTERED ( '42 - Product'[ERP Brand] ),
+			    "#FFFFFF00",
+			    // Transparent (disappears)
+			    "#FFFFFF" // Solid White (hides the table)
+			)
+		displayFolder: 55 - Reconciliation Report\5 - Stock - Makes
+		lineageTag: e4011336-c6f3-49ac-bcd2-4e20b556c400
+
+	measure OverlayText =
+			
+			IF (
+			    ISFILTERED ( '42 - Product'[ERP Brand] ),
+			    "#FFFFFF00",
+			    // Transparent (disappears)
+			    "#000000" // Solid Black (or whatever color you want your message)
+			)
+		displayFolder: 55 - Reconciliation Report\5 - Stock - Makes
+		lineageTag: f8a5931a-8ddc-4c43-b2e5-aebeb1371248
+
+	measure '55 - P5' =
+			
+			VAR _total = [Repair Hours] + [Floor Bike Build Hours] + [Bike Build Hours] + [Bike Build Count] + [Floor Bike Build Count]
+			RETURN
+			    IF ( _total <> 0, 1, 0 )
+		displayFolder: 55 - Reconciliation Report\0 - Visual Filters
+		lineageTag: c13e7946-4613-4636-bc58-aaffb40ac23a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Google Last Refresh UTC' =
+			
+			CALCULATE (
+			    MAX ( '98 - Refreshes'[Last Refresh UTC] ),
+			    REMOVEFILTERS ( '41 - Date' ),
+			    '98 - Refreshes'[Layer Name] = "raw_google"
+			)
+		formatString: General Date
+		displayFolder: 20 - Utilities/Hidden\Refreshes
+		lineageTag: ebdf702f-3c5a-4afc-ba70-675124d3ee7c
+
+	measure 'Google Last Refresh (Text)' =
+			
+			VAR _LatestRefresh = [Google Last Refresh UTC]
+			RETURN
+			    IF (
+			        ISBLANK ( _LatestRefresh ),
+			        "No Data",
+			        "Last Refreshed: " & FORMAT ( _LatestRefresh, "dd/mm/yy HH:mm" ) & " UTC"
+			    )
+		displayFolder: 20 - Utilities/Hidden\Display Text\Refreshes
+		lineageTag: 54f86583-3cb8-4e8a-a22a-9c787d81e669
+
+	measure '55 - Revenue' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [55 - Order Revenue (Non Collections)] + [55 - Order Revenue (Collections)] + [Till Net Sales],
+			    [55 - Non Collections] + [55 - Collections] + [55 - Till Revenue (ERP Visual)]
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: 3f40b5a2-5a03-4652-8d3d-393496f3db11
+
+	measure '55 - Gross Profit (ERP Visual)' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [Sales Gross Profit],
+			    SUMX (
+			        VALUES ( '44 - Employee'[Employee Key] ),
+			        CALCULATE ( [Sales Gross Profit] )
+			    )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: a98d4c0d-2f5b-4f44-99aa-37fc6ad6e9d7
+
+	measure '55 - Revenue Ex VAT (ERP Visual)' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [Sales Value (Excl. VAT)],
+			    SUMX (
+			        VALUES ( '44 - Employee'[Employee Key] ),
+			        CALCULATE ( [Sales Value (Excl. VAT)] )
+			    )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: b76c4c67-bec2-4eef-9841-7385c849eb52
+
+	measure '55 - Margin % (ERP Visual)' =
+			
+			DIVIDE ( [55 - Gross Profit (ERP Visual)], [55 - Revenue Ex VAT (ERP Visual)] )
+		formatString: 0%;-0%;0%
+		displayFolder: __Internal
+		lineageTag: d52213d3-7947-47f6-a12d-d44dc65ec6be
+
+	measure '55 - Non Collections' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [55 - Order Revenue (Non Collections)],
+			    VAR EmployeeKeys =
+			        DISTINCT (
+			            UNION (
+			                SELECTCOLUMNS (
+			                    VALUES ( '01 - Order Invoices'[Employee Key] ),
+			                    "employee_key", '01 - Order Invoices'[Employee Key]
+			                ),
+			                SELECTCOLUMNS (
+			                    VALUES ( '05 - Order Credits'[Employee Key] ),
+			                    "employee_key", '05 - Order Credits'[Employee Key]
+			                )
+			            )
+			        )
+			    RETURN
+			        SUMX (
+			            EmployeeKeys,
+			            VAR EmployeeKey = [employee_key]
+			            VAR InvoiceAmount =
+			                CALCULATE (
+			                    [Order Invoices Amount],
+			                    KEEPFILTERS ( '01 - Order Invoices'[Collection Employee Key] = -1 ),
+			                    KEEPFILTERS ( '01 - Order Invoices'[Employee Key] = EmployeeKey )
+			                )
+			            VAR CreditAmount =
+			                CALCULATE (
+			                    [Order Credits Amount],
+			                    KEEPFILTERS ( '05 - Order Credits'[Collection Employee Key] = -1 ),
+			                    KEEPFILTERS ( '05 - Order Credits'[Employee Key] = EmployeeKey )
+			                )
+			            RETURN
+			                InvoiceAmount - CreditAmount
+			        )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: c5321e69-92e5-44ab-a5d6-34b7af2362bd
+
+	measure '55 - Collections' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [55 - Order Revenue (Collections)],
+			    SUMX (
+			        VALUES ( '44 - Employee'[Employee Key] ),
+			        CALCULATE ( [55 - Order Revenue (Collections)] )
+			    )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: 3880ce75-9411-4c53-a39a-0fb9ea977593
+
+	measure '55 - Collections Made' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [55 - Order Revenue],
+			    SUMX (
+			        VALUES ( '44 - Employee'[Employee Key] ),
+			        CALCULATE ( [55 - Order Revenue] )
+			    )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\1 - Sale by Salesperson
+		lineageTag: 8e6b8cdb-8d87-4d6f-b4fb-c6a2547ca89e
+
+	measure '55 - Till Revenue (ERP Visual)' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [Till Net Sales],
+			    SUMX (
+			        VALUES ( '44 - Employee'[Employee Key] ),
+			        CALCULATE ( [Till Net Sales] )
+			    )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: 517105c6-9fd7-4f13-9bc1-4e6aec66f7ec
+
+	measure '55 - COGS (ERP Visual)' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Name] ),
+			    [Sales Net COGS],
+			    SUMX (
+			        VALUES ( '44 - Employee'[Employee Key] ),
+			        CALCULATE ( [Sales Net COGS] )
+			    )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: 036f0c10-9f12-4d38-b975-d2904365c917
+
+	measure '55 - P3' =
+			
+			VAR _total = [Service Net Sales] + [Service Gross Profit] + [Service Net COS] + [55 - Service Bonus Calculated]
+			RETURN
+			    IF ( NOT ISBLANK ( _total ) && _total <> 0, 1, 0 )
+		formatString: 0
+		displayFolder: 55 - Reconciliation Report\0 - Visual Filters
+		lineageTag: dc8ccbbb-db3d-4736-9594-f29a9892ab59
+
+	measure '55 - Service Invoices COGS' =
+			
+			SUMX (
+			    '03 - Service Invoices',
+			    VAR _invoice_cost = [Cost]
+			    VAR _stock_key = [Product Key] -- Labour-* and MISC-3 are synthetic/non-stock items; skip stock cost lookup for these
+			    VAR _is_synthetic =
+			        LEFT ( _stock_key, 6 ) = "Labour" || _stock_key = "MISC-3" -- Fallback: current stock cost price × qty, to match ERP behaviour for zero-cost invoice lines
+			    VAR _stock_cost =
+			        COALESCE ( RELATED ( '42 - Product'[Cost Price] ), 0 ) * [Quantity]
+			    RETURN
+			        IF ( _invoice_cost = 0 && NOT _is_synthetic, _stock_cost, _invoice_cost )
+			)
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		displayFolder: 55 - Reconciliation Report\3 - Service by Salesperson
+		lineageTag: a035fcd4-3d3e-4011-8efe-35b097bdfd9f
+
+	measure '55 - Service Net COS' =
+			
+			[55 - Service Invoices COGS] - [Service Credit COS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\3 - Service by Salesperson
+		lineageTag: 417885fe-942e-4ad9-989c-340cc3f4d5f2
+
+	measure 'Repair Time Hours' =
+			
+			[Service Invoice Repair Time (Minutes)] / 60
+		formatString: 0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: f290c238-9488-4838-8eb7-44ff02a2b6b8
+
+	measure 'Service Invoice Labour Amount' =
+			
+			SUMX (
+			    VALUES ( '03 - Service Invoices'[Transaction Key] ),
+			    VAR v =
+			        CALCULATE ( SELECTEDVALUE ( '03 - Service Invoices'[Total Labour Cost] ) )
+			    RETURN
+			        COALESCE ( v, 0 )
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: d1704903-740d-4388-8779-df76344500db
+
+	measure 'Service Invoice Repair Time (Minutes)' =
+			
+			SUMX (
+			    VALUES ( '03 - Service Invoices'[Transaction Key] ),
+			    VAR v =
+			        CALCULATE ( SELECTEDVALUE ( '03 - Service Invoices'[Repair Time] ) )
+			    RETURN
+			        COALESCE ( v, 0 )
+			)
+		formatString: #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: 7f35a703-0787-4ffe-9450-3b5d0ff6214b
+
+	measure 'Service Invoices Margin %' =
+			
+			DIVIDE ( [Service Invoice Gross Profit], [Service Invoice Amount] )
+		formatString: 0%;-0%;0%
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: bcdb3920-455b-41f7-959b-bd9ae1f6c0ea
+
+	measure 'Service Invoices Amount (Ex VAT)' =
+			
+			[Service Invoice Amount] - [Service Invoices VAT]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: b9a3b802-dd43-49d1-8866-9d121aba2a90
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoices VAT' =
+			
+			SUMX ( '03 - Service Invoices', [VAT Amount] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\VAT
+		lineageTag: fd8f57d8-89ca-49a2-b7cf-e376e42311ec
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Order Credits VAT' =
+			
+			SUMX ( '05 - Order Credits', [VAT Amount] )
+		formatString: #,0
+		displayFolder: __Internal\__Internal\VAT
+		lineageTag: 31d77d03-6cc7-45c5-a18f-0346b576545e
+
+	measure 'Till Credits VAT' =
+			
+			SUMX ( '06 - Till Credits', [VAT Amount] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\VAT
+		lineageTag: 252abcf4-b33f-41f6-989d-071d0d4452e1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Credits Gross Credits Amount (Ex VAT)' =
+			
+			[Service Credit Amount] - [Service Credits VAT]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: c1f32317-7f82-4475-987e-93f52a94c88b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Credits VAT' =
+			
+			SUMX ( '07 - Service Credits', [VAT Amount] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\VAT
+		lineageTag: ed16dfc6-251e-4f88-aa5b-77c605641609
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// no invoice sent
+	/// 
+	measure 'Sales Orders Gross Profit EDITED' =
+			
+			CALCULATE (
+			    [Sales Orders Gross Profit],
+			    '08 - Sales Orders'[Order Status] <> "Invoice Sent"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: 960e41e3-9301-4dfe-9e07-d81341622ca2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Orders VAT' =
+			
+			SUMX ( '08 - Sales Orders', [VAT Amount] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\VAT
+		lineageTag: 5af305ac-df3c-4bc8-8b0b-66d66bf59277
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Orders VAT' =
+			
+			SUMX ( '09 - Service Orders', [VAT Amount] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal\VAT
+		lineageTag: 13837f8b-91a2-4284-880c-ab4ceebf8571
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest Inventory' =
+			
+			VAR AbsoluteLatestDate =
+			    CALCULATE (
+			        MAX ( '10 - Inventory'[Query Date] ),
+			        REMOVEFILTERS ( '10 - Inventory' )
+			    )
+			VAR TotalInventory =
+			    CALCULATE (
+			        SUM ( '10 - Inventory'[Quantity On Hand Cara] )
+			            + SUM ( '10 - Inventory'[Quantity On Hand T1] ),
+			        '10 - Inventory'[Query Date] = AbsoluteLatestDate
+			    )
+			RETURN
+			    IF ( TotalInventory = 0, BLANK (), TotalInventory )
+		formatString: #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: 04512384-d231-4334-8aaa-5126ce6f19d0
+
+	measure 'Latest Inventory Cara' =
+			
+			VAR AbsoluteLatestDate =
+			    CALCULATE (
+			        MAX ( '10 - Inventory'[Query Date] ),
+			        REMOVEFILTERS ( '10 - Inventory' )
+			    )
+			VAR TotalInventory =
+			    CALCULATE (
+			        SUM ( '10 - Inventory'[Quantity On Hand Cara] ),
+			        '10 - Inventory'[Query Date] = AbsoluteLatestDate
+			    )
+			RETURN
+			    IF ( TotalInventory = 0, BLANK (), TotalInventory )
+		formatString: #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: df07c95b-b8c9-4064-9829-c67f17447e3f
+
+	measure 'Latest Inventory T1' =
+			
+			VAR AbsoluteLatestDate =
+			    CALCULATE (
+			        MAX ( '10 - Inventory'[Query Date] ),
+			        REMOVEFILTERS ( '10 - Inventory' )
+			    )
+			VAR TotalInventory =
+			    CALCULATE (
+			        SUM ( '10 - Inventory'[Quantity On Hand T1] ),
+			        '10 - Inventory'[Query Date] = AbsoluteLatestDate
+			    )
+			RETURN
+			    IF ( TotalInventory = 0, BLANK (), TotalInventory )
+		formatString: #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: dfc519ad-de9a-4844-8a45-3b38191470c2
+
+	measure 'Bottom Funnel Store Visit Amount' =
+			
+			CALCULATE (
+			    [Google Campaigns Conversion Count],
+			    '13 - Google Campaign Conversions'[Conversion Action Category] = "STORE_VISIT",
+			    '13 - Google Campaign Conversions'[Funnel Type] = "Bottom Funnel"
+			)
+		formatString: #,0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: 6de9fb5d-a018-4544-80a5-63bdcabf48eb
+
+	measure 'Product Clicks Ads' =
+			
+			CALCULATE (
+			    [Google Product Clicks],
+			    '14 - Google Product Performance'[Destination] = "ADS"
+			)
+		formatString: 0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: dabfba05-4848-422e-b1cc-89cfade263ed
+
+	measure 'Product Clicks Free' =
+			
+			CALCULATE (
+			    [Google Product Clicks],
+			    '14 - Google Product Performance'[Destination] = "FREE"
+			)
+		formatString: 0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: 64a94c61-5444-407e-a710-6b906e223908
+
+	measure '. 1' =
+			
+			[Till Credits VAT] + [Order Credits VAT]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal
+		lineageTag: c0b7dbde-8f5d-4893-b0fa-bb8d6d279e36
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Product Clicks' =
+			
+			CALCULATE (
+			    [Google Product Clicks],
+			    REMOVEFILTERS ( '14 - Google Product Performance'[Destination] )
+			)
+		formatString: 0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: 750e2623-fc4c-48c0-87d3-5bf2ebc521b8
+
+	measure 'Floor Bike Build Time Spent Hours' =
+			
+			DIVIDE ( [Floor Bike Build Hours], 60 )
+		formatString: 0.0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: 1e2c99ca-7396-4c7a-b9ae-b4b2bda30b39
+
+	measure 'Bike Build Hours Spent' =
+			
+			DIVIDE ( [Bike Build Count], 60 )
+		formatString: 0.0
+		displayFolder: __Internal\_Direct Measures
+		lineageTag: de997fc6-7480-4a40-a285-5a85a942e1b8
+
+	measure 'Sales Value' =
+			
+			[Sales Invoice Amount] - [Sales Credit Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: 9a31fbc7-20ab-4f32-81d3-3cc1ecd24098
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Units Sold' =
+			
+			[Sales Units Invoiced] - [Sales Units Credited]
+		formatString: 0
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: 743f1831-d1f0-40f7-8119-500cafa673d6
+
+	measure 'Sales COGS' =
+			
+			[Sales Invoice COGS] - [Sales Credit COGS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: 3606a5d2-4508-4634-8118-f053825ccd99
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Invoices' =
+			
+			[Sales Invoice Note Count] - [Sales Credit Note Count]
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: dfa2949c-7306-47c1-9187-66e3aaa0bc95
+
+	measure 'Sales Credit Amount (Excl. VAT)' =
+			
+			[Order Credits Amount (Excl. VAT)] + [Till Credits Amount (Excl. VAT)]
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: 1166c313-757c-4204-93bf-8173f30e1d22
+
+	measure 'Sales Invoice Amount (Excl. VAT)' =
+			
+			[Order Invoices Amount (Excl. VAT)] + [Till Invoices Amount (Excl. VAT)]
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: 441b1b05-6b7c-46ac-8aa2-94589077fa25
+
+	measure '. 2 1' =
+			
+			[Till Credits VAT]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: __Internal\__Internal
+		lineageTag: 3d1bbc08-ba5b-4f4c-aed8-372e2f013813
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Gross Margin %' =
+			
+			DIVIDE ( [Sales Gross Profit], [Sales Value] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 02 - Sales\Ratios & Rates
+		lineageTag: f18b3478-656d-4fcf-9ec6-3e60be1534c5
+
+	measure 'Average Sales Transaction Value (ATV)' =
+			
+			DIVIDE ( [Sales Value], [Sales Invoices], 0 )
+		displayFolder: 02 - Sales\Ratios & Rates
+		lineageTag: 9811a307-30c7-4d97-9a66-03b32575410b
+
+	measure 'Sales Units Per Transaction (UPT)' =
+			
+			DIVIDE ( [Sales Units Sold], [Sales Invoices], 0 )
+		displayFolder: 02 - Sales\Ratios & Rates
+		lineageTag: 733c37cc-2967-4318-846e-2e4f854baf04
+
+	measure 'Sales Discount Rate %' =
+			
+			DIVIDE ( [Sales Discounts], [Sales Invoice Amount], 0 )
+		displayFolder: 02 - Sales\Ratios & Rates
+		lineageTag: 09ee88f2-84bf-4307-818e-e881cd322008
+
+	measure 'Sales Invoice Discounts' =
+			
+			[Order Invoices Discount Amount] + [Till Invoices Discount Amount]
+		displayFolder: 02 - Sales\_Totals\‎‎‎‎‎‎‎‏‏‎In‎‎voices
+		lineageTag: 5d8239fb-f736-488a-a35b-b12c6a2bbd60
+
+	measure 'Sales Credit Discounts' =
+			
+			[Order Credits Discount Amount] + [Till Credits Discount Amount]
+		displayFolder: 02 - Sales\_Totals\Credits
+		lineageTag: 52de720f-b9eb-475a-b25b-934720237047
+
+	measure 'Sales Discounts' =
+			
+			[Sales Invoice Discounts] - [Sales Credit Discounts]
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: 486ec87b-a973-49f8-a87b-90e1fd8d5e1c
+
+	measure 'Sales Return Rate %' =
+			
+			DIVIDE ( [Sales Credit Note Count], [Sales Invoice Note Count], 0 )
+		displayFolder: 02 - Sales\Ratios & Rates
+		lineageTag: df2bfcb1-9cb0-4f40-9e6f-45adccf88736
+
+	measure 'Sales Value YTD' =
+			
+			CALCULATE (
+			    [Sales Value],
+			    DATESYTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 02 - Sales\Time Intelligence
+		lineageTag: ccc8a651-ba83-4000-885e-d32749bb180c
+
+	measure 'Sales Value MTD' =
+			
+			CALCULATE (
+			    [Sales Value],
+			    DATESMTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 02 - Sales\Time Intelligence
+		lineageTag: 1a0f73b4-706c-4cb2-a251-b8c2c8f9a018
+
+	measure 'Sales Value LY' =
+			
+			CALCULATE (
+			    [Sales Value],
+			    SAMEPERIODLASTYEAR ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 02 - Sales\Time Intelligence
+		lineageTag: 837f646a-9a4c-454f-a359-75abbd414b90
+
+	measure 'Sales Gross Profit LY' =
+			
+			CALCULATE (
+			    [Sales Gross Profit],
+			    SAMEPERIODLASTYEAR ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 02 - Sales\Time Intelligence
+		lineageTag: 32bdcf9b-ae69-49cf-a990-b1568a424631
+
+	measure 'Sales Gross Profit MTD ' =
+			
+			CALCULATE (
+			    [Sales Gross Profit],
+			    DATESMTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 02 - Sales\Time Intelligence
+		lineageTag: ea87906f-8a61-45c7-8f8c-f7967e21ab87
+
+	measure 'Sales Gross Profit YTD' =
+			
+			CALCULATE (
+			    [Sales Gross Profit],
+			    DATESYTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 02 - Sales\Time Intelligence
+		lineageTag: 05431744-0cb7-4dcf-8000-5ba6c7d9632b
+
+	measure 'Sales Value YoY' =
+			
+			[Sales Value] - [Sales Value LY]
+		displayFolder: 02 - Sales\Variances
+		lineageTag: 225710ba-d6d0-489f-95bb-a9d38db5c48c
+
+	measure 'Sales Value YoY %' =
+			
+			DIVIDE ( [Sales Value YoY], [Sales Value LY], 0 )
+		displayFolder: 02 - Sales\Variances
+		lineageTag: aeec85d7-39a8-4cb7-bb90-f68d509d70e5
+
+	measure 'Stock On Hand' =
+			
+			VAR AbsoluteLatestDate =
+			    CALCULATE (
+			        MAX ( '10 - Inventory'[Query Date] ),
+			        REMOVEFILTERS ( '10 - Inventory' )
+			    )
+			VAR TotalInventory =
+			    CALCULATE (
+			        [Total Inventory],
+			        '10 - Inventory'[Query Date] = AbsoluteLatestDate
+			    )
+			RETURN
+			    IF ( TotalInventory = 0, BLANK (), TotalInventory )
+		displayFolder: 05 - Inventory\_Balances
+		lineageTag: 26823e7e-88f1-4b9c-9d00-189f7e5be701
+
+	measure 'T1 Stock On Hand' =
+			
+			VAR AbsoluteLatestDate =
+			    CALCULATE (
+			        MAX ( '10 - Inventory'[Query Date] ),
+			        REMOVEFILTERS ( '10 - Inventory' )
+			    )
+			VAR TotalInventory =
+			    CALCULATE ( [T1 Inventory], '10 - Inventory'[Query Date] = AbsoluteLatestDate )
+			RETURN
+			    IF ( TotalInventory = 0, BLANK (), TotalInventory )
+		displayFolder: 05 - Inventory\_Balances
+		lineageTag: 38f0f5b0-7619-439d-9b5c-07dd1d287ef0
+
+	measure 'Cara Stock On Hand' =
+			
+			VAR AbsoluteLatestDate =
+			    CALCULATE (
+			        MAX ( '10 - Inventory'[Query Date] ),
+			        REMOVEFILTERS ( '10 - Inventory' )
+			    )
+			VAR TotalInventory =
+			    CALCULATE (
+			        [Cara Inventory],
+			        '10 - Inventory'[Query Date] = AbsoluteLatestDate
+			    )
+			RETURN
+			    IF ( TotalInventory = 0, BLANK (), TotalInventory )
+		displayFolder: 05 - Inventory\_Balances
+		lineageTag: 6ac35f87-657f-4cdd-9195-e9cc29b813bb
+
+	measure 'Stock Units' =
+			
+			VAR LastAvailableDate =
+			    LASTDATE ( '41 - Date'[Date] )
+			RETURN
+			    CALCULATE (
+			        [Total Inventory],
+			        '10 - Inventory'[Query Date] = LastAvailableDate
+			    )
+		displayFolder: 05 - Inventory\Historical Trends
+		lineageTag: 2d9b8637-9ce8-49dc-87b9-0820ff7ec370
+
+	/// current sale price value
+	measure 'Stock Sale Value' =
+			
+			VAR LastAvailableDate =
+			    LASTDATE ( '41 - Date'[Date] )
+			RETURN
+			    CALCULATE (
+			        SUMX ( '42 - Product', [Total Inventory] * '42 - Product'[Selling Price 1] ),
+			        '10 - Inventory'[Query Date] = LastAvailableDate
+			    )
+		displayFolder: 05 - Inventory\Valuations
+		lineageTag: ac9ce170-20f3-435e-bb4e-59437097703a
+
+	measure 'Average Stock Value' =
+			
+			AVERAGEX ( VALUES ( '41 - Date'[Date] ), [55 - Stock Value] )
+		displayFolder: 05 - Inventory\Valuations
+		lineageTag: 23a81e73-bfec-4431-a177-1ab47d0f1d3a
+
+	measure 'Days Sales of Inventory (DSI)' =
+			
+			DIVIDE ( [55 - Stock Value], [Sales COGS], 0 ) * 365
+		displayFolder: 05 - Inventory\Efficiency
+		lineageTag: 921f6bb8-e41f-4127-9e42-0cf5534163be
+
+	measure 'Estimated Net Stock Value ' =
+			
+			[Stock Sale Value] * ( 1 - [Sales Discount Rate %] )
+		displayFolder: 05 - Inventory\Valuations
+		lineageTag: 32228b59-6fea-4bc3-a0a9-8885118487aa
+
+	measure 'Service Value' =
+			
+			[Service Invoice Amount] - [Service Credit Amount]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: 564701eb-2d4e-41c7-9dfa-fc162863f810
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service COGS' =
+			
+			[Service Invoice COGS] - [Service Credit COGS]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: b3cb16e4-44e4-4d7b-9e9f-ff3f018ef472
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Discounts' =
+			
+			[Service Invoice Discounts] - [Service Credit Discounts]
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: 4844f2ea-457d-4170-9837-f05021ff520a
+
+	measure 'Service Invoices' =
+			
+			[Service Invoice Note Count] - [Service Credit Note Count]
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: 4600b384-d733-4583-ac5b-ee73f30baedc
+
+	measure 'Service COS' =
+			
+			[Service Invoice COS] - [Service Credit COS]
+		formatString: 0
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: b100f2ea-a8e5-4048-bea3-027aed6c3946
+
+	measure 'Service Invoice Amount' =
+			
+			SUMX ( '03 - Service Invoices', [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: e49e2ea0-9c59-47d3-bae8-ca222f0aeb0d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoice Amount (Excl. VAT)' =
+			
+			SUMX ( '03 - Service Invoices', [Price] - [VAT Amount] )
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: 164362b0-6566-4a29-81c0-944848a4c7eb
+
+	measure 'Service Invoice COGS' =
+			
+			CALCULATE (
+			    SUMX ( '03 - Service Invoices', [Cost] ),
+			    '03 - Service Invoices'[Product Key] <> "Labour-0"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: ad4e1a10-9de3-482a-bc26-e1fbb3c621f2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoice Customer Count' =
+			
+			DISTINCTCOUNT ( '03 - Service Invoices'[Customer Code] )
+		formatString: #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: 5d74f5ba-ffe2-4e3a-b697-c8633d7e9fd9
+
+	measure 'Service Invoice Discounts' =
+			
+			SUMX ( '03 - Service Invoices', [Price Before Discount] - [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: 86e6ea26-7fab-49ce-98d5-72a2227baf59
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoice Gross Profit' =
+			
+			SUMX ( '03 - Service Invoices', [Price] - [VAT Amount] - [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: a2073546-8638-4a26-bdcb-f1df84c77ec4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoice Note Count' =
+			
+			DISTINCTCOUNT ( '03 - Service Invoices'[Transaction Key] )
+		formatString: #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: ac1e97ce-9e18-4e92-9732-f3bf4cbcde24
+
+	measure 'Service Credit Amount' =
+			
+			SUMX ( '07 - Service Credits', [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: 5032c3ae-c13f-411c-8f46-f9a146293e28
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Credit Amount (Excl. VAT)' =
+			
+			SUMX ( '07 - Service Credits', [Price] - [VAT Amount] )
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: a1ba6243-8263-4f30-bbac-44b63d48b39a
+
+	measure 'Service Credit COS' =
+			
+			SUMX ( '07 - Service Credits', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: 5aa98719-5199-45ce-80f7-3dd595b9df9b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Credit Customer Count' =
+			
+			DISTINCTCOUNT ( '07 - Service Credits'[Customer Code] )
+		formatString: #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: 36ba795d-0fbc-4828-bba4-45341096999d
+
+	measure 'Service Credit Discounts' =
+			
+			SUMX ( '07 - Service Credits', [Price Before Discount] - [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: 2bacb9c8-6ea9-40ce-a817-3cfacb97e188
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Credit Gross Loss' =
+			
+			SUMX ( '07 - Service Credits', [Price] - [VAT Amount] - [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: bfc25f5c-69f0-4179-bba1-0ffa8154b3cc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Credit Note Count' =
+			
+			DISTINCTCOUNT ( '07 - Service Credits'[Transaction Key] )
+		formatString: #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: 449e1970-0bd4-4a48-98fb-99a0dd95f997
+
+	measure 'Sales Value (Excl. VAT)' =
+			
+			[Sales Invoice Amount (Excl. VAT)] - [Sales Credit Amount (Excl. VAT)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: 3b21cd9a-5470-48b0-aebb-1e2c30c823e4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Value (Excl. VAT)' =
+			
+			[Service Invoice Amount (Excl. VAT)] - [Service Credit Amount (Excl. VAT)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: 9a1e75d4-7bd8-4f38-b75c-29aca8424fc5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoice COS' =
+			
+			SUMX ( '03 - Service Invoices', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: 03a7bc3e-f6be-4d67-be3a-155abd43cb23
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Invoice Labour Cost' =
+			
+			CALCULATE (
+			    SUMX ( '03 - Service Invoices', [Cost] ),
+			    '03 - Service Invoices'[Product Key] = "Labour-0"
+			)
+		displayFolder: 03 - Service\_Totals\Invoices
+		lineageTag: 47e2bc24-3d92-4cef-88ea-575283312aea
+
+	measure 'Service Credit Labour Cost' =
+			
+			CALCULATE (
+			    SUMX ( '07 - Service Credits', [Cost] ),
+			    '07 - Service Credits'[Product Key] = "Labour-0"
+			)
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: 93c406e0-53c3-4818-823e-4e396f222329
+
+	measure 'Service Labour Cost' =
+			
+			[Service Invoice Labour Cost] - [Service Credit Labour Cost]
+		displayFolder: 03 - Service\_Totals\_Net
+		lineageTag: 4384dc7d-8956-4665-84bd-1b5ef066b543
+
+	measure 'Service Credit COGS' =
+			
+			CALCULATE (
+			    SUMX ( '07 - Service Credits', [Cost] ),
+			    '07 - Service Credits'[Product Key] <> "Labour-0"
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 03 - Service\_Totals\Credits
+		lineageTag: f8ecbb3c-bbbb-4cc8-9ee1-98248364ebe0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Average Service Transaction Value (ATV)' =
+			
+			DIVIDE ( [Service Value], [Service Invoices], 0 )
+		displayFolder: 03 - Service\Ratios & Rates
+		lineageTag: a7faf514-e668-4bd2-a617-9f9a20ea5cec
+
+	measure 'Service Discount Rate %' =
+			
+			DIVIDE ( [Service Discounts], [Service Invoice Amount], 0 )
+		displayFolder: 03 - Service\Ratios & Rates
+		lineageTag: 154024f0-0a85-4bd6-a703-050b077c30ff
+
+	measure 'Service Gross Margin %' =
+			
+			DIVIDE ( [Service Gross Profit], [Service Value (Excl. VAT)] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 03 - Service\Ratios & Rates
+		lineageTag: 026312b2-bad7-4a69-8b4f-2142e04b42bd
+
+	measure 'Service Return Rate %' =
+			
+			DIVIDE ( [Service Credit Note Count], [Service Invoice Note Count], 0 )
+		displayFolder: 03 - Service\Ratios & Rates
+		lineageTag: d182d767-ae1a-4056-9a13-b9d97fa6c61a
+
+	measure 'Service Gross Profit LY' =
+			
+			CALCULATE (
+			    [Service Gross Profit],
+			    SAMEPERIODLASTYEAR ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 03 - Service\Time Intelligence
+		lineageTag: 8451f0de-7735-4f76-a0e1-45652293c522
+
+	measure 'Service Gross Profit MTD ' =
+			
+			CALCULATE (
+			    [Service Gross Profit],
+			    DATESMTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 03 - Service\Time Intelligence
+		lineageTag: 312c8f29-4aa1-492c-b6ed-452b8ed67d74
+
+	measure 'Service Gross Profit YTD' =
+			
+			CALCULATE (
+			    [Service Gross Profit],
+			    DATESYTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 03 - Service\Time Intelligence
+		lineageTag: e8e894d8-257b-4c12-a047-c6dc192feb25
+
+	measure 'Service Value LY' =
+			
+			CALCULATE (
+			    [Service Value],
+			    SAMEPERIODLASTYEAR ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 03 - Service\Time Intelligence
+		lineageTag: b9ebb3cf-53a6-475a-9f8e-f51c47e54d43
+
+	measure 'Service Value MTD ' =
+			
+			CALCULATE (
+			    [Service Value],
+			    DATESMTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 03 - Service\Time Intelligence
+		lineageTag: c2c1cec5-e326-4e4b-857d-808aeab13061
+
+	measure 'Service Value YTD' =
+			
+			CALCULATE (
+			    [Service Value],
+			    DATESYTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 03 - Service\Time Intelligence
+		lineageTag: ba7474a1-5380-4f83-8260-f1d05fe415f3
+
+	measure 'Service Value YoY' =
+			
+			[Service Value] - [Service Value LY]
+		displayFolder: 03 - Service\Variances
+		lineageTag: 25fb217e-0fde-49ae-b603-65ce0007e29d
+
+	measure 'Service Value YoY % ' =
+			
+			DIVIDE ( [Service Value YoY], [Service Value LY], 0 )
+		displayFolder: 03 - Service\Variances
+		lineageTag: 1d03e41c-1146-4284-91c0-0d3a7b3f3b76
+
+	measure 'Total Revenue' =
+			
+			[Sales Value] + [Service Value]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 01 - Enterprise\_Net
+		lineageTag: f39e2a0f-a668-4b82-97ec-60ed4f3566ad
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Revenue (Excl. VAT)' =
+			
+			[Sales Value (Excl. VAT)] + [Service Value (Excl. VAT)]
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 01 - Enterprise\_Net
+		lineageTag: fa89fec5-14eb-4b76-ade8-0d4fc69793a3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Gross Profit LY' =
+			
+			CALCULATE (
+			    [Total Gross Profit],
+			    SAMEPERIODLASTYEAR ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 01 - Enterprise\Time Intelligence
+		lineageTag: 8ed44b68-ac28-4a4b-8a94-47a81d99376d
+
+	measure 'Total Gross Profit MTD' =
+			
+			CALCULATE (
+			    [Total Gross Profit],
+			    DATESMTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 01 - Enterprise\Time Intelligence
+		lineageTag: f121f54b-eb5b-4400-b15e-585f45f54a9e
+
+	measure 'Total Gross Profit YTD' =
+			
+			CALCULATE (
+			    [Total Gross Profit],
+			    DATESYTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 01 - Enterprise\Time Intelligence
+		lineageTag: da71e0e4-92dd-4c26-9fd1-d3ddf02e8561
+
+	measure 'Total Revenue LY' =
+			
+			CALCULATE (
+			    [Total Revenue],
+			    SAMEPERIODLASTYEAR ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 01 - Enterprise\Time Intelligence
+		lineageTag: bf42e34d-b7f0-474b-bebc-09212542acbf
+
+	measure 'Total Revenue MTD' =
+			
+			CALCULATE (
+			    [Total Revenue],
+			    DATESMTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 01 - Enterprise\Time Intelligence
+		lineageTag: dea8af5c-50ac-41fe-a0d0-0b487beb4512
+
+	measure 'Total Revenue YTD' =
+			
+			CALCULATE (
+			    [Total Revenue],
+			    DATESYTD ( '41 - Date'[Date] ),
+			    '41 - Date'[Is Completed Day] = TRUE
+			)
+		displayFolder: 01 - Enterprise\Time Intelligence
+		lineageTag: 0e627c73-a97d-4816-90d5-0f52cc985636
+
+	measure 'Total Revenue YoY' =
+			
+			[Total Revenue] - [Total Revenue LY]
+		displayFolder: 01 - Enterprise\Variances
+		lineageTag: fe51f32f-70c9-4879-922d-7e2c551f014c
+
+	measure 'Total Revenue YoY %' =
+			
+			DIVIDE ( [Total Revenue YoY], [Total Revenue LY], 0 )
+		displayFolder: 01 - Enterprise\Variances
+		lineageTag: f29c9200-6d6b-4220-b70e-9c78b1bdabcd
+
+	measure 'Used Bike Revenue' =
+			
+			CALCULATE (
+			    SUMX ( '04 - Used Bikes', [Sold Price] ),
+			    '04 - Used Bikes'[Used Bike Status] IN { "Sold", "Scrap" }
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 10 - Used Bikes
+		lineageTag: 6f737734-8f6d-4e8b-baa4-a24f2974ba52
+
+	measure 'Used Bike COGS' =
+			
+			CALCULATE (
+			    SUMX ( '04 - Used Bikes', [Cost Price] ),
+			    '04 - Used Bikes'[Used Bike Status] IN { "Sold" /*", "Scrap"*/
+			        }
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 10 - Used Bikes
+		lineageTag: 78faf858-39b9-4b97-8d34-cb18afec1c3c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bike COS' =
+			
+			CALCULATE (
+			    SUMX ( '04 - Used Bikes', [Service Cost Price] ),
+			    '04 - Used Bikes'[Used Bike Status] IN { "Sold" /*", "Scrap"*/
+			        }
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 10 - Used Bikes
+		lineageTag: e64522f2-2cff-4cee-a851-455f3f7cfe21
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Used Bike Note Count' =
+			
+			CALCULATE (
+			    DISTINCTCOUNT ( '04 - Used Bikes'[Used Bike ID] ),
+			    '04 - Used Bikes'[Used Bike Status] IN { "Sold" /*", "Scrap"*/
+			        }
+			)
+		formatString: #,0
+		displayFolder: 10 - Used Bikes
+		lineageTag: c556bf3e-724b-4e41-8e0c-f4e05cb59a3d
+
+	measure 'Used Bike Scrap Revenue' =
+			
+			CALCULATE (
+			    SUMX ( '04 - Used Bikes', [Sold Price] ),
+			    '04 - Used Bikes'[Used Bike Status] IN { "Scrap" }
+			)
+		displayFolder: 10 - Used Bikes
+		lineageTag: 8c5eae1a-0bb3-4e35-8fe9-5fde979441da
+
+	measure 'Sales Orders Amount' =
+			
+			SUMX ( '08 - Sales Orders', [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: 90998491-4d32-422b-9180-a54f5eb960a5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Orders Amount (Excl. VAT)' =
+			
+			SUMX ( '08 - Sales Orders', [Price] - [VAT Amount] )
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: b201b8d1-a85b-45bf-a136-1c71935443ad
+
+	measure 'Sales Orders COGS' =
+			
+			SUMX ( '08 - Sales Orders', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: 68feeaba-166e-4bb8-9b83-a451d05a25fb
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Orders Discount Amount' =
+			
+			SUMX ( '08 - Sales Orders', [Price Before Discount] - [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: 1fdfd398-11f3-4924-abaf-09c2cd6b6c8d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// no invoice sent
+	/// 
+	measure 'Sales Orders Gross Profit' =
+			
+			SUMX ( '08 - Sales Orders', [Price] - [VAT Amount] - [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: bcae1a47-f8bf-41ec-82ea-552e669aa5bc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Orders Note Count' =
+			
+			DISTINCTCOUNT ( '08 - Sales Orders'[Transaction Key] )
+		formatString: #,0
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: dd3d5dcd-9cfa-4f68-9450-aab186c41629
+
+	measure 'Sales Orders Units Ordered' =
+			
+			SUM ( '08 - Sales Orders'[Quantity] )
+		formatString: 0
+		displayFolder: 04 - Orders\Sales Orders
+		lineageTag: d7401b86-713b-4fd9-9315-330e13358217
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Orders Amount' =
+			
+			SUMX ( '09 - Service Orders', [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: ca0fafc7-9f76-411d-8dfd-3e4e424ab8ea
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Orders Amount (Excl. VAT) ' =
+			
+			SUMX ( '09 - Service Orders', [Price] - [VAT Amount] )
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: da04218a-4f1a-402b-951b-c0f6f97c969d
+
+	/// Cost of Services
+	measure 'Service Orders COGS' =
+			
+			SUMX ( '09 - Service Orders', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: 69665c9d-0ab3-4692-8d9a-38e281a08584
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Orders Customer Count' =
+			
+			DISTINCTCOUNT ( '09 - Service Orders'[Customer Code] )
+		formatString: #,0
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: c77f9d4c-83d4-4d83-9ddd-bab239384cb4
+
+	measure 'Service Orders Discount Amount' =
+			
+			SUMX ( '09 - Service Orders', [Price Before Discount] - [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: 67017005-582a-4979-ac36-2f7f1ee2f750
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Orders Gross Profit' =
+			
+			SUMX ( '09 - Service Orders', [Price] - [VAT Amount] - [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: 6c018bbe-9974-422c-a643-e9a5cf4b693e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Service Orders Note Count' =
+			
+			DISTINCTCOUNT ( '09 - Service Orders'[Transaction Key] )
+		formatString: #,0
+		displayFolder: 04 - Orders\Service Orders
+		lineageTag: 3a8bf82e-5a08-4116-889c-ae3ea379d707
+
+	measure 'CCData Last Refresh Date' =
+			
+			CALCULATE (
+			    MAX ( '98 - Refreshes'[Last Refresh Date] ),
+			    REMOVEFILTERS ( '41 - Date' ),
+			    '98 - Refreshes'[Layer Name] = "raw_ccdata"
+			)
+		formatString: Short Date
+		displayFolder: 20 - Utilities/Hidden\Refreshes
+		lineageTag: fbef70dc-4003-4bbe-bd91-6c389a431222
+
+	measure 'Google Last Refresh Date' =
+			
+			CALCULATE (
+			    MAX ( '98 - Refreshes'[Last Refresh Date] ),
+			    REMOVEFILTERS ( '41 - Date' ),
+			    '98 - Refreshes'[Layer Name] = "raw_google"
+			)
+		formatString: General Date
+		displayFolder: 20 - Utilities/Hidden\Refreshes
+		lineageTag: feacb63a-a4db-4c9e-9d6c-b856f018fd55
+
+	measure 'Inventory Last Refresh Date' =
+			
+			CALCULATE (
+			    MAX ( '98 - Refreshes'[Last Refresh Date] ),
+			    REMOVEFILTERS ( '41 - Date' ),
+			    '98 - Refreshes'[Layer Name] = "raw_inventory"
+			)
+		formatString: General Date
+		displayFolder: 20 - Utilities/Hidden\Refreshes
+		lineageTag: 0f758cce-5fb8-49c0-96ab-047cb0dd7105
+
+	measure 'Bike Build Count' =
+			
+			SUMX ( '15 - Service Engineer Performance', [Bike Builds] )
+		displayFolder: 03 - Service\_Totals\Builds
+		lineageTag: b78b8896-c357-43d7-9593-06828a7fe6ca
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Bike Build Hours' =
+			
+			DIVIDE ( SUMX ( '15 - Service Engineer Performance', [Bike Build Time] ), 60 )
+		formatString: 0.0
+		displayFolder: 03 - Service\_Totals\Builds
+		lineageTag: 1d51ac5f-bb01-432a-93c7-767f6b554136
+
+	measure 'Floor Bike Build Count' =
+			
+			SUMX ( '15 - Service Engineer Performance', [Floor Bike Builds] )
+		formatString: 0
+		displayFolder: 03 - Service\_Totals\Builds
+		lineageTag: dfe5652e-bbb2-4058-bf9e-9e698b3707ae
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'Floor Bike Build Hours' =
+			
+			DIVIDE (
+			    SUMX ( '15 - Service Engineer Performance', [Floor Bike Build Time] ),
+			    60
+			)
+		formatString: 0.0
+		displayFolder: 03 - Service\_Totals\Builds
+		lineageTag: 3a38dd72-5ca6-4a35-a309-34daa5595dee
+
+	measure '55 - Bonus Text' =
+			
+			IF (
+			    ISINSCOPE ( '44 - Employee'[Employee Key] ),
+			    VAR BonusVal =
+			        MAX ( '44 - Employee'[Bonus] ) -- Define the formatting logic once to keep it clean
+			    VAR FormatBonus =
+			        IF ( BonusVal * 100 = INT ( BonusVal * 100 ), "0%", "0.#%" )
+			    RETURN
+			        IF ( BonusVal = 0, BLANK (), FORMAT ( BonusVal, FormatBonus ) ),
+			    BLANK ()
+			)
+		displayFolder: 55 - Reconciliation Report\3 - Service by Salesperson
+		lineageTag: 0f469b88-51fb-4626-89da-f19cb996f0f8
+
+	measure 'Sales Value Sundry' =
+			
+			[Till Invoices Amount] - [Till Credits Amount]
+		formatString: "€"#,0.###############;-"€"#,0.###############;"€"#,0.###############
+		displayFolder: 02 - Sales\_Totals\‏‏_Net
+		lineageTag: f5c217cb-114f-48cc-96bb-3ce554164c3f
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-IE"}
+
+	measure '55 - Margin % ' =
+			
+			VAR _OrderNetExVAT =
+			    CALCULATE (
+			        [Order Invoices Amount (Excl. VAT)],
+			        '01 - Order Invoices'[Is Credited] = FALSE,
+			        '01 - Order Invoices'[Price] <> 0
+			    )
+			VAR _TillNetExVAT = [Till Invoices Amount (Excl. VAT)]
+			VAR _GrossSaleExVAT = _OrderNetExVAT + _TillNetExVAT
+			RETURN
+			    DIVIDE ( [Sales Gross Profit], _GrossSaleExVAT )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: cbb2db84-74c1-4a9a-9adc-a5d1971ba529
+
+	measure '55 - Total Sale Value' =
+			
+			VAR _OrderSaleERP =
+			    CALCULATE (
+			        [Order Invoices Amount],
+			        '01 - Order Invoices'[Is Credited] = FALSE
+			    )
+			VAR _TillSaleERP = [Till Invoices Amount]
+			RETURN
+			    _OrderSaleERP + _TillSaleERP
+		formatString: "€"#,0;-"€"#,0;"€"#,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: 0b1de72a-70e4-4eee-81f7-cf7fe908d44b
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-IE"}
+
+	measure '55 - P2' =
+			
+			VAR _total = [55 - Sales Gross Profit]
+			RETURN
+			    IF ( NOT ISBLANK ( _total ) && _total <> 0, 1, 0 )
+		formatString: 0
+		displayFolder: 55 - Reconciliation Report\0 - Visual Filters
+		lineageTag: 507142d8-8b0b-4636-b8b3-eb7398750906
+
+	measure '55 - Main Stock Value' =
+			
+			VAR _MainPhysical =
+			    SUMX (
+			        FILTER (
+			            '42 - Product',
+			            '42 - Product'[Main/Sundry] = "Main"
+			                && '42 - Product'[Subcategory] <> "Labour Charges"
+			        ),
+			        ( [Quantity On Hand Cara] + [Quantity On Hand T1] + [Quantity On Hand T2] ) * [Cost Price]
+			    )
+			RETURN
+			    _MainPhysical
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: 7e3f1d10-239f-479c-b2aa-efcb15b207fb
+
+	measure '55 - Turn Sale Netto/Stock Value' =
+			
+			VAR _OrderSaleExVAT =
+			    CALCULATE (
+			        [Order Invoices Amount (Excl. VAT)],
+			        '01 - Order Invoices'[Is Credited] = FALSE
+			    )
+			VAR _TillSaleExVAT = [Till Invoices Amount (Excl. VAT)]
+			VAR _SaleNetto = _OrderSaleExVAT + _TillSaleExVAT
+			RETURN
+			    DIVIDE ( _SaleNetto, [55 - Stock Value] )
+		formatString: "€"#,0.###############;-"€"#,0.###############;"€"#,0.###############
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: 17e019b4-6e35-4491-b51a-caa29fbc7841
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-IE"}
+
+	measure '55 - Sundry Stock Value' =
+			
+			VAR _SundryPhysical =
+			    SUMX (
+			        FILTER (
+			            '42 - Product',
+			            '42 - Product'[Main/Sundry] = "Sundry"
+			                && '42 - Product'[Subcategory] <> "Labour Charges"
+			        ),
+			        ( [Quantity On Hand Cara] + [Quantity On Hand T1] + [Quantity On Hand T2] ) * [Average Cost Price]
+			    )
+			VAR _OpenSalesOrders =
+			    CALCULATE (
+			        SUMX (
+			            FILTER (
+			                '08 - Sales Orders',
+			                RIGHT ( '08 - Sales Orders'[Product Key], 2 ) = "-0"
+			                    && RELATED ( '42 - Product'[Subcategory] ) <> "Labour Charges"
+			            ),
+			            '08 - Sales Orders'[Quantity Taken]
+			                * RELATED ( '42 - Product'[Average Cost Price] )
+			        ),
+			        REMOVEFILTERS ( '41 - Date' )
+			    )
+			VAR _OpenServiceJobs =
+			    CALCULATE (
+			        SUMX (
+			            FILTER (
+			                '09 - Service Orders',
+			                RIGHT ( '09 - Service Orders'[Product Key], 2 ) = "-0"
+			                    && RELATED ( '42 - Product'[Subcategory] ) <> "Labour Charges"
+			            ),
+			            '09 - Service Orders'[Quantity] * RELATED ( '42 - Product'[Average Cost Price] )
+			        ),
+			        REMOVEFILTERS ( '41 - Date' )
+			    )
+			RETURN
+			    _SundryPhysical + _OpenSalesOrders + _OpenServiceJobs
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		displayFolder: 55 - Reconciliation Report\2 - Sale By Make
+		lineageTag: 1ce16557-e017-4099-80eb-474b06ed9121
+
+	measure 'Repair Hours' =
+			
+			DIVIDE ( SUMX ( '15 - Service Engineer Performance', [Repair Time Spent] ), 60 )
+		formatString: 0.0
+		displayFolder: 03 - Service\_Totals\Builds
+		lineageTag: c464f6be-ec3e-4e38-a2f6-b0cd9b0fbbfd
+
+	measure '55 - Total Time Spent' =
+			
+			VAR _BBC =
+			    COALESCE ( [Bike Build Hours], 0 )
+			VAR _Floor =
+			    COALESCE ( [Floor Bike Build Hours], 0 )
+			VAR _Repair =
+			    COALESCE ( [Repair Hours], 0 )
+			VAR _Total = _BBC + _Floor + _Repair
+			RETURN
+			    _Total
+		formatString: 0.0
+		displayFolder: 55 - Reconciliation Report\4 - Engineer Performance
+		lineageTag: cfc2f778-f588-46bd-982b-d2a53b96aec5
+
+	measure 'Sundry Stock On Hand' =
+			
+			CALCULATE ( [Stock On Hand], '42 - Product'[Main/Sundry] = "Sundry" )
+		formatString: 0
+		displayFolder: 05 - Inventory\_Balances
+		lineageTag: b2cc46a2-24a5-4550-9c21-3cbf761725e2
+
+	measure 'Main Stock On Hand' =
+			
+			CALCULATE ( [Stock On Hand], '42 - Product'[Main/Sundry] = "Main" )
+		formatString: #,0
+		displayFolder: 05 - Inventory\_Balances
+		lineageTag: bdaebda5-0172-4445-912e-b1e4ff442ddc
+
+	measure 'Google Product Clicks' =
+			
+			SUMX ( '14 - Google Product Performance', [Total Clicks] )
+		formatString: 0
+		displayFolder: 06 - Marketing
+		lineageTag: 919d0d41-91a4-479c-9aaa-2e7e6eda2e68
+
+	measure 'Google Product Impressions' =
+			
+			SUMX ( '14 - Google Product Performance', [Total Impressions] )
+		formatString: 0
+		displayFolder: 06 - Marketing
+		lineageTag: a1f0c784-7ec0-4957-82b7-ae6d0e2f2e0c
+
+	measure '55 - Total Value Invoice Orders' =
+			
+			VAR _invoiceAmt = [Order Invoices Amount]
+			VAR _creditAmt = [Order Credits Amount]
+			RETURN
+			    _invoiceAmt + _creditAmt
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		displayFolder: 55 - Reconciliation Report\6 - Transactions Report
+		lineageTag: b301bdc6-d3f5-43c1-966b-cfe5c904ba36
+
+	measure '55 - Total Value Till Transactions' =
+			
+			VAR _invoiceAmt = [Till Invoices Amount]
+			VAR _creditAmt = [Till Credits Amount]
+			RETURN
+			    _invoiceAmt + _creditAmt
+		formatString: "€"#,0.###############;-"€"#,0.###############;"€"#,0.###############
+		displayFolder: 55 - Reconciliation Report\6 - Transactions Report
+		lineageTag: de8c52a1-2aca-4ef4-9641-98e59adb1472
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-IE"}
+
+	measure '55 - Total Value Service Orders' =
+			
+			VAR _invoiced =
+			    CALCULATE (
+			        [Service Invoice Amount],
+			        USERELATIONSHIP ( '03 - Service Invoices'[Order Date], '41 - Date'[Date] )
+			    )
+			VAR _orders =
+			    SUM ( '09 - Service Orders'[Price] )
+			RETURN
+			    COALESCE ( _invoiced, 0 ) + COALESCE ( _orders, 0 )
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		displayFolder: 55 - Reconciliation Report\6 - Transactions Report
+		lineageTag: dd39ad47-bfdd-4948-87bb-695b40a421bf
+
+	column Placeholder
+		isHidden
+		formatString: 0
+		displayFolder: 30 - Saved/Pending
+		lineageTag: 7bdba4bf-9a76-450c-867a-6eb6bf5b787f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Placeholder]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '00 - Measures' = calculated
+		mode: import
+		source =
+				DATATABLE(
+				"Placeholder",INTEGER,
+				{
+				{1}
+				}
+				)
+
+	annotation PBI_Id = 5bf50a92293e4a9590268df1761f633a
+

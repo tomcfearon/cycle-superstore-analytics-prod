@@ -1,0 +1,54 @@
+DEFINE
+    MEASURE '00 - Measures'[Qty FootFall] =
+        VAR FilterDates = VALUES ( '41 - Date'[Date] )
+
+        -- 1a. Order Invoices linked to an SO → key off SO Order Date (inactive rel)
+        VAR OI_SO =
+            CALCULATETABLE (
+                DISTINCT ( '01 - Order Invoices'[Customer Code] ),
+                USERELATIONSHIP ( '01 - Order Invoices'[Order Date], '41 - Date'[Date] )
+            )
+
+        -- 1b. Direct order invoices (no SO) → Invoice Date (active rel)
+        VAR OI_Direct =
+            CALCULATETABLE (
+                DISTINCT ( '01 - Order Invoices'[Customer Code] ),
+                FILTER (
+                    ALL ( '01 - Order Invoices'[Order Date] ),
+                    '01 - Order Invoices'[Order Date] = BLANK ()
+                )
+            )
+
+        -- 2. Till / POS invoices → Invoice Date (active rel)
+        VAR TI =
+            DISTINCT ( '02 - Till Invoices'[Customer Code] )
+
+        -- 3. All service (incl. non-invoiced) → Repair/Fault Date (no direct rel; manual filter)
+        VAR SVC_Dropoff =
+            CALCULATETABLE (
+                DISTINCT ( '09 - Service Orders'[Customer Code] ),
+                REMOVEFILTERS ( '41 - Date' ),
+                FILTER (
+                    ALL ( '09 - Service Orders'[Repair Date] ),
+                    '09 - Service Orders'[Repair Date] IN FilterDates
+                )
+            )
+
+        -- 4. Sales Order collections → customers walking in to collect their order
+        VAR SO_Collect =
+            CALCULATETABLE (
+                DISTINCT ( '08 - Sales Orders'[Customer Code] ),
+                USERELATIONSHIP ( '08 - Sales Orders'[Collection Date], '41 - Date'[Date] )
+            )
+
+        -- 5. Service collections → customers collecting repaired bikes
+        VAR SVC_Collect =
+            CALCULATETABLE (
+                DISTINCT ( '09 - Service Orders'[Customer Code] ),
+                USERELATIONSHIP ( '09 - Service Orders'[Collection Date], '41 - Date'[Date] )
+            )
+
+        -- NOTE: Payments (except bank transfers) are NOT in this model yet
+
+        RETURN
+            COUNTROWS ( DISTINCT ( UNION ( OI_SO, OI_Direct, TI, SVC_Dropoff, SO_Collect, SVC_Collect ) ) )

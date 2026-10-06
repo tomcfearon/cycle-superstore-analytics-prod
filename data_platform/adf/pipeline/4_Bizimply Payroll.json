@@ -1,0 +1,246 @@
+{
+	"name": "4_Bizimply Payroll",
+	"properties": {
+		"description": "Loads the weekly Bizimply timecards CSV (landed by the payroll Logic App) into raw_payroll.bizimply_timecards",
+		"activities": [
+			{
+				"name": "Copy Bizimply Timecards",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"additionalColumns": [
+							{
+								"name": "ingested_time",
+								"value": {
+									"value": "@utcNow()",
+									"type": "Expression"
+								}
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": false,
+							"wildcardFileName": "*.csv"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings",
+							"skipLineCount": 1
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Prop_0"
+								},
+								"sink": {
+									"name": "Bizimply Unique ID"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_1"
+								},
+								"sink": {
+									"name": "First Name"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_2"
+								},
+								"sink": {
+									"name": "Last Name"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_3"
+								},
+								"sink": {
+									"name": "Employee Number"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_4"
+								},
+								"sink": {
+									"name": "Department"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_5"
+								},
+								"sink": {
+									"name": "Monday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_6"
+								},
+								"sink": {
+									"name": "Tuesday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_7"
+								},
+								"sink": {
+									"name": "Wednesday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_8"
+								},
+								"sink": {
+									"name": "Thursday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_9"
+								},
+								"sink": {
+									"name": "Friday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_10"
+								},
+								"sink": {
+									"name": "Saturday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_11"
+								},
+								"sink": {
+									"name": "Sunday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_12"
+								},
+								"sink": {
+									"name": "Total Regular"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_13"
+								},
+								"sink": {
+									"name": "Total Sunday"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_14"
+								},
+								"sink": {
+									"name": "Total Paid Hours"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_15"
+								},
+								"sink": {
+									"name": "Base Pay Rate"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_16"
+								},
+								"sink": {
+									"name": "Column6"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_17"
+								},
+								"sink": {
+									"name": "Paid Time Off"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_18"
+								},
+								"sink": {
+									"name": "Paid Sick"
+								}
+							},
+							{
+								"source": {
+									"name": "Prop_19"
+								},
+								"sink": {
+									"name": "Cash Extras 1"
+								}
+							},
+							{
+								"source": {
+									"name": "ingested_time"
+								},
+								"sink": {
+									"name": "ingested_time"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_bizimply_payroll_csv",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_raw_payroll_bizimply_timecards",
+						"type": "DatasetReference",
+						"parameters": {
+							"pDbName": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "08ff98c243000c60c17c",
+  "position": {
+    "x": 174,
+    "y": 402,
+    "z": 1,
+    "height": 552,
+    "width": 908
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "01 - Order Invoices"
+                    }
+                  },
+                  "Property": "Transaction Key"
+                }
+              },
+              "queryRef": "01 - Order Invoices.Transaction Key",
+              "nativeQueryRef": "Transaction Key"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "01 - Order Invoices"
+                    }
+                  },
+                  "Property": "Order Invoices Note Count"
+                }
+              },
+              "queryRef": "01 - Order Invoices.Order Invoices Note Count",
+              "nativeQueryRef": "Order Invoices Note Count"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,37 @@
+CREATE TABLE [marts].[fct_order_credits] (
+    [transaction_key]           VARCHAR (20)    NULL,
+    [credit_date]               DATE            NULL,
+    [customer_code]             VARCHAR (12)    NULL,
+    [employee_key]              INT             NOT NULL,
+    [creditor_key]              INT             NOT NULL,
+    [product_key]               VARCHAR (52)    NOT NULL,
+    [quantity]                  INT             NULL,
+    [price]                     DECIMAL (19, 2) NULL,
+    [vat_amount]                DECIMAL (19, 2) NULL,
+    [cost]                      NUMERIC (34, 6) NULL,
+    [price_before_discount]     DECIMAL (30, 2) NULL,
+    [approver_key]              INT             NULL,
+    [order_date]                DATE            NULL,
+    [order_time]                TIME (0)        NULL,
+    [is_dispatched]             BIT             NULL,
+    [invoice_connection_number] VARCHAR (12)    NULL,
+    [web_order_id]              INT             NULL,
+    [line_sequence_number]      INT             NULL,
+    [description]               VARCHAR (255)   NULL,
+    [last_modified_datetime]    DATETIME        NULL,
+    [row_modified_datetime]     DATETIME        NULL,
+    [order_channel]             VARCHAR (50)    NULL,
+    [collection_employee_key]   INT             NULL
+) ON [PRIMARY];
+
+
+GO
+CREATE CLUSTERED COLUMNSTORE INDEX [marts_fct_order_credits__dbt_tmp_cci]
+    ON [marts].[fct_order_credits] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0)
+    ON [PRIMARY];
+
+
+GO
+-- Enforces the line grain and gives the loader MERGE a seek target instead of a full scan
+CREATE UNIQUE NONCLUSTERED INDEX [uq_fct_order_credits_transaction_line]
+    ON [marts].[fct_order_credits]([transaction_key], [line_sequence_number]);

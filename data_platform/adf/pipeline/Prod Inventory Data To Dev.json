@@ -1,0 +1,153 @@
+{
+	"name": "Prod Inventory Data To Dev",
+	"properties": {
+		"description": "unscheduled",
+		"activities": [
+			{
+				"name": "Copy Inventory",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Max Table Date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM [raw_ccdata].[Inventory] WHERE query_datetime > '@{activity('Max Table Date').output.firstRow.MaxDate}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "raw_ccdata",
+							"pTable": "Inventory",
+							"ds_database_name": "css-dwh-prod"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "raw_ccdata",
+							"pTable": "Inventory",
+							"ds_database_name": "css-dwh-dev"
+						}
+					}
+				]
+			},
+			{
+				"name": "Max Table Date",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT COALESCE(MAX(query_datetime), '1900-01-01') AS MaxDate FROM raw_ccdata.Inventory",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "raw_ccdata",
+							"pTable": "Inventory",
+							"ds_database_name": "css-dwh-dev"
+						}
+					}
+				}
+			},
+			{
+				"name": "Log Load",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy Inventory",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"refresh_time_utc": {
+							"value": {
+								"value": "@formatDateTime(activity('Max Table Date').output.firstRow.MaxDate, 'yyyy-MM-dd HH:mm:ss')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"table_name": {
+							"value": "raw_ccdata.inventory",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "css-dwh-dev"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Dev Only"
+		},
+		"annotations": []
+	}
+}

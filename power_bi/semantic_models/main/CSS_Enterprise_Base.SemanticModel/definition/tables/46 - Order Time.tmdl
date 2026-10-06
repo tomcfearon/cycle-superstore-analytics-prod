@@ -1,0 +1,89 @@
+table '46 - Order Time'
+	lineageTag: cc50ff5a-850e-42f2-97cc-8d0f0f7a1927
+
+	column 'Second Of Day'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1c62cc8e-d8d3-44d9-a608-a2026508818a
+		summarizeBy: none
+		sourceColumn: Second Of Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Hour Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: db656bdc-cb5c-4d88-a866-bd336a1225b2
+		summarizeBy: none
+		sourceColumn: Hour Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Minute Of Hour'
+		dataType: int64
+		formatString: 0
+		lineageTag: 94575bcf-984d-4c55-8763-34a564f3fdb8
+		summarizeBy: none
+		sourceColumn: Minute Of Hour
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Second Of Minute'
+		dataType: int64
+		formatString: 0
+		lineageTag: 26678235-210c-4484-9834-1892515da1dc
+		summarizeBy: none
+		sourceColumn: Second Of Minute
+
+		annotation SummarizationSetBy = Automatic
+
+	column Time
+		dataType: dateTime
+		formatString: Long Time
+		lineageTag: 7f5e6f08-36e7-43a2-81b3-31408c8e9561
+		summarizeBy: none
+		sourceColumn: Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column Hour
+		dataType: string
+		lineageTag: e70f251a-12b3-4339-84fc-43d138261acc
+		summarizeBy: none
+		sourceColumn: Hour
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Store Hours Category'
+		dataType: string
+		lineageTag: 84b2366c-8e71-42a0-83ea-45afe525e371
+		summarizeBy: none
+		sourceColumn: Store Hours Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Store Hours Sort'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8b999700-7f07-4987-8bc2-3b8a5165c13d
+		summarizeBy: none
+		sourceColumn: Store Hours Sort
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '46 - Order Time' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name=Database]}[Data],
+				    #"dbo_46 - Document Time" = #"css-dwh-dev"{[Schema="dbo",Item="46 - Order Time"]}[Data]
+				in
+				    #"dbo_46 - Document Time"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

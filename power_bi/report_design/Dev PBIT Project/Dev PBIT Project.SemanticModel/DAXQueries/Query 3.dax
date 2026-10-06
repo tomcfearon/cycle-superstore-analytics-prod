@@ -1,0 +1,17 @@
+EVALUATE
+SELECTCOLUMNS (
+    FILTER (
+        '01 - Order Invoices',
+        '01 - Order Invoices'[Invoice Date] = DATE ( 2025, 3, 27 )
+            && RELATED ( '42 - Stock'[ERP Brand] ) = "-"
+    ),
+    "Invoice Number",  '01 - Order Invoices'[Invoice Number],
+    "Invoice Date",    '01 - Order Invoices'[Invoice Date],
+    "Stock Key",       '01 - Order Invoices'[Stock Key],
+    "Description",     '01 - Order Invoices'[Description],
+    "Price",           '01 - Order Invoices'[Price],
+    "Cost",            '01 - Order Invoices'[Cost],
+    "ERP Brand",       RELATED ( '42 - Stock'[ERP Brand] ),
+	"SKU",       RELATED ( '42 - Stock'[Stock Code] )
+)
+ORDER BY [Invoice Number], [Stock Key]

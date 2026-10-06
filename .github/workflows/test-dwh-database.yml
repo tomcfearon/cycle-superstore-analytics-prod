@@ -1,0 +1,202 @@
+name: Test CSS DWH Database
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "css-dwh-project/**"
+      - "data_platform/tests/**"
+      - "data_platform/scripts/runners/orchestration/**"
+      - ".github/workflows/test-dwh-database.yml"
+  workflow_dispatch:
+    inputs:
+      confirm_reset:
+        description: Confirm destructive reset of css-dwh-test
+        required: true
+        type: choice
+        options:
+          - RESET css-dwh-test
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: css-dwh-test-database
+  cancel-in-progress: false
+
+env:
+  SQL_SERVER_FQDN: css-sql-prd-neu.database.windows.net
+  SQL_DATABASE: css-dwh-test
+  TEST_LOG: artifacts/css-dwh-test.log
+  CONFIRM_RESET: ${{ inputs.confirm_reset }}
+
+jobs:
+  database-test:
+    name: Publish and test warehouse
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Login to Azure using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Install SqlPackage and sqlcmd
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          # Install SqlPackage via dotnet
+          dotnet tool install -g Microsoft.SqlPackage
+          "/home/runner/.dotnet/tools" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+          # Download and install modern Go-based sqlcmd
+          Invoke-WebRequest -Uri "https://github.com/microsoft/go-sqlcmd/releases/latest/download/sqlcmd-linux-amd64.tar.bz2" -OutFile "sqlcmd.tar.bz2"
+          tar -xjf sqlcmd.tar.bz2
+          sudo install -m 755 sqlcmd /usr/local/bin/sqlcmd
+          sudo ln -sf /usr/local/bin/sqlcmd /usr/bin/sqlcmd
+
+          sqlcmd --version
+
+      - name: Get Azure SQL access token
+        id: sql_token
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $token = az account get-access-token --resource https://database.windows.net --query accessToken -o tsv
+
+          Write-Output "::add-mask::$token"
+          "value=$token" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Initialize test log
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          "css-dwh-test workflow run $($env:GITHUB_RUN_ID)" | Out-File -FilePath $env:TEST_LOG -Encoding utf8
+
+      - name: Validate test target
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          if ($env:GITHUB_EVENT_NAME -ne 'pull_request' -and $env:CONFIRM_RESET -ne 'RESET css-dwh-test') {
+              throw "Workflow refused: Reset confirmation missing for manual run."
+          }
+          if (-not $env:SQL_SERVER_FQDN) { throw "Server FQDN is empty." }
+
+          $arguments = @(
+              '-S', $env:SQL_SERVER_FQDN,
+              '-d', $env:SQL_DATABASE,
+              '--authentication-method', 'ActiveDirectoryAzCli',
+              '-b', '-r1',
+              '-Q', "SET NOCOUNT ON; IF DB_NAME() <> N'css-dwh-test' THROW 52150, 'Workflow refused: unexpected database.', 1; SELECT DB_NAME() AS database_name, ORIGINAL_LOGIN() AS original_login;"
+          )
+
+          & sqlcmd @arguments 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "Preflight failed with exit code $LASTEXITCODE." }
+
+      - name: Build warehouse DACPAC
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & dotnet build "css-dwh-project/css-dwh-project.sqlproj" -c Release 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "dotnet build failed with exit code $LASTEXITCODE." }
+
+      - name: Publish warehouse DACPAC
+        shell: pwsh
+        env:
+          SQL_TOKEN: ${{ steps.sql_token.outputs.value }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $arguments = @(
+              '/Action:Publish',
+              '/SourceFile:css-dwh-project/bin/Release/css-dwh-project.dacpac',
+              '/Profile:css-dwh-project/test.publish.xml',
+              "/TargetServerName:$env:SQL_SERVER_FQDN",
+              "/TargetDatabaseName:$env:SQL_DATABASE",
+              "/AccessToken:$env:SQL_TOKEN"
+          )
+
+          & sqlpackage @arguments 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "sqlpackage failed with exit code $LASTEXITCODE." }
+
+      - name: Reset test database
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $arguments = @(
+              '-S', $env:SQL_SERVER_FQDN,
+              '-d', $env:SQL_DATABASE,
+              '--authentication-method', 'ActiveDirectoryAzCli',
+              '-b', '-r1',
+              '-i', "data_platform/tests/reset_test_database.sql"
+          )
+
+          & sqlcmd @arguments 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "Reset script failed with exit code $LASTEXITCODE." }
+
+      - name: Seed synthetic fixture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $arguments = @(
+              '-S', $env:SQL_SERVER_FQDN,
+              '-d', $env:SQL_DATABASE,
+              '--authentication-method', 'ActiveDirectoryAzCli',
+              '-b', '-r1',
+              '-i', "data_platform/tests/seeds/seed_test_data.sql"
+          )
+
+          & sqlcmd @arguments 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "Seed script failed with exit code $LASTEXITCODE." }
+
+      - name: Run canonical warehouse load
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $arguments = @(
+              '-S', $env:SQL_SERVER_FQDN,
+              '-d', $env:SQL_DATABASE,
+              '--authentication-method', 'ActiveDirectoryAzCli',
+              '-b', '-r1',
+              '-i', "data_platform/scripts/runners/orchestration/load_warehouse_full.sql"
+          )
+
+          & sqlcmd @arguments 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "Load script failed with exit code $LASTEXITCODE." }
+
+      - name: Run warehouse assertions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $arguments = @(
+              '-S', $env:SQL_SERVER_FQDN,
+              '-d', $env:SQL_DATABASE,
+              '--authentication-method', 'ActiveDirectoryAzCli',
+              '-b', '-r1',
+              '-i', "data_platform/tests/run_assertions.sql"
+          )
+
+          & sqlcmd @arguments 2>&1 | Tee-Object -FilePath $env:TEST_LOG -Append
+          if ($LASTEXITCODE -ne 0) { throw "Assertions failed with exit code $LASTEXITCODE." }
+
+      - name: Upload database test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-dwh-test-${{ github.run_id }}
+          path: artifacts/css-dwh-test.log
+          if-no-files-found: warn

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Cycle Superstore Self-Service"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "aa7cd0d1-af2c-4b09-a54e-cd42534e9ca4"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "d4765db079e241706a3a",
+  "position": {
+    "x": 39.824987846378221,
+    "y": 11.799996398926881,
+    "z": 0,
+    "height": 300,
+    "width": 300
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Sales Gross Profit (Referenced)"
+                }
+              },
+              "queryRef": "00 - Measures.Sales Gross Profit (Referenced)",
+              "nativeQueryRef": "Sales Gross Profit (Referenced)"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "b8c2dd744d170e68d5ba",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "00 - Measures"
+              }
+            },
+            "Property": "Sales Gross Profit (Referenced)"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

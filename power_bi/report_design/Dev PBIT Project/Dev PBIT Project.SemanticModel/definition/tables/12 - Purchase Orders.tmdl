@@ -1,0 +1,189 @@
+table '12 - Purchase Orders'
+	lineageTag: bdf102dd-8520-4986-b92b-48e56d686527
+
+	measure 'Purchase Orders Retail Value' =
+			
+			SUMX ( '12 - Purchase Orders', [Retail Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 9834e815-2449-4ec5-b325-86d9d4e82bfe
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Purchase Orders Amount' =
+			
+			SUMX ( '12 - Purchase Orders', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 7bd2efcd-f594-4552-8cbb-84796610e74c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Product Key'
+		dataType: string
+		isHidden
+		lineageTag: 8fedc0a6-8691-42cb-8c30-3ee6c01a84e3
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Number'
+		dataType: string
+		lineageTag: d56ac78a-1b4e-4191-992c-3789efed0981
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Order Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: eeb4072b-47d2-4cc3-a99e-c303097d2b16
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Due In Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 4b65082a-1452-4f28-85b7-7ab5085551e4
+		summarizeBy: none
+		sourceColumn: Due In Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Goods In Datetime'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1fb5d8fa-eb04-4db4-a7e2-6f001d025a74
+		summarizeBy: none
+		sourceColumn: Goods In Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Supplier Code'
+		dataType: string
+		lineageTag: c965c9f5-4f78-43de-9726-bd32c7a9a19d
+		summarizeBy: none
+		sourceColumn: Supplier Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Purchase Order Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 35843dcf-5510-41b4-ac5a-fdd3285f5e85
+		summarizeBy: none
+		sourceColumn: Purchase Order Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Goods In Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 76e6ba03-2cd6-4d49-9b68-fb4a9b1d2282
+		summarizeBy: none
+		sourceColumn: Goods In Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 37ae4125-bffa-444e-ab88-5bbfd5424dd4
+		summarizeBy: none
+		sourceColumn: Line Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Item Type'
+		dataType: int64
+		formatString: 0
+		lineageTag: 0a3786ad-2d64-4981-9c62-0cbb0ed76223
+		summarizeBy: none
+		sourceColumn: Item Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Stock Location'
+		dataType: string
+		lineageTag: 2166cd54-4256-4819-b15d-f3ed3b9e35c5
+		summarizeBy: none
+		sourceColumn: Stock Location
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: e226d55d-a0d3-4617-a4d1-51638e84e11a
+		summarizeBy: none
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Quantity Received'
+		dataType: int64
+		formatString: 0
+		lineageTag: 2e3a4796-5e10-499c-813c-83cc2da72ffe
+		summarizeBy: none
+		sourceColumn: Quantity Received
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cost
+		dataType: double
+		formatString: Currency
+		lineageTag: 763258f6-902e-44de-80cf-91e6846f0dbe
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Retail Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: fc03c815-0801-47b1-a78a-a511ad0579c8
+		summarizeBy: sum
+		sourceColumn: Retail Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Trade Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: 07b3dd0d-e604-4465-8876-d56205ff58a7
+		summarizeBy: sum
+		sourceColumn: Trade Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '22 - Purchase Orders' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_22 - Purchase Orders" = #"css-dwh"{[Schema="dbo",Item="12 - Purchase Orders"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_22 - Purchase Orders", each [Order Date] >= #"Data From")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+

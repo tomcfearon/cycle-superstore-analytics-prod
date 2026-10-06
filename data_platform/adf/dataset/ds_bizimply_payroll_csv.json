@@ -1,0 +1,24 @@
+{
+  "name": "ds_bizimply_payroll_csv",
+  "properties": {
+    "linkedServiceName": {
+      "referenceName": "Analytical_Blob_Storage",
+      "type": "LinkedServiceReference"
+    },
+    "annotations": [],
+    "type": "DelimitedText",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobStorageLocation",
+        "folderPath": "bizimply",
+        "container": "staging"
+      },
+      "columnDelimiter": ",",
+      "escapeChar": "\"",
+      "firstRowAsHeader": false,
+      "quoteChar": "\""
+    },
+    "schema": []
+  },
+  "type": "Microsoft.DataFactory/factories/datasets"
+}

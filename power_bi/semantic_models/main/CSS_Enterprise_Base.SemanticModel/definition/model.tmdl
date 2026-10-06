@@ -1,0 +1,68 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-IE
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+queryGroup Facts
+
+	annotation PBI_QueryGroupOrder = 0
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["01 - Order Invoices","02 - Till Invoices","03 - Service Invoices","04 - Used Bikes","05 - Order Credits","06 - Till Credits","07 - Service Credits","08 - Sales Orders","09 - Service Orders","10 - Inventory","11 - Emails","12 - Purchase Orders","41 - Document Date","42 - Product","43 - Customer","44 - Employee","45 - Order Channel","46 - Order Time","47 - Transaction","48 - Engineer","49 - Order Date","50 - Service Type","51 - Google Ads Campaign","98 - Refreshes","99 - Data From","Data From","Database","13 - Google Campaign Conversions","14 - Google Product Performance","15 - Google Ads Campaign Stats","16 - Service Engineer Performance"]
+
+annotation PBI_ProTooling = ["DevMode","CalcGroup","DaxQueryView_Desktop","WebModelingEdit","TMDLView_Desktop","TMDL-Extension"]
+
+annotation __BNorm = 1
+
+annotation __TEdtr = 1
+
+annotation __LastRPTime = 134152159713752061
+
+ref table '01 - Order Invoices'
+ref table '03 - Service Invoices'
+ref table '04 - Used Bikes'
+ref table '02 - Till Invoices'
+ref table '05 - Order Credits'
+ref table '06 - Till Credits'
+ref table '09 - Service Orders'
+ref table '07 - Service Credits'
+ref table '10 - Inventory'
+ref table '11 - Emails'
+ref table '12 - Purchase Orders'
+ref table '43 - Customer'
+ref table '42 - Product'
+ref table '44 - Employee'
+ref table '98 - Refreshes'
+ref table '99 - Data From'
+ref table '00 - Measures'
+ref table '08 - Sales Orders'
+ref table '62 - Link Mode'
+ref table '45 - Order Channel'
+ref table '64 - Order Factor'
+ref table '63 - Used Bikes Invoices Toggle'
+ref table '67 - Model Year Selector'
+ref table '65 - Brand Selector'
+ref table '68 - Product Status Selector'
+ref table '61 - Metric Selection'
+ref table '13 - Google Campaign Conversions'
+ref table '14 - Google Product Performance'
+ref table '47 - Transaction'
+ref table '41 - Document Date'
+ref table '46 - Order Time'
+ref table '48 - Engineer'
+ref table '49 - Order Date'
+ref table '50 - Service Type'
+ref table '69 - Website'
+ref table '70 - Discount Parameter'
+ref table '71 - Discount Parameter'
+ref table '51 - Google Ads Campaign'
+ref table '15 - Google Ads Campaign Stats'
+ref table '16 - Service Engineer Performance'
+
+ref cultureInfo en-US
+

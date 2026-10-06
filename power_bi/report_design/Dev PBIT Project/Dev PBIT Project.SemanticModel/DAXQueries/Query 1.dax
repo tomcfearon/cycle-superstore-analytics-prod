@@ -1,0 +1,78 @@
+// ── Orphaned Customer Codes (Enterprise SEM 2) ──────────────────────────────
+// Includes 18 - Sales Orders which only exists in this model, not Validation.
+// ────────────────────────────────────────────────────────────────────────────
+
+DEFINE
+    VAR _dim =
+        SELECTCOLUMNS (
+            '53 - Customer',
+            "@Customer Code", '53 - Customer'[Customer Code]
+        )
+
+    VAR _order_invoices =
+        EXCEPT (
+            SELECTCOLUMNS ( '11 - Order Invoices', "@Customer Code", '11 - Order Invoices'[Customer Code] ),
+            _dim
+        )
+
+    VAR _till_invoices =
+        EXCEPT (
+            SELECTCOLUMNS ( '12 - Till Invoices', "@Customer Code", '12 - Till Invoices'[Customer Code] ),
+            _dim
+        )
+
+    VAR _service_invoices =
+        EXCEPT (
+            SELECTCOLUMNS ( '13 - Service Invoices', "@Customer Code", '13 - Service Invoices'[Customer Code] ),
+            _dim
+        )
+
+    VAR _used_bikes =
+        EXCEPT (
+            SELECTCOLUMNS ( '14 - Used Bikes', "@Customer Code", '14 - Used Bikes'[Customer Code] ),
+            _dim
+        )
+
+    VAR _order_credits =
+        EXCEPT (
+            SELECTCOLUMNS ( '15 - Order Credits', "@Customer Code", '15 - Order Credits'[Customer Code] ),
+            _dim
+        )
+
+    VAR _till_credits =
+        EXCEPT (
+            SELECTCOLUMNS ( '16 - Till Credits', "@Customer Code", '16 - Till Credits'[Customer Code] ),
+            _dim
+        )
+
+    VAR _service_credits =
+        EXCEPT (
+            SELECTCOLUMNS ( '17 - Service Credits', "@Customer Code", '17 - Service Credits'[Customer Code] ),
+            _dim
+        )
+
+    VAR _sales_orders =
+        EXCEPT (
+            SELECTCOLUMNS ( '18 - Sales Orders', "@Customer Code", '18 - Sales Orders'[Customer Code] ),
+            _dim
+        )
+
+    VAR _service_orders =
+        EXCEPT (
+            SELECTCOLUMNS ( '19 - Service Orders', "@Customer Code", '19 - Service Orders'[Customer Code] ),
+            _dim
+        )
+
+EVALUATE
+UNION (
+    ADDCOLUMNS ( _order_invoices,   "Source Table", "11 - Order Invoices" ),
+    ADDCOLUMNS ( _till_invoices,    "Source Table", "12 - Till Invoices" ),
+    ADDCOLUMNS ( _service_invoices, "Source Table", "13 - Service Invoices" ),
+    ADDCOLUMNS ( _used_bikes,       "Source Table", "14 - Used Bikes" ),
+    ADDCOLUMNS ( _order_credits,    "Source Table", "15 - Order Credits" ),
+    ADDCOLUMNS ( _till_credits,     "Source Table", "16 - Till Credits" ),
+    ADDCOLUMNS ( _service_credits,  "Source Table", "17 - Service Credits" ),
+    ADDCOLUMNS ( _sales_orders,     "Source Table", "18 - Sales Orders" ),
+    ADDCOLUMNS ( _service_orders,   "Source Table", "19 - Service Orders" )
+)
+ORDER BY [Source Table], [@Customer Code]

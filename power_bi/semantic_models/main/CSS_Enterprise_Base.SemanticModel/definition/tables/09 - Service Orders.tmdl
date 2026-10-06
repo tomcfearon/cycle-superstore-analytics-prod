@@ -1,0 +1,336 @@
+table '09 - Service Orders'
+	lineageTag: 403f31a4-f44c-45f1-a81d-7c2ba5bc0606
+
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: efad014d-8c9b-4d20-95d5-7691d13f2e6b
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Repair Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 202e1697-6ce9-4804-a666-feee817bcb52
+		summarizeBy: none
+		sourceColumn: Repair Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Collection Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 9bb7ed56-eea8-4ab9-91c4-594ebf2500e2
+		summarizeBy: none
+		sourceColumn: Collection Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Customer Code'
+		dataType: string
+		isHidden
+		lineageTag: cf2a268e-77d8-4d09-9cd2-521c29aa8c3a
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Salesperson Key'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1150163d-98d7-487c-a803-f5d4a10c9773
+		summarizeBy: none
+		sourceColumn: Salesperson Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Engineer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5d8dec0d-4a28-4382-ba97-e8b2d8c3621f
+		summarizeBy: none
+		sourceColumn: Engineer Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Supervisor Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 690f70a9-8467-444b-b26d-8e7a62d28da6
+		summarizeBy: count
+		sourceColumn: Supervisor Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Approver Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: d47ebc22-87ae-46cd-87a2-fbe69820f138
+		summarizeBy: count
+		sourceColumn: Approver Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		isHidden
+		lineageTag: baffeb3d-771d-4e98-89d2-c59f75d8d31e
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Status'
+		dataType: string
+		lineageTag: 6b6340c2-d704-4306-ace4-1e500f706d50
+		summarizeBy: none
+		sourceColumn: Order Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Urgent'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 3ce04bee-9648-4779-9c59-dbce0e86fbf7
+		summarizeBy: none
+		sourceColumn: Is Urgent
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Faulty'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: eb3e1e89-4edb-4b2b-b658-7700ef75fe68
+		summarizeBy: none
+		sourceColumn: Is Faulty
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Total Labour Cost'
+		dataType: double
+		formatString: Currency
+		lineageTag: 66198c6b-c9f7-4c5c-8475-ce04f6575af3
+		summarizeBy: sum
+		sourceColumn: Total Labour Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Repair Time'
+		dataType: int64
+		formatString: 0
+		lineageTag: 08fa64ce-1bfb-44cc-8ef0-377d218b1c7d
+		summarizeBy: sum
+		sourceColumn: Repair Time
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Estimate Given'
+		dataType: string
+		lineageTag: b126225b-431f-41c6-9a74-8be926a006b4
+		summarizeBy: none
+		sourceColumn: Estimate Given
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 1d57f356-b317-4805-b444-a6963f026ca7
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Price
+		dataType: double
+		formatString: Currency
+		lineageTag: a08f1ccf-6650-44d5-ae10-db2ba40eded8
+		summarizeBy: sum
+		sourceColumn: Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Price Before Discount'
+		dataType: double
+		formatString: Currency
+		lineageTag: 43181155-3613-49c3-a8a1-a2e72bf8c253
+		summarizeBy: sum
+		sourceColumn: Price Before Discount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Cost
+		dataType: double
+		formatString: Currency
+		lineageTag: ceb92b92-c07b-4021-8160-08f66b6d4392
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Description
+		dataType: string
+		lineageTag: 37b0256b-4f0a-40b0-9d89-c788f854e297
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Sequence Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 88d3d728-73b2-4fce-9d5b-4e1155147559
+		summarizeBy: sum
+		sourceColumn: Line Sequence Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Last Modified Datetime'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d60397b2-504f-4e74-a283-f59ade2164e8
+		summarizeBy: none
+		sourceColumn: Last Modified Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Company Stock'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 54e34f19-36d9-4c67-8e04-7b6d55af62cd
+		summarizeBy: none
+		sourceColumn: Is Company Stock
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Wheel'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: d4b70308-8506-43a0-a0aa-ed812bfe33f5
+		summarizeBy: none
+		sourceColumn: Is Wheel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Fork'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 15584fa9-0ef7-4a25-bef4-6665cbc9d377
+		summarizeBy: none
+		sourceColumn: Is Fork
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Pedal'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 70bfee45-1c65-4631-9088-1d3a4ed6a7ad
+		summarizeBy: none
+		sourceColumn: Is Pedal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bike Brand'
+		dataType: string
+		lineageTag: 775a9d80-aa15-4e76-991a-6606703ee5e2
+		summarizeBy: none
+		sourceColumn: Bike Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Channel'
+		dataType: string
+		lineageTag: 02c89660-cf29-451e-9d3b-8fba873b950f
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Order ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1bbf76d0-fd0a-492d-a28a-e987dd55bac7
+		summarizeBy: count
+		sourceColumn: Web Order ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Service Bike ID'
+		dataType: string
+		lineageTag: 8c43c90a-b06d-476f-b05f-1161211cf9cd
+		summarizeBy: none
+		sourceColumn: Service Bike ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VAT Amount'
+		dataType: double
+		formatString: Currency
+		lineageTag: e2a0144f-a426-4a1c-9439-7f87b6641b20
+		summarizeBy: sum
+		sourceColumn: VAT Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'MISC Title'
+		dataType: string
+		lineageTag: 1a390c52-794d-4b5a-ae33-fbd464301fcc
+		summarizeBy: none
+		sourceColumn: MISC Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Transaction Key'
+		dataType: string
+		lineageTag: 1a009999-9999-4999-8999-999999999909
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Service Type Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 20876bcc-0526-4f37-a0d5-b66dcff5d832
+		summarizeBy: none
+		sourceColumn: Service Type Key
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '19 - Service Orders' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_19 - Service Orders" = #"css-dwh"{[Schema="dbo",Item="09 - Service Orders"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_19 - Service Orders", each [Order Date] >= #"Data From")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,278 @@
+table '08 - Sales Orders'
+	lineageTag: c2ead703-e8e4-4d55-963b-d49d4c659c5b
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 46148493-76d3-496d-bf82-4a673b266b0a
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Order Time'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 611eeb42-fb1d-4bce-9bae-6812de88bcde
+		summarizeBy: none
+		sourceColumn: Order Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column 'Customer Code'
+		dataType: string
+		isHidden
+		lineageTag: 83187906-2b1a-45f5-9798-6011aaaa5b76
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Key'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 05d3a20a-d700-4cd4-a594-2ef281128bdd
+		summarizeBy: none
+		sourceColumn: Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		isHidden
+		lineageTag: bdd09efc-1520-4c35-9ac9-ca2cf5bdc2f0
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 351dc5fc-0e58-4835-9b1e-3afd8e5df492
+		summarizeBy: none
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Price
+		dataType: double
+		formatString: Currency
+		lineageTag: 365dd0f1-8904-457b-8625-71b9512aebef
+		summarizeBy: sum
+		sourceColumn: Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Cost
+		dataType: double
+		formatString: Currency
+		lineageTag: 2f429554-7156-4067-83b5-e7a9197c5f8a
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Price Before Discount'
+		dataType: double
+		formatString: Currency
+		lineageTag: edb10bd4-ac7e-4adf-aaec-2a74ca84e7ed
+		summarizeBy: sum
+		sourceColumn: Price Before Discount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Quantity Taken'
+		dataType: int64
+		formatString: 0
+		lineageTag: cc7a16b7-c30a-49ea-af5c-2fe28bed52e8
+		summarizeBy: none
+		sourceColumn: Quantity Taken
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Approver Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8a621b14-ee24-4cc5-9478-861dc733ad8d
+		summarizeBy: none
+		sourceColumn: Approver Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Deposit Value'
+		dataType: double
+		formatString: Currency
+		lineageTag: 8566fe7a-735e-414d-b849-070f445f9f3c
+		summarizeBy: sum
+		sourceColumn: Deposit Value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Payment To Date'
+		dataType: double
+		formatString: Currency
+		lineageTag: bb5e82f9-9faa-41e8-86ed-e5ce69f713b4
+		summarizeBy: sum
+		sourceColumn: Payment To Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Collection Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 27d9a701-0af5-4934-90c8-cebbbb7ec052
+		summarizeBy: none
+		sourceColumn: Collection Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Order Status'
+		dataType: string
+		lineageTag: f4a0b7be-fd07-46b9-a2ce-b8658961438c
+		summarizeBy: none
+		sourceColumn: Order Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Confirmed'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 3d1c95c8-3d50-4e3a-bb90-90f05f5b8658
+		summarizeBy: none
+		sourceColumn: Is Confirmed
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bike Location'
+		dataType: string
+		lineageTag: 2f02acc3-0791-43a7-9f50-6119166b3ac6
+		summarizeBy: none
+		sourceColumn: Bike Location
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Box Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 20d6a077-7fa8-4451-a648-ec54f44873b5
+		summarizeBy: none
+		sourceColumn: Box Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Sequence Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 360187cd-d31f-44c1-b5e0-00fcd9246fd9
+		summarizeBy: none
+		sourceColumn: Line Sequence Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Description
+		dataType: string
+		lineageTag: a591a7c5-34ac-432c-b031-3d6d4b9f12c4
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Pulled'
+		dataType: int64
+		formatString: 0
+		lineageTag: e0bee131-6938-47ef-bbb7-d1b7bc0f33be
+		summarizeBy: none
+		sourceColumn: Is Pulled
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Channel'
+		dataType: string
+		isHidden
+		lineageTag: 0fbc418b-1edc-4bde-ae24-972b1d095699
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Collection Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 36194353-b1a7-4aed-862c-adb4ae8a5952
+		summarizeBy: none
+		sourceColumn: Collection Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VAT Amount'
+		dataType: double
+		formatString: Currency
+		lineageTag: ab360b80-f2aa-4dd4-98d7-cfe9aa7015ef
+		summarizeBy: sum
+		sourceColumn: VAT Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Web Order ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1d01e012-93ca-42c3-9c80-8402bc1b550a
+		summarizeBy: none
+		sourceColumn: Web Order ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Request ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: aee46f2d-1e30-4e65-93d5-f9de9be12917
+		summarizeBy: none
+		sourceColumn: Request ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Transaction Key'
+		dataType: string
+		lineageTag: 1a008888-8888-4888-8888-888888888808
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '18 - Sales Orders' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_18 - Sales Order" = #"css-dwh"{[Schema="dbo",Item="08 - Sales Order"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_18 - Sales Order", each [Order Date] >= #"Data From")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_ResultType = Exception
+
+	annotation PBI_NavigationStepName = Navigation
+

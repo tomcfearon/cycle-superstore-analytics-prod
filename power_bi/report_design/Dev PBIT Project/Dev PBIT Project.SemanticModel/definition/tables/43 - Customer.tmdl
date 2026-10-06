@@ -1,0 +1,282 @@
+table '43 - Customer'
+	lineageTag: 26798409-5018-439d-b44d-d31ed6a19be9
+
+	column 'Customer Code'
+		dataType: string
+		isKey
+		lineageTag: ac9e6d87-9be4-47ba-9abc-25483520257c
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: 2bf8d883-2fb7-4c0a-a5dd-ace3473073e7
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Type'
+		dataType: string
+		lineageTag: 2a0424be-debb-4482-aed9-0a7a44b892f9
+		summarizeBy: none
+		sourceColumn: Customer Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column Company
+		dataType: string
+		lineageTag: a0e3e216-b8c6-427c-9493-7d195556e97f
+		summarizeBy: none
+		sourceColumn: Company
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is On Stop'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5dec7380-767d-4e54-93f6-c223081e883a
+		summarizeBy: none
+		sourceColumn: Is On Stop
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Archived'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 6e9e5416-4ead-41e9-97fe-63793029fd6c
+		summarizeBy: none
+		sourceColumn: Is Archived
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Confirmed Female'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: fe7973d4-8149-47b0-8248-e02d546797fd
+		summarizeBy: none
+		sourceColumn: Is Confirmed Female
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Credit Terms'
+		dataType: string
+		lineageTag: 95464ab2-25d7-4d50-aed8-53abe1b3559c
+		summarizeBy: none
+		sourceColumn: Credit Terms
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Credit Limit'
+		dataType: double
+		formatString: Currency
+		lineageTag: 0e1db0a4-80c2-440c-8dcd-00d277d914f5
+		summarizeBy: sum
+		sourceColumn: Credit Limit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Credit Balance'
+		dataType: double
+		formatString: Currency
+		lineageTag: 803ec296-4705-44a0-af52-88059ae6212d
+		summarizeBy: sum
+		sourceColumn: Credit Balance
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Last Modified Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: bac3e69d-16e5-41dd-abc9-0519cecb94ee
+		summarizeBy: none
+		sourceColumn: Last Modified Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Last In Store Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 4c9039a5-98ee-4c97-ac2c-944437834fa7
+		summarizeBy: none
+		sourceColumn: Last In Store Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Email
+		dataType: string
+		lineageTag: 4c94b132-32e7-4e54-b2ea-0dd7bf0a6719
+		summarizeBy: none
+		sourceColumn: Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Cp Connection'
+		dataType: string
+		lineageTag: e468545b-8090-4c20-a3d5-3e5a1c3f6f6f
+		summarizeBy: none
+		sourceColumn: Web Cp Connection
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web First Name'
+		dataType: string
+		lineageTag: 85a3d161-e8d1-4cd6-8e8c-4b0b865159f8
+		summarizeBy: none
+		sourceColumn: Web First Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Last Name'
+		dataType: string
+		lineageTag: 27a863eb-8209-467e-bdf5-a328499aeefe
+		summarizeBy: none
+		sourceColumn: Web Last Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Company'
+		dataType: string
+		lineageTag: 339ad7d8-7656-4364-9c58-5fa466b3874d
+		summarizeBy: none
+		sourceColumn: Web Company
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Phone'
+		dataType: string
+		lineageTag: 0a3ac85b-6207-4370-911a-e127d5aa54b0
+		summarizeBy: none
+		sourceColumn: Web Phone
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Address Line 1'
+		dataType: string
+		lineageTag: edf7b4ad-82b3-4cc2-a489-dd60b8e7a7cc
+		summarizeBy: none
+		sourceColumn: Web Address Line 1
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Address Line 2'
+		dataType: string
+		lineageTag: 8c40bf6d-d5cf-44f6-b822-c847d21011c4
+		summarizeBy: none
+		sourceColumn: Web Address Line 2
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Postal Code'
+		dataType: string
+		lineageTag: 92f1c792-f728-4c4e-8a12-bbc03595d2dd
+		summarizeBy: none
+		sourceColumn: Web Postal Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web State Code'
+		dataType: string
+		lineageTag: f204ed97-c197-408e-aaae-5abe859e0ac4
+		summarizeBy: none
+		sourceColumn: Web State Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web State'
+		dataType: string
+		lineageTag: f625c41b-7d44-4ffd-abf5-01c1ddb0d7e2
+		summarizeBy: none
+		sourceColumn: Web State
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web City'
+		dataType: string
+		lineageTag: 50ee1915-73cd-4ab8-a11d-fc0779dc1ed9
+		summarizeBy: none
+		sourceColumn: Web City
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Country Code'
+		dataType: string
+		lineageTag: fd984d41-8ce5-4d93-ba66-fcb9674ea92a
+		summarizeBy: none
+		sourceColumn: Web Country Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Customer Type'
+		dataType: string
+		lineageTag: 9de999f8-a50c-4b90-89ba-89c5c87f05f6
+		summarizeBy: none
+		sourceColumn: Web Customer Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Created At'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: a059c5f9-e54b-40b7-b022-9f7b716bd86c
+		summarizeBy: none
+		sourceColumn: Web Created At
+
+		annotation SummarizationSetBy = Automatic
+
+	column Retail/Trade
+		dataType: string
+		lineageTag: f25c30c7-60e4-438a-b3fb-58b5096da139
+		summarizeBy: none
+		sourceColumn: Retail/Trade
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Price Band'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3346ac2b-e1d2-40f9-9a17-6b3f68e987b4
+		summarizeBy: none
+		sourceColumn: Price Band
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Account Opened Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 5e297208-918b-4cb8-afad-645a448129f7
+		summarizeBy: none
+		sourceColumn: Account Opened Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Customer ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: ded35a05-303f-4a53-83dd-74950773f906
+		summarizeBy: none
+		sourceColumn: Web Customer ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '43 - Customer' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_53 - Customer" = #"css-dwh"{[Schema="dbo",Item="43 - Customer"]}[Data]
+				in
+				    #"dbo_53 - Customer"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

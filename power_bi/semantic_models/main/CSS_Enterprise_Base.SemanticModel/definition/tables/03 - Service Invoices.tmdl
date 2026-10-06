@@ -1,0 +1,390 @@
+table '03 - Service Invoices'
+	lineageTag: 6806a94a-1017-471d-bff3-165d7c972c20
+
+	column 'Order Number'
+		dataType: string
+		lineageTag: 5c4d548f-7ff0-4f8a-ba1a-f020235c36c9
+		summarizeBy: none
+		sourceColumn: Order Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: 78cc9a1d-7e73-47ac-b449-0eb44be1d3bc
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Salesperson Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1a0aae00-d846-4766-b9e4-a4a56d285b36
+		summarizeBy: none
+		sourceColumn: Salesperson Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Engineer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 28db1e4c-d612-4362-a239-8b918f2ebcdf
+		summarizeBy: none
+		sourceColumn: Engineer Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Supervisor Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 6b7a4d8a-a2d6-4053-9f83-16d8325fbe7e
+		summarizeBy: count
+		sourceColumn: Supervisor Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Approver Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7deae077-551d-4ffc-a88f-2532d37f816c
+		summarizeBy: count
+		sourceColumn: Approver Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		lineageTag: ae405772-90f7-4632-9a85-36f09189b54c
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b50b2666-2219-409d-a7ef-cbe607670856
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Invoice Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: c62afcb0-4141-4cba-9ce2-9418eb81b919
+		summarizeBy: none
+		sourceColumn: Invoice Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Repair Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 675d2039-6a43-499d-ba13-d1ca1d213bf0
+		summarizeBy: none
+		sourceColumn: Repair Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Repair Time'
+		dataType: int64
+		formatString: 0
+		lineageTag: acef0133-a455-46ee-b5f0-389db2f95a2a
+		summarizeBy: sum
+		sourceColumn: Repair Time
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Completion Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 1c4b8087-f0dc-4d5f-ba68-8eb44e405a67
+		summarizeBy: none
+		sourceColumn: Completion Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Collection Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: fdf6ca79-43f9-4655-b278-c06c8715ab68
+		summarizeBy: none
+		sourceColumn: Collection Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Last Modified Datetime'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 512ed052-0690-4e78-ab23-f47d56c423a5
+		summarizeBy: none
+		sourceColumn: Last Modified Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Invoice Status'
+		dataType: string
+		lineageTag: 3ca99f6e-66b7-48ee-9351-bc050e3683e5
+		summarizeBy: none
+		sourceColumn: Invoice Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Urgent'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: e78837a8-2720-41f3-9cad-e769fb4cf20d
+		summarizeBy: none
+		sourceColumn: Is Urgent
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Faulty'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: f22b89cf-7b0e-4615-943f-674664797352
+		summarizeBy: none
+		sourceColumn: Is Faulty
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Credited'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: e366a1c3-c4d5-4ecd-b45f-9d6339ae6b44
+		summarizeBy: none
+		sourceColumn: Is Credited
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Estimate Given'
+		dataType: string
+		lineageTag: cb72c06e-93ec-422a-ab34-837a54c765c1
+		summarizeBy: none
+		sourceColumn: Estimate Given
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Total Labour Cost'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 3975ba5e-1e4b-4575-ae00-65bc0958cefd
+		summarizeBy: sum
+		sourceColumn: Total Labour Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Payment To Date'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: d8147c41-3456-4b08-9e1b-5f1cfc7748f3
+		summarizeBy: sum
+		sourceColumn: Payment To Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Credit Note Number'
+		dataType: string
+		lineageTag: bd5f313d-5edd-43db-9e89-18e682de7d7c
+		summarizeBy: none
+		sourceColumn: Credit Note Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Credit Number'
+		dataType: string
+		lineageTag: b6f5fdc7-0bc4-47a3-a08e-b38cc3269496
+		summarizeBy: none
+		sourceColumn: Credit Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: abb985b2-0831-4bdf-971c-4269cb54a5c8
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Price
+		dataType: decimal
+		formatString: Currency
+		lineageTag: f875d6ff-857b-4855-af3e-1b1d3d0d5e3d
+		summarizeBy: sum
+		sourceColumn: Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Price Before Discount'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: bf0f9952-a1a5-4799-9775-5f9f0162e2dd
+		summarizeBy: sum
+		sourceColumn: Price Before Discount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Cost
+		dataType: decimal
+		formatString: Currency
+		lineageTag: ab211e8f-2326-4263-8ba1-0baf449bccb1
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Description
+		dataType: string
+		lineageTag: 3c4ea985-f238-4e44-b1bd-1f176f7af09e
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Sequence Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 23a13a66-dfe5-4041-a509-a7e600625806
+		summarizeBy: sum
+		sourceColumn: Line Sequence Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Company Stock'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2ebe1359-11c6-4914-b58d-ea15ec66b10b
+		summarizeBy: none
+		sourceColumn: Is Company Stock
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Wheel'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 155fe796-0dcc-4244-8daf-dd1443b323e9
+		summarizeBy: none
+		sourceColumn: Is Wheel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Fork'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: e4155bfb-1883-48b2-b6ef-6f1484235db8
+		summarizeBy: none
+		sourceColumn: Is Fork
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Pedal'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5149ea3a-707c-4c0d-bd34-5792b83cb037
+		summarizeBy: none
+		sourceColumn: Is Pedal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bike Brand'
+		dataType: string
+		lineageTag: fac7ddd6-30c4-4c19-995f-aa653cb5e945
+		summarizeBy: none
+		sourceColumn: Bike Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Order ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: cadb0304-484e-4be8-b056-064acd8dfd56
+		summarizeBy: count
+		sourceColumn: Web Order ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Channel'
+		dataType: string
+		lineageTag: a2baadd2-f7be-4ae0-ac7e-c6ee17910a37
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VAT Amount'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: e1475445-30f3-4d69-aa59-0cf7b48ec858
+		summarizeBy: sum
+		sourceColumn: VAT Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'MISC Title'
+		dataType: string
+		lineageTag: 3beaef6a-1533-47c3-8f17-201947adbee5
+		summarizeBy: none
+		sourceColumn: MISC Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Transaction Key'
+		dataType: string
+		lineageTag: 1a003333-3333-4333-8333-333333333303
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Service Type Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4b2a4023-e92b-44f9-bc3b-43c8dd1ec698
+		summarizeBy: none
+		sourceColumn: Service Type Key
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '03 - Service Invoices' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_13 - Service Invoices" = #"css-dwh"{[Schema="dbo",Item="03 - Service Invoices"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_13 - Service Invoices", each [Invoice Date] >= #"Data From"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Total Labour Cost", Currency.Type}, {"Payment To Date", Currency.Type}, {"Price Before Discount", Currency.Type}, {"Cost", Currency.Type}, {"VAT Amount", Currency.Type}, {"Price", Currency.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

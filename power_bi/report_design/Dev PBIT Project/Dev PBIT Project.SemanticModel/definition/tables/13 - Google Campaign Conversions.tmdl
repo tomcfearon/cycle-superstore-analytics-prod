@@ -1,0 +1,90 @@
+table '13 - Google Campaign Conversions'
+	lineageTag: 55ed1963-7c6c-4733-a03b-159e2aed0714
+
+	measure 'Google Campaigns Conversion Count' =
+			
+			SUMX ( '13 - Google Campaign Conversions', [Total Conversions] )
+		formatString: #,0
+		displayFolder: _Direct Measures
+		lineageTag: 30c337e8-7c16-4a3b-8a92-40559d535486
+
+	measure 'Google Campaigns Conversion Value' =
+			
+			SUMX ( '13 - Google Campaign Conversions', [Total Conversions Value] )
+		formatString: #,0
+		displayFolder: _Direct Measures
+		lineageTag: 92776d1a-f464-4473-b868-73e2624950b7
+
+	column 'Campaign Name'
+		dataType: string
+		lineageTag: b07be66b-a66b-498e-a936-daa75a9a815a
+		summarizeBy: none
+		sourceColumn: Campaign Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Conversion Action Category'
+		dataType: string
+		lineageTag: 1f50cb9d-85f0-446e-9ae8-02a7c4741ac0
+		summarizeBy: none
+		sourceColumn: Conversion Action Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Conversion Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: e6c7b847-8846-4965-8acc-b9588f0acc57
+		summarizeBy: none
+		sourceColumn: Conversion Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Total Conversions'
+		dataType: double
+		formatString: Currency
+		lineageTag: a93b7dca-5e25-4340-ba93-556957907fd0
+		summarizeBy: sum
+		sourceColumn: Total Conversions
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total Conversions Value'
+		dataType: double
+		formatString: Currency
+		lineageTag: 608edb0c-23cd-433d-ab97-a82956d8a96b
+		summarizeBy: sum
+		sourceColumn: Total Conversions Value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Funnel Type'
+		dataType: string
+		lineageTag: 6653e337-9ad7-44cb-b31c-18dd667d72bc
+		summarizeBy: none
+		sourceColumn: Funnel Type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '13 - Google Campaign Conversions' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name="css-dwh-dev"]}[Data],
+				    #"dbo_13 - Google Ads Campaign Conversions" = #"css-dwh-dev"{[Schema="dbo",Item="13 - Google Ads Campaign Conversions"]}[Data],
+				    #"Sorted Rows" = Table.Sort(#"dbo_13 - Google Ads Campaign Conversions",{{"Campaign Name", Order.Ascending}, {"Conversion Date", Order.Descending}})
+				in
+				    #"Sorted Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

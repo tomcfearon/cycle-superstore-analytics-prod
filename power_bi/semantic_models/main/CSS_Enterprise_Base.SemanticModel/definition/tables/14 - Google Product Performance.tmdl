@@ -1,0 +1,81 @@
+table '14 - Google Product Performance'
+	lineageTag: a6979f51-44a3-4b14-bd94-e441df959c6b
+
+	measure 'Product Clicks' =
+			SUMX(
+				'14 - Google Product Performance',
+				[Total Clicks]
+			)
+		formatString: #,0
+		lineageTag: d0c802b0-9c48-4984-ae1d-f7599f5d3f29
+
+	measure 'Product Impressions' =
+			SUMX(
+				'14 - Google Product Performance',
+				[Total Impressions]
+			)
+		formatString: 0
+		lineageTag: 264d244a-8188-49ec-b2d8-2534ce4a45dd
+
+	column 'Performance Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 2551879e-55f0-4d55-9e38-e51f06dc1f46
+		summarizeBy: none
+		sourceColumn: Performance Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Total Impressions'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5597e324-5cc7-4970-8d28-a35f3e37fdb0
+		summarizeBy: sum
+		sourceColumn: Total Impressions
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Total Clicks'
+		dataType: int64
+		formatString: 0
+		lineageTag: aeb248fc-6e78-4fb8-b735-9e5d700c7ab6
+		summarizeBy: sum
+		sourceColumn: Total Clicks
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		lineageTag: 7b622e04-100a-4c1f-aad2-e7d4f83f8a3a
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Destination
+		dataType: string
+		lineageTag: 735928c1-a2db-4d9f-b942-11b77eae8dcd
+		summarizeBy: none
+		sourceColumn: Destination
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '14 - Google Product Performance' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+					Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+					#"database" = Source{[Name = Database]}[Data],
+					#"dbo_14 - Google Product Performance" = #"database"{
+						[Schema = "dbo", Item = "14 - Google Product Performance"]
+					}[Data]
+				in
+					#"dbo_14 - Google Product Performance"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,14 @@
+expression 'Data From' = #date(2025, 1, 1) meta [IsParameterQuery=true, Type="Date", IsParameterQueryRequired=true]
+	lineageTag: cc88ee61-0603-44b5-bbb3-0fa099a36e07
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Date
+
+expression Database = "css-dwh-dev" meta [IsParameterQuery=true, List={"css-dwh-prod", "css-dwh-dev"}, DefaultValue="css-dwh-dev", Type="Text", IsParameterQueryRequired=true]
+	lineageTag: c83f0848-d1e7-4df1-a70a-16b2fe2dc8a8
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

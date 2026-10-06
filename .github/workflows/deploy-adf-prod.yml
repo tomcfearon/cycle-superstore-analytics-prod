@@ -1,0 +1,238 @@
+name: Deploy Data Factory to Prod
+
+on:
+  push:
+    branches: [main]
+    paths: ["data_platform/adf/**"]
+
+env:
+  FACTORY: df-css-ana-prd-neu
+  RG: rg-css-analytics-prd
+
+jobs:
+  deploy-adf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_ADF_PROD_SERVICE_PRINCIPAL }}
+
+      - name: Install datafactory extension
+        run: az extension add --name datafactory --yes 2>/dev/null
+
+      # ── Phase 1 — Stop active triggers before making changes ─────
+      - name: Stop active triggers
+        run: |
+          az datafactory trigger list \
+            --factory-name "$FACTORY" --resource-group "$RG" \
+            --query "[?properties.runtimeState=='Started'].name" -o tsv \
+          | while IFS= read -r name; do
+              [ -z "$name" ] && continue
+              echo "Stopping trigger: $name"
+              az datafactory trigger stop \
+                --factory-name "$FACTORY" --resource-group "$RG" --name "$name"
+            done
+
+      # ── Phase 2 — Deploy global parameters ──────────────────────
+      - name: Deploy global parameters
+        env:
+          PBI_WORKSPACE_ID: ${{ secrets.PBI_PROD_WORKSPACE_ID }}
+          PBI_DATASET_ID: ${{ secrets.PBI_PROD_DATASET_ID }}
+        run: |
+          SUB=$(az account show --query id -o tsv)
+          az rest \
+            --method PATCH \
+            --uri "https://management.azure.com/subscriptions/${SUB}/resourceGroups/${RG}/providers/Microsoft.DataFactory/factories/${FACTORY}?api-version=2018-06-01" \
+            --body "{\"properties\":{\"globalParameters\":{
+              \"DWH_DB_Name\":{\"type\":\"string\",\"value\":\"css-dwh-prod\"},
+              \"PBI_Workspace_ID\":{\"type\":\"string\",\"value\":\"${PBI_WORKSPACE_ID}\"},
+              \"PBI_Dataset_ID\":{\"type\":\"string\",\"value\":\"${PBI_DATASET_ID}\"},
+              \"Environment\":{\"type\":\"string\",\"value\":\"Prod\"}
+            }}}"
+      # ── Phase 3 — Deploy resources in dependency order ──────────
+      #
+      # GoogleBigQueryV2 resources use the GOOGLE_BIGQUERY_KEY secret
+      # (full service-account JSON key) — client_email and keyFileContent
+      # are extracted at deploy time; the dev encryptedCredential is dropped.
+      #
+      # Skipped: pipeline1 (dev scratch pipeline only)
+
+      - name: Deploy linked services
+        env:
+          STORE_SQL_PC_PASSWORD: ${{ secrets.STORE_SQL_PC_PASSWORD }}
+          WEB_SQL_PASSWORD: ${{ secrets.WEB_SQL_PASSWORD }}
+          GOOGLE_BIGQUERY_KEY: ${{ secrets.GOOGLE_BIGQUERY_KEY }}
+        run: |
+          for f in data_platform/adf/linkedService/*.json; do
+            name=$(jq -r '.name' "$f")
+
+            # Prod overrides: remap Web-DB IR → Web-SQL-IR-OP-DF
+            props=$(jq -c '.properties' "$f")
+
+            # Replace dev-encrypted credentials with appropriate secrets
+            case "$name" in
+              Store_SQL_PC)
+                props=$(printf '%s' "$props" | jq --arg pw "$STORE_SQL_PC_PASSWORD" '
+                  del(.typeProperties.encryptedCredential)
+                  | .typeProperties.password = {"type":"SecureString","value":$pw}');;
+              Web_SQL)
+                props=$(printf '%s' "$props" | jq --arg pw "$WEB_SQL_PASSWORD" '
+                  del(.typeProperties.encryptedCredential)
+                  | .typeProperties.password = {"type":"SecureString","value":$pw}');;
+              GoogleBigQuery)
+                sa_email=$(printf '%s' "$GOOGLE_BIGQUERY_KEY" | jq -r '.client_email')
+                props=$(printf '%s' "$props" | jq --arg key "$GOOGLE_BIGQUERY_KEY" --arg email "$sa_email" '
+                  del(.typeProperties.encryptedCredential)
+                  | .typeProperties.serviceAccountEmail = $email
+                  | .typeProperties.keyFileContent = {"type":"SecureString","value":$key}');;
+            esac
+
+            echo "→ $name"
+            printf '%s\n' "$props" > /tmp/resource.json
+            az datafactory linked-service create \
+              --factory-name "$FACTORY" --resource-group "$RG" \
+              --linked-service-name "$name" --properties @/tmp/resource.json
+          done
+
+      - name: Deploy datasets
+        run: |
+          for f in data_platform/adf/dataset/*.json; do
+            name=$(jq -r '.name' "$f")
+            echo "→ $name"
+            jq -c '.properties' "$f" > /tmp/resource.json
+            az datafactory dataset create \
+              --factory-name "$FACTORY" --resource-group "$RG" \
+              --dataset-name "$name" --properties @/tmp/resource.json
+          done
+
+      - name: Deploy pipelines
+        run: |
+          for f in data_platform/adf/pipeline/*.json; do
+            name=$(jq -r '.name' "$f")
+
+            echo "→ $name"
+            jq -c '.properties | del(.lastPublishTime)' "$f" > /tmp/resource.json
+            az datafactory pipeline create \
+              --factory-name "$FACTORY" --resource-group "$RG" \
+              --name "$name" --pipeline @/tmp/resource.json
+          done
+
+      - name: Deploy triggers
+        run: |
+          for f in data_platform/adf/trigger/*.json; do
+            name=$(jq -r '.name' "$f")
+
+            # Remove read-only runtimeState before deploying
+            jq -c '.properties | del(.runtimeState)' "$f" > /tmp/resource.json
+
+            echo "→ $name"
+            az datafactory trigger create \
+              --factory-name "$FACTORY" --resource-group "$RG" \
+              --name "$name" --properties @/tmp/resource.json
+          done
+
+      # ── Phase 4 — Remove stale resources from prod ─────────────
+      #
+      # Anything in prod that is not defined in git gets deleted.
+      # Deletion order respects dependencies:
+      #   triggers → pipelines → datasets → linked services
+      # Integration runtimes are never touched (shared via RBAC).
+
+      - name: Clean up stale resources
+        run: |
+          ADF="data_platform/adf"
+
+          # All resource names from git — including Google resources we
+          # skipped deploying, so we don't accidentally delete them if
+          # they were set up manually in prod.
+          git_names() { for f in "$1"/*.json; do jq -r '.name' "$f"; done; }
+
+          expected_tr=$(git_names "$ADF/trigger")
+          expected_pl=$(git_names "$ADF/pipeline")
+          expected_ds=$(git_names "$ADF/dataset")
+          expected_ls=$(git_names "$ADF/linkedService")
+
+          in_list() { echo "$1" | grep -qxF "$2"; }
+
+          echo "── Triggers ──"
+          az datafactory trigger list \
+            --factory-name "$FACTORY" --resource-group "$RG" \
+            --query "[].name" -o tsv \
+          | while IFS= read -r n; do
+              [ -z "$n" ] && continue
+              if ! in_list "$expected_tr" "$n"; then
+                echo "✕ $n"
+                az datafactory trigger stop \
+                  --factory-name "$FACTORY" --resource-group "$RG" \
+                  --name "$n" 2>/dev/null || true
+                az datafactory trigger delete \
+                  --factory-name "$FACTORY" --resource-group "$RG" \
+                  --name "$n" --yes
+              fi
+            done
+
+          echo "── Pipelines ──"
+          az datafactory pipeline list \
+            --factory-name "$FACTORY" --resource-group "$RG" \
+            --query "[].name" -o tsv \
+          | while IFS= read -r n; do
+              [ -z "$n" ] && continue
+              if ! in_list "$expected_pl" "$n"; then
+                echo "✕ $n"
+                az datafactory pipeline delete \
+                  --factory-name "$FACTORY" --resource-group "$RG" \
+                  --name "$n" --yes
+              fi
+            done
+
+          echo "── Datasets ──"
+          az datafactory dataset list \
+            --factory-name "$FACTORY" --resource-group "$RG" \
+            --query "[].name" -o tsv \
+          | while IFS= read -r n; do
+              [ -z "$n" ] && continue
+              if ! in_list "$expected_ds" "$n"; then
+                echo "✕ $n"
+                az datafactory dataset delete \
+                  --factory-name "$FACTORY" --resource-group "$RG" \
+                  --name "$n" --yes
+              fi
+            done
+
+          echo "── Linked Services ──"
+          az datafactory linked-service list \
+            --factory-name "$FACTORY" --resource-group "$RG" \
+            --query "[].name" -o tsv \
+          | while IFS= read -r n; do
+              [ -z "$n" ] && continue
+              if ! in_list "$expected_ls" "$n"; then
+                echo "✕ $n"
+                az datafactory linked-service delete \
+                  --factory-name "$FACTORY" --resource-group "$RG" \
+                  --name "$n" --yes
+              fi
+            done
+
+          echo "✅ Prod now mirrors git."
+
+      # ── Phase 5 — Re-start triggers ─────────────────────────────
+      #
+      # Triggers are created stopped. Start them all now that
+      # deployment and cleanup are complete.
+      - name: Start triggers
+        run: |
+          for f in data_platform/adf/trigger/*.json; do
+            name=$(jq -r '.name' "$f")
+            pipeline_count=$(jq '.properties.pipelines | length' "$f")
+            if [ "$pipeline_count" -eq 0 ]; then
+              echo "⏭ Skipping $name — no pipeline references (trigger not yet wired up)"
+              continue
+            fi
+            echo "▶ $name"
+            az datafactory trigger start \
+              --factory-name "$FACTORY" --resource-group "$RG" --name "$name"
+          done

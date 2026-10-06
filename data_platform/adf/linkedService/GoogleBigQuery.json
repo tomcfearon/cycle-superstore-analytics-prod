@@ -1,0 +1,20 @@
+{
+	"name": "GoogleBigQuery",
+	"properties": {
+		"annotations": [],
+		"type": "GoogleBigQueryV2",
+		"typeProperties": {
+			"projectId": "silicon-reason-474320-g2",
+			"authenticationType": "ServiceAuthentication",
+			"keyFileContent": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "bigquery-google"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
+}

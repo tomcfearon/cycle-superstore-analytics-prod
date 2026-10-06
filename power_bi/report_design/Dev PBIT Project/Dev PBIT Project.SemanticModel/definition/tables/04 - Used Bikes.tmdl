@@ -1,0 +1,233 @@
+table '04 - Used Bikes'
+	lineageTag: ce837651-afc3-4382-ae62-e8359e3a7531
+
+	column 'Service Order Number'
+		dataType: string
+		lineageTag: a5e70eae-3113-483d-8e69-0c11190f35b7
+		summarizeBy: none
+		sourceColumn: Service Order Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Memo Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: c449c3dd-f092-4466-b6db-bbfe411b9f49
+		summarizeBy: none
+		sourceColumn: Memo Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Sold Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 80d70ef7-6fff-4f24-8fb7-3029111abfb8
+		summarizeBy: none
+		sourceColumn: Sold Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: 505b37ed-69f9-4080-9f6d-49cf5ff7c7c4
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sold Customer Code'
+		dataType: string
+		lineageTag: d8f4512e-9ad3-46d6-b6c3-03e6fef86798
+		summarizeBy: none
+		sourceColumn: Sold Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Salesperson1 Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 0672bcbf-2327-4735-9e7e-e8afc4ae0cf7
+		summarizeBy: none
+		sourceColumn: Salesperson1 Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Salesperson2 Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 855881b5-13d9-480d-aebb-713e66ad09ed
+		summarizeBy: none
+		sourceColumn: Salesperson2 Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sold Salesperson Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: e6311042-dd83-4cef-8c2a-0c3961660491
+		summarizeBy: none
+		sourceColumn: Sold Salesperson Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Description
+		dataType: string
+		lineageTag: 6becd717-ffe9-41d5-980d-a62f1612eab2
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: c232100d-4423-4415-ba18-831dcb3cf5e2
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Retail Price'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: f2e963f6-0937-4ece-bce3-931c1860a3f7
+		summarizeBy: none
+		sourceColumn: Retail Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Cost Price'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: e42bdd1c-47ff-4879-a33f-9f4366dc0733
+		summarizeBy: none
+		sourceColumn: Cost Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sale Price'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 81509591-6a55-4ee4-ba5d-2e6cbd97c8bc
+		summarizeBy: none
+		sourceColumn: Sale Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sold Price'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 6b2c5a4d-b148-4c4e-8907-51cacb042c5d
+		summarizeBy: none
+		sourceColumn: Sold Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sold Payment Amount'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: b27b46d8-f3e7-416d-8ebe-fe9a19118cd7
+		summarizeBy: none
+		sourceColumn: Sold Payment Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Service Cost Price'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: f2544588-9829-472e-bef9-e64311089940
+		summarizeBy: none
+		sourceColumn: Service Cost Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Used Bike Status'
+		dataType: string
+		lineageTag: ed517582-9795-4852-8841-b43312b01845
+		summarizeBy: none
+		sourceColumn: Used Bike Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Used Bike Category'
+		dataType: string
+		lineageTag: a1421cb3-692d-464d-b2c1-2e3dfdaf6e7f
+		summarizeBy: none
+		sourceColumn: Used Bike Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Status'
+		dataType: string
+		lineageTag: fd6a8000-a16b-43dc-8899-26a8dcc50e4d
+		summarizeBy: none
+		sourceColumn: Web Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Channel'
+		dataType: string
+		lineageTag: 02672ffe-0c94-4f97-a7fe-a1c1bb3bf115
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Used Bike ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 74ce992d-72cd-48e1-b43a-9544293df213
+		summarizeBy: none
+		sourceColumn: Used Bike ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Bike ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: af9a7c38-2a27-4787-b090-d9ece77581b4
+		summarizeBy: none
+		sourceColumn: Web Bike ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		lineageTag: a012823b-c1bd-4974-9af3-d40cf845cb2c
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '04 - Used Bikes' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_14 - Used Bikes" = #"css-dwh"{[Schema="dbo",Item="04 - Used Bikes"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_14 - Used Bikes", each [Sold Date] >= #"Data From"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Retail Price", Currency.Type}, {"Cost Price", Currency.Type}, {"Sale Price", Currency.Type}, {"Sold Price", Currency.Type}, {"Sold Payment Amount", Currency.Type}, {"Service Cost Price", Currency.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

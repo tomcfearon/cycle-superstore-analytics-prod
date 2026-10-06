@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "fabric.vscode-fabric-mcp-server",
+    "analysis-services.tmdl",
+    "github.vscode-github-actions",
+    "redhat.vscode-yaml",
+    "ms-mssql.mssql",
+    "ms-azuretools.vscode-azurecli",
+    "ms-python.python",
+    "timonwong.shellcheck"
+  ]
+}

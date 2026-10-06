@@ -1,0 +1,120 @@
+{
+	"name": "Save Price Data Daily",
+	"properties": {
+		"activities": [
+			{
+				"name": "CCData To DWH",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "-- Query text for the ADF daily product-price snapshot.\n-- Mirrors the source-side inventory snapshot product universe so prices are saved for the same product keys.\nWITH\n\n-- Inline the warehouse product-key mapping so source snapshots stay aligned with dim_product keys.\nstock_map AS (\n    SELECT\n        s.StockCode AS product_id,\n        CASE\n            WHEN s.StockCode <> s.ModelNo\n                 AND (s.StockCode LIKE '%-1-%' OR s.StockCode LIKE '%-0-%')\n            THEN LEFT(\n                     s.StockCode,\n                     LEN(s.StockCode) - CHARINDEX('-', REVERSE(s.StockCode)) - 2\n                 ) + '-1'\n            WHEN s.StockCode LIKE '%-BOX'\n                 AND EXISTS (\n                     SELECT 1\n                     FROM dbo.Stock AS s2\n                     WHERE s2.StockCode = LEFT(\n                               s.StockCode,\n                               LEN(s.StockCode) - CHARINDEX('-', REVERSE(s.StockCode))\n                           ) + '-SINGLE'\n                       AND s2.StockCode NOT LIKE 'SER-1-%'\n                 )\n            THEN LEFT(\n                     s.StockCode,\n                     LEN(s.StockCode) - CHARINDEX('-', REVERSE(s.StockCode))\n                 ) + '-SINGLE-0'\n            ELSE s.StockCode + '-0'\n        END AS product_key\n    FROM dbo.Stock AS s\n    WHERE s.StockCode NOT LIKE 'SER-1-%'\n),\n\n-- Rebuild the inventory scope first so the price snapshot covers the same product keys as the daily inventory save.\nbike_qty AS (\n    SELECT\n        m.product_key,\n        s.StockLocation AS location_name,\n        COUNT(*) AS quantity_on_hand\n    FROM dbo.Stock AS s\n    INNER JOIN stock_map AS m ON m.product_id = s.StockCode\n    WHERE s.ItemType = 0\n      AND s.DateSold IS NULL\n    GROUP BY m.product_key, s.StockLocation\n),\n\n-- Sundry quantities come from counted locations, excluding BOX rows just like the inventory snapshot.\nsundry_qty AS (\n    SELECT\n        m.product_key,\n        sc.StockLocation AS location_name,\n        SUM(sc.QtyOnHand) AS quantity_on_hand\n    FROM dbo.StockCountedLocations AS sc\n    INNER JOIN stock_map AS m ON m.product_id = sc.StockCode\n    WHERE sc.StockCode NOT LIKE '%-BOX'\n    GROUP BY m.product_key, sc.StockLocation\n),\n\ncombined AS (\n    SELECT product_key, location_name, quantity_on_hand FROM bike_qty\n    UNION ALL\n    SELECT product_key, location_name, quantity_on_hand FROM sundry_qty\n),\n\n-- Keep only product keys that the inventory snapshot would actually emit.\ninventory_scope AS (\n    SELECT\n        c.product_key\n    FROM combined AS c\n    GROUP BY c.product_key\n    HAVING\n        SUM(CASE WHEN c.location_name = 'T1' THEN c.quantity_on_hand ELSE 0 END) > 0\n        OR SUM(CASE WHEN c.location_name = 'T2' THEN c.quantity_on_hand ELSE 0 END) > 0\n        OR SUM(CASE WHEN c.location_name = 'Cara' THEN c.quantity_on_hand ELSE 0 END) > 0\n),\n\n-- Bike price candidates are taken from live unsold stock rows so they match the bike inventory branch.\nbike_price_candidates AS (\n    SELECT\n        m.product_key,\n        s.StockCode AS product_id,\n        s.ModelNo AS stock_code,\n        s.RetailPrice AS rrp_price,\n        s.CostPrice AS cost_price,\n        s.SellingPrice1 AS selling_price_1,\n        s.SellingPrice3 AS selling_price_3,\n        s.SellingPrice5 AS selling_price_5,\n        s.SellingPrice7 AS selling_price_7,\n        s.TradePrice AS trade_price,\n        'bike' AS source_branch\n    FROM dbo.Stock AS s\n    INNER JOIN stock_map AS m ON m.product_id = s.StockCode\n    WHERE s.ItemType = 0\n      AND s.DateSold IS NULL\n),\n\n-- Sundry price candidates are restricted to counted-location stock codes so the branch matches non-bike inventory.\nsundry_price_candidates AS (\n    SELECT DISTINCT\n        m.product_key,\n        s.StockCode AS product_id,\n        s.ModelNo AS stock_code,\n        s.RetailPrice AS rrp_price,\n        s.CostPrice AS cost_price,\n        s.SellingPrice1 AS selling_price_1,\n        s.SellingPrice3 AS selling_price_3,\n        s.SellingPrice5 AS selling_price_5,\n        s.SellingPrice7 AS selling_price_7,\n        s.TradePrice AS trade_price,\n        'sundry' AS source_branch\n    FROM dbo.StockCountedLocations AS sc\n    INNER JOIN stock_map AS m ON m.product_id = sc.StockCode\n    INNER JOIN dbo.Stock AS s ON s.StockCode = sc.StockCode\n    WHERE sc.StockCode NOT LIKE '%-BOX'\n),\n\nprice_candidates AS (\n    SELECT\n        product_key,\n        product_id,\n        stock_code,\n        rrp_price,\n        cost_price,\n        selling_price_1,\n        selling_price_3,\n        selling_price_5,\n        selling_price_7,\n        trade_price,\n        source_branch\n    FROM bike_price_candidates\n\n    UNION ALL\n\n    SELECT\n        product_key,\n        product_id,\n        stock_code,\n        rrp_price,\n        cost_price,\n        selling_price_1,\n        selling_price_3,\n        selling_price_5,\n        selling_price_7,\n        trade_price,\n        source_branch\n    FROM sundry_price_candidates\n),\n\n-- Rank duplicates so each product key keeps one stable source row for the daily snapshot.\nranked_prices AS (\n    SELECT\n        i.product_key,\n        pc.rrp_price,\n        pc.cost_price,\n        pc.selling_price_1,\n        pc.selling_price_3,\n        pc.selling_price_5,\n        pc.selling_price_7,\n        pc.trade_price,\n        ROW_NUMBER() OVER (\n            PARTITION BY i.product_key\n            ORDER BY\n                CASE WHEN pc.source_branch = 'sundry' THEN 0 ELSE 1 END,\n                CASE WHEN pc.product_id = pc.stock_code THEN 0 ELSE 1 END,\n                pc.product_id\n        ) AS row_num\n    FROM inventory_scope AS i\n    INNER JOIN price_candidates AS pc ON pc.product_key = i.product_key\n)\n\nSELECT\n    rp.product_key,\n    rp.rrp_price,\n    rp.cost_price,\n    rp.selling_price_1,\n    rp.selling_price_3,\n    rp.selling_price_5,\n    rp.selling_price_7,\n    rp.trade_price,\n    CAST(GETDATE() AS DATE) AS query_date,\n    GETDATE() AS query_datetime\nFROM ranked_prices AS rp\nWHERE rp.row_num = 1\nORDER BY rp.product_key;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": true,
+							"keys": [
+								"product_key",
+								"query_date"
+							]
+						},
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ccdata_tables",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "-placeholder",
+							"pTable": "-placeholder"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "raw_ccdata",
+							"pTable": "Prices",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Log Load",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CCData To DWH",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"table_name": {
+							"value": "raw_ccdata.Prices",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": {
+							"value": "@pipeline().globalParameters.DWH_DB_Name",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Snapshots"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-08-15T14:14:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

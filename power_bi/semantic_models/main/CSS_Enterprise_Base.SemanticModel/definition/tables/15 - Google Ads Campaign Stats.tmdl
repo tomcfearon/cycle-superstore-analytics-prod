@@ -1,0 +1,101 @@
+table '15 - Google Ads Campaign Stats'
+	lineageTag: 9eab3d65-a6ce-444c-9bb1-e6aaea845462
+
+	measure 'Ads Cost' =
+			SUMX(
+				'15 - Google Ads Campaign Stats',
+				[Total Cost]
+			)
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		lineageTag: 1b0c4ef6-652f-4d5a-af04-f9a37d5d2519
+
+	measure 'Bottom Funnel Cost' =
+			CALCULATE(
+				[Ads Cost],
+				'51 - Google Ads Campaign'[Funnel Type] = "Bottom Funnel"
+			)
+		formatString: #,0.00\ "€";-#,0.00\ "€";#,0.00\ "€"
+		lineageTag: a9a0ce0a-81ce-46e1-ae0c-61cde3723bb7
+
+	measure 'Mid Funnel Cost' =
+			CALCULATE(
+				[Ads Cost],
+				'51 - Google Ads Campaign'[Funnel Type] = "Medium Funnel"
+			)
+		formatString: #,0.00\ "€";-#,0.00\ "€";#,0.00\ "€"
+		lineageTag: d8218ad8-53e7-4123-84c6-aa370af0509e
+
+	column 'Campaign ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 892f71b4-e16e-41b0-97b5-67853752058a
+		summarizeBy: none
+		sourceColumn: Campaign ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Stats Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 2b073f8a-0090-49a9-8919-0a1b70093316
+		summarizeBy: none
+		sourceColumn: Stats Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Total Clicks'
+		dataType: int64
+		formatString: 0
+		lineageTag: 61febb5e-c5f1-4e6b-943c-efce2b183887
+		summarizeBy: sum
+		sourceColumn: Total Clicks
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Total Impressions'
+		dataType: int64
+		formatString: 0
+		lineageTag: ebf45fed-5f81-4a55-8f6b-5aa4dfad33c8
+		summarizeBy: sum
+		sourceColumn: Total Impressions
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Total Cost'
+		dataType: double
+		lineageTag: 414a1ee7-7b1a-4bb8-b0c1-8c52b167b388
+		summarizeBy: sum
+		sourceColumn: Total Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total Interactions'
+		dataType: int64
+		formatString: 0
+		lineageTag: ba6e1242-71a3-4d22-b1de-b235ef6106f9
+		summarizeBy: sum
+		sourceColumn: Total Interactions
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '15 - Google Ads Campaign Stats' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+					Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+					#"database" = Source{[Name = Database]}[Data],
+					#"dbo_14 - Google Product Performance" = #"database"{
+						[Schema = "dbo", Item = "15 - Google Ads Campaign Stats"]
+					}[Data]
+				in
+					#"dbo_14 - Google Product Performance"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

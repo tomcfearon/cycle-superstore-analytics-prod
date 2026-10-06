@@ -1,0 +1,28 @@
+table '68 - Product Status Selector'
+	lineageTag: 7269ed82-4ec2-45bc-8400-1f64841f6e5f
+
+	column Status
+		lineageTag: 549bdb84-48bc-4012-a9b4-6b81e8939815
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Status]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '68 - Product Status Selector' = calculated
+		mode: import
+		source = ```
+				
+				DATATABLE(
+				    "Status", STRING,
+				    {
+				        {"Current Product"},
+				        {"New Product"},
+				        {"Discontinued"}
+				    }
+				)
+				
+				```
+
+	annotation PBI_Id = 56ab4da478be4c12bb13fbb0ddd31994
+

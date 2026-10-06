@@ -1,0 +1,65 @@
+table '47 - Transaction'
+	lineageTag: 47000047-0047-4047-8047-000000000047
+
+	column 'Transaction Key'
+		dataType: string
+		isKey
+		lineageTag: 47000001-0001-4001-8001-000000047001
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Document Number'
+		dataType: string
+		lineageTag: 47000002-0002-4002-8002-000000047002
+		summarizeBy: none
+		sourceColumn: Document Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Document Type'
+		dataType: string
+		lineageTag: 47000003-0003-4003-8003-000000047003
+		summarizeBy: none
+		sourceColumn: Document Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Internal Note'
+		dataType: string
+		lineageTag: 47000004-0004-4004-8004-000000047004
+		summarizeBy: none
+		sourceColumn: Internal Note
+
+		annotation SummarizationSetBy = Automatic
+
+	column Type =
+			
+			SWITCH (
+			    TRUE (),
+			    CONTAINSSTRING ( [Document Type], "Credit" ), "Credit",
+			    CONTAINSSTRING ( [Document Type], "Invoice" ), "Invoice",
+			    CONTAINSSTRING ( [Document Type], "Order" ), "Order",
+			    BLANK ()
+			)
+		lineageTag: 7fe071c3-22af-4e2f-a79c-d03a6911d281
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '47 - Transaction' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_Dim Transaction" = #"css-dwh"{[Schema="dbo",Item="Dim Transaction"]}[Data]
+				in
+				    #"dbo_Dim Transaction"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

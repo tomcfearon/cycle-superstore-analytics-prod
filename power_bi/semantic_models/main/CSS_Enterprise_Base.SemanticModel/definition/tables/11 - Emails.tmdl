@@ -1,0 +1,121 @@
+table '11 - Emails'
+	lineageTag: 94b7b660-9178-4789-9928-d2fe0b496434
+
+	column 'Received Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 8a246d6f-d944-422a-9265-39f3c5d945bb
+		summarizeBy: none
+		sourceColumn: Received Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Subject
+		dataType: string
+		lineageTag: 83b56e34-241e-4e9a-b281-a7937b580b27
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Subject
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Body Preview'
+		dataType: string
+		lineageTag: 9c7e5677-f6d9-46cb-b98e-271626375b16
+		summarizeBy: none
+		sourceColumn: Body Preview
+
+		annotation SummarizationSetBy = Automatic
+
+	column Name
+		dataType: string
+		lineageTag: 895afb2b-5c93-4eec-841c-fca1f4a297f6
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Address
+		dataType: string
+		lineageTag: 6897752a-af29-4e49-8854-22a8c422416b
+		summarizeBy: none
+		sourceColumn: Address
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ingested Time'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 82dee392-104c-4798-b0ca-e26d3eda4654
+		summarizeBy: none
+		sourceColumn: Ingested Time
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Source Mailbox Upn'
+		dataType: string
+		lineageTag: 7f68d16c-d8b0-4257-bc2d-f922c2b900e3
+		summarizeBy: none
+		sourceColumn: Source Mailbox Upn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Conversation Index'
+		dataType: string
+		lineageTag: 877eb5a9-0fa7-45b3-8dd5-43b27ed5462b
+		summarizeBy: none
+		sourceColumn: Conversation Index
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Link'
+		dataType: string
+		lineageTag: 166bf833-a768-4620-aa77-7dd7dab70007
+		summarizeBy: none
+		sourceColumn: Web Link
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Body Text'
+		dataType: string
+		lineageTag: 3dc71cdf-b230-4c49-9a75-f26dd93536e8
+		summarizeBy: none
+		sourceColumn: Body Text
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Code'
+		dataType: string
+		isHidden
+		lineageTag: 5904cb47-b3c0-40a1-847d-6c9c70aa1b81
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Conversation ID'
+		dataType: string
+		lineageTag: 5e9263f9-b922-4371-ac68-5c42a4af47dc
+		summarizeBy: none
+		sourceColumn: Conversation ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '21 - Emails' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_21 - Emails" = #"css-dwh"{[Schema="dbo",Item="11 - Emails"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_21 - Emails", each [Received Date] >= #"Data From")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

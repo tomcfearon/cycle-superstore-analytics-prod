@@ -1,0 +1,22 @@
+table '62 - Link Mode'
+	lineageTag: 005a01ea-c84e-42e2-9e01-233507d6fa48
+
+	column Mode
+		lineageTag: 8fe80f59-a019-4a10-8ea6-45941690c6cd
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mode]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '62 - Link Mode' = calculated
+		mode: import
+		source = ```
+				
+				DATATABLE("Mode", STRING, {{"VPN"}, {"Internal"}})
+				
+				
+				```
+
+	annotation PBI_Id = 4686524b440f40f6be2005b7227c1fb7
+

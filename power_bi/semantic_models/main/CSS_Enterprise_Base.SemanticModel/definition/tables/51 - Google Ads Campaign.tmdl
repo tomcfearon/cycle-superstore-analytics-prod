@@ -1,0 +1,42 @@
+table '51 - Google Ads Campaign'
+	lineageTag: 1cbba7d0-b4b8-4a07-b29b-913f802b28bb
+
+	column 'Campaign ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 94d6e92c-9bbe-4669-b4c3-7916a43171fd
+		summarizeBy: none
+		sourceColumn: Campaign ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Campaign Name'
+		dataType: string
+		lineageTag: cd74c299-0fab-4934-9fbf-ccbf1e8e993f
+		summarizeBy: none
+		sourceColumn: Campaign Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Funnel Type'
+		dataType: string
+		lineageTag: 3f494835-266c-4a60-948b-ddd6db710dee
+		summarizeBy: none
+		sourceColumn: Funnel Type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '51 - Google Ads Campaign' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name=Database]}[Data],
+				    #"dbo_48 - Engineer" = #"css-dwh-dev"{[Schema="dbo",Item="51 - Google Ads Campaign"]}[Data]
+				in
+				    #"dbo_48 - Engineer"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

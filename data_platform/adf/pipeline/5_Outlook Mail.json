@@ -1,0 +1,300 @@
+{
+	"name": "5_Outlook Mail",
+	"properties": {
+		"activities": [
+			{
+				"name": "For Each Email",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Wake DB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@createArray('web@cyclesuperstore.ie', 'sales@cyclesuperstore.ie', 'workshop@cyclesuperstore.ie', 'sales@caratrade.com')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Upsert Emails",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 60,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"additionalColumns": [
+										{
+											"name": "source_mailbox_upn",
+											"value": {
+												"value": "@item()",
+												"type": "Expression"
+											}
+										},
+										{
+											"name": "ingested_time",
+											"value": {
+												"value": "@utcNow()",
+												"type": "Expression"
+											}
+										}
+									],
+									"httpRequestTimeout": "00:03:00",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"AbsoluteUrl": "$['@odata.nextLink']"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"message_id"
+										]
+									},
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['receivedDateTime']"
+											},
+											"sink": {
+												"name": "receivedDateTime",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['subject']"
+											},
+											"sink": {
+												"name": "subject",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['bodyPreview']"
+											},
+											"sink": {
+												"name": "bodyPreview",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['from']['emailAddress']['name']"
+											},
+											"sink": {
+												"name": "name",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['from']['emailAddress']['address']"
+											},
+											"sink": {
+												"name": "address",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['conversationId']"
+											},
+											"sink": {
+												"name": "conversation_id",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['conversationIndex']"
+											},
+											"sink": {
+												"name": "conversation_index",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['webLink']"
+											},
+											"sink": {
+												"name": "webLink",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['body']['contentType']"
+											},
+											"sink": {
+												"name": "body_content_type",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['body']['content']"
+											},
+											"sink": {
+												"name": "body_text",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['id']"
+											},
+											"sink": {
+												"name": "message_id",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "$['source_mailbox_upn']"
+											},
+											"sink": {
+												"name": "source_mailbox_upn",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "$['ingested_time']"
+											},
+											"sink": {
+												"name": "ingested_time",
+												"type": "DateTime"
+											}
+										}
+									],
+									"collectionReference": "$['value']"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_rest_graph_messages",
+									"type": "DatasetReference",
+									"parameters": {
+										"relativeUrl": {
+											"value": "@concat('users/', item(), '/messages?$filter=receivedDateTime ge ', addDays(utcNow(), -8, 'yyyy-MM-ddTHH:mm:ssZ'), '&$select=receivedDateTime,subject,bodyPreview,from,conversationId,id,conversationIndex,webLink,body&$top=50')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": "raw_365",
+										"pTable": "365_mail",
+										"ds_database_name": {
+											"value": "@pipeline().globalParameters.DWH_DB_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Log Refresh Mail",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "For Each Email",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[meta].[usp_log_refresh]",
+					"storedProcedureParameters": {
+						"table_name": {
+							"value": "raw_365.365_mail",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "Azure_DWH",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"linked_db_name": "@pipeline().globalParameters.DWH_DB_Name"
+					}
+				}
+			},
+			{
+				"name": "Wake DB",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 60,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "azure_sql_dwh",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "meta",
+							"pTable": "refresh_metadata",
+							"ds_database_name": {
+								"value": "@pipeline().globalParameters.DWH_DB_Name",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}

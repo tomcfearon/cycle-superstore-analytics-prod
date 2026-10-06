@@ -1,0 +1,165 @@
+table '46 - Time'
+	lineageTag: 01689161-ddb9-4eae-9e91-bb17a8e1b876
+
+	column Value
+		isHidden
+		formatString: 0
+		lineageTag: 34b6369d-5de3-4e6e-ac29-3ad09c54638f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Minute Of Hour'
+		formatString: 0
+		lineageTag: 5a69f32a-d791-472c-b0bb-416752ee466b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Minute Of Hour]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Time
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: 4202f2b0-70b9-4f9f-8738-2297c28e5cc3
+		isDefaultLabel
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Time]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column 'Second Of Day'
+		formatString: 0
+		lineageTag: 3ec2d0a4-d208-439e-9a2b-03d3abeaea10
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Second Of Day]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Second Of Minute'
+		formatString: 0
+		lineageTag: 741af60d-4f6a-407f-bd62-028b70a70209
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Second Of Minute]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Hour Number'
+		formatString: 0
+		lineageTag: 964af7a0-721d-47df-a167-ef2862ba3447
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Hour Number]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Hour
+		lineageTag: af9dfcad-3f03-4193-9703-8704a2caf422
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Hour]
+		sortByColumn: 'Hour Number'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Store Hours Category'
+		lineageTag: bc2efd2b-788d-4457-8783-455b8ff65b9f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Store Hours Category]
+		sortByColumn: 'Store Hours Sort'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Store Hours Sort'
+		formatString: 0
+		lineageTag: 7e3b78d6-e453-4fb0-aab8-861801ff7c32
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Store Hours Sort]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '56 - Time' = calculated
+		mode: import
+		source = ```
+				
+				    VAR openS  = 9 * 3600
+				    VAR closeS = 20 * 3600 + 15 * 60    -- 20:15
+				    
+				    -- Define the irregular block split logic here so we can reuse values if needed
+				    -- However, inside ADDCOLUMNS we often have to repeat logic or use nested steps.
+				    -- For simplicity, I have corrected the Sort Logic below.
+				
+				    VAR RESULT =
+				    ADDCOLUMNS (
+				        GENERATESERIES ( 0, 86399, 1 ),
+				        
+				        "Second Of Day", [Value],
+				        "Hour Number", INT ( [Value] / 3600 ),
+				        "Minute Of Hour", INT ( MOD ( [Value], 3600 ) / 60 ),
+				        "Second Of Minute", MOD ( [Value], 60 ),
+				        
+				        -- CHANGED: Return a TIME object, not Text. Format this as HH:mm:ss in the UI.
+				        "Time", TIME (
+				                INT ( [Value] / 3600 ),
+				                INT ( MOD ( [Value], 3600 ) / 60 ),
+				                MOD ( [Value], 60 )
+				            ),
+				            
+				        "Hour", FORMAT ( INT ( [Value] / 3600 ), "00" ) & ":00",
+				
+				        "Store Hours Category",
+				        VAR v = [Value]
+				        VAR firstStart = openS              -- 09:00
+				        VAR firstEnd   = 10 * 3600 + 15 * 60 -- 10:15
+				        VAR start2     = firstEnd           -- 10:15
+				        VAR idx        = INT ( ( v - start2 ) / 3600 )
+				        
+				        VAR blockStart =
+				            IF ( v < firstEnd, firstStart, start2 + idx * 3600 )
+				        
+				        VAR blockEnd =
+				            IF (
+				                v < firstEnd,
+				                firstEnd,
+				                MIN ( start2 + ( idx + 1 ) * 3600, closeS )
+				            )
+				        
+				        VAR label =
+				            FORMAT ( TIME ( INT ( blockStart / 3600 ), INT ( MOD ( blockStart, 3600 ) / 60 ), 0 ), "HH:mm" )
+				                & "–" &
+				            FORMAT ( TIME ( INT ( blockEnd / 3600 ),   INT ( MOD ( blockEnd, 3600 ) / 60 ),   0 ), "HH:mm" )
+				        
+				        RETURN
+				            IF ( v >= openS && v < closeS, label, "Closed Hours" ),
+				
+				        -- FIXED SORT COLUMN
+				        "Store Hours Sort",
+				        VAR v = [Value]
+				        VAR firstEnd   = 10 * 3600 + 15 * 60
+				        VAR start2     = firstEnd
+				        VAR idx        = INT ( ( v - start2 ) / 3600 )
+				        
+				        -- We recalculate the Block Start to use as the Sort Key
+				        VAR blockStart =
+				             IF ( v < firstEnd, openS, start2 + idx * 3600 )
+				
+				        RETURN 
+				            IF ( [Value] >= openS && [Value] < closeS, blockStart, 999999 ) 
+				    )
+				RETURN RESULT
+				```
+
+	annotation PBI_Id = b3bc12a5a32d43f89bcab2aa2b27c0e0
+

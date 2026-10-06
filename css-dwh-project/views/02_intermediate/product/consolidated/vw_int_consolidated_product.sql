@@ -1,0 +1,72 @@
+CREATE
+-- OR ALTER
+VIEW [int].[consolidated_product]
+AS
+    -- Public contract keeps downstream joins stable while helper views own the internal logic.
+    SELECT
+        product_key,
+        stock_code,
+        brand,
+        erp_brand,
+        title,
+        product_group_title,
+        category,
+        subcategory,
+        retail_price,
+        cost_price,
+        average_cost_price,
+        selling_price_1,
+        selling_price_2,
+        selling_price_3,
+        selling_price_4,
+        selling_price_5,
+        selling_price_6,
+        selling_price_7,
+        sale_price,
+        trade_sale_price,
+        is_active,
+        is_on_web,
+        is_discontinued,
+        web_is_active,
+        web_is_list_hidden,
+        color,
+        size,
+        product_options_last_refreshed,
+        item_groupings_last_refreshed,
+        store_db_title,
+        web_link,
+        main_image_link,
+        additional_image_links,
+        web_category_path,
+        google_category,
+        html_details,
+        gender,
+        item_material,
+        web_product_id,
+        web_parent_product_id,
+        web_price,
+        web_list_price,
+        extended_warehouse_quantity,
+        web_is_bike_product,
+        model_year,
+        is_new,
+        stock_type,
+        bike_sundry,
+        bike_category,
+        electric_manual_sundry,
+        main_bike_type,
+        category_type,
+        subcategory_type,
+        variant_descriptor,
+        is_distribution,
+        main_sundry_repairs,
+        benchmark_price,
+        suggested_price,
+        clean_product_name,
+        row_modified_datetime
+    FROM [int].[product_consolidated_enriched]
+
+GO
+-- SELECT TOP 1000 *
+-- FROM [int].[consolidated_product]
+-- WHERE variant_descriptor IS NOT NULL

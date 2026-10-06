@@ -1,0 +1,17 @@
+table '63 - Used Bikes Invoices Toggle'
+	lineageTag: 44d6536c-e521-4ede-b41f-e7c4d238ad9d
+
+	column 'Include Used Bike Invoices'
+		lineageTag: 92cb90e3-f52d-453f-a8d1-1bd7a0f7eaec
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Include Used Bike Invoices]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '63 - Used Bikes Invoices Toggle' = calculated
+		mode: import
+		source = ROW("Include Used Bike Invoices", "Include Used Bike Invoices")
+
+	annotation PBI_Id = d3c6185a927a4052bf7724165ec55eb2
+

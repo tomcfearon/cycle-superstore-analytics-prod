@@ -1,0 +1,27 @@
+name: Build CSS DWH Project on Dev
+
+on:
+  push:
+    branches-ignore:
+      - main # Runs on every branch EXCEPT main
+    paths:
+      - "css-dwh-project/**"
+      - ".github/workflows/build-dwh-dev.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build SQL project
+        shell: pwsh
+        run: dotnet build "css-dwh-project/css-dwh-project.sqlproj" -c Release

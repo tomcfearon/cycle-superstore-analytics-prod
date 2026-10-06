@@ -1,0 +1,77 @@
+table '67 - Model Year Selector'
+	lineageTag: ae001be9-e646-4d59-b5fa-9050955defc9
+
+	column Brand
+		lineageTag: d10c6dcc-cd7a-4fcb-9a64-e456643ec3ed
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Brand]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Model Year'
+		lineageTag: 1aa2f800-f3b4-4abe-befa-84a336dd051d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Model Year]
+		sortByColumn: 'Model Year Sort'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Model Year Sort'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 8c9d7174-921b-4e72-b242-71c2c8aa3fcf
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Model Year Sort]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '67 - Model Year Selector' = calculated
+		mode: import
+		source = ```
+				
+				VAR Base =
+				    SELECTCOLUMNS(
+				        '42 - Product',
+				        "Brand", '42 - Product'[Brand],
+				        "Model Year", LOWER(TRIM('42 - Product'[Model Year]))
+				    )
+				VAR Clean =
+				    FILTER(
+				        Base,
+				        NOT ISBLANK([Brand]) && [Brand] <> ""
+				            && NOT ISBLANK([Model Year]) && [Model Year] <> ""
+				    )
+				RETURN
+				DISTINCT(
+				    ADDCOLUMNS(
+				        Clean,
+				        "Model Year Sort",
+				            VAR my = [Model Year]
+				            VAR digitsOnly =
+				                CONCATENATEX(
+				                    FILTER(
+				                        ADDCOLUMNS(
+				                            GENERATESERIES(1, LEN(my)),
+				                            "ch", MID(my, [Value], 1)
+				                        ),
+				                        [ch] >= "0" && [ch] <= "9"
+				                    ),
+				                    [ch],
+				                    "",
+				                    [Value],
+				                    ASC
+				                )
+				            RETURN
+				                IF(digitsOnly <> "", VALUE(digitsOnly), BLANK())
+				    )
+				)
+				
+				```
+
+	annotation PBI_Id = e0dba1f33a5b41b9a5f2215d5a0a4dde
+

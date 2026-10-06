@@ -1,0 +1,2 @@
+CREATE SCHEMA [raw_xero]
+    AUTHORIZATION [dbo];

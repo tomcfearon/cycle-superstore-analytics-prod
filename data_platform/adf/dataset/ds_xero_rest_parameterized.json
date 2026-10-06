@@ -1,0 +1,23 @@
+{
+  "name": "ds_xero_rest_parameterized",
+  "properties": {
+    "linkedServiceName": {
+      "referenceName": "Xero_Rest",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "pRelativeUrl": {
+        "type": "string"
+      }
+    },
+    "annotations": [],
+    "type": "RestResource",
+    "typeProperties": {
+      "relativeUrl": {
+        "value": "@dataset().pRelativeUrl",
+        "type": "Expression"
+      }
+    },
+    "schema": []
+  }
+}

@@ -1,0 +1,371 @@
+table '41 - Document Date'
+	lineageTag: 9002138a-6b67-499e-b7d9-c59608339296
+
+	column Date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: a39f7ba4-da0e-44c9-bd48-b03bfa139b4f
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Date Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: a5607852-d5c4-4889-a345-928f308f847f
+		summarizeBy: sum
+		sourceColumn: Date Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 2a46f157-c2fc-4ddd-8519-2e5b70578e6f
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Quarter Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 0daeffe9-03a6-4125-ade5-dd72fb45d7eb
+		summarizeBy: sum
+		sourceColumn: Quarter Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: string
+		lineageTag: f7e5cba1-1742-4011-8905-c92710ba1b43
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Quarter Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 503a30b2-bc33-4ae6-a6d8-6af04b6c8b9f
+		summarizeBy: sum
+		sourceColumn: Day of Quarter Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Quarter Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: bdadf89f-a881-4d9c-b5ee-6403ddb4caa3
+		summarizeBy: sum
+		sourceColumn: Year Quarter Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Quarter'
+		dataType: string
+		lineageTag: 294762ef-23c6-4f53-86d1-0b60218023f0
+		summarizeBy: none
+		sourceColumn: Year Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1649823a-c381-415c-a706-87e8230a87ce
+		summarizeBy: sum
+		sourceColumn: Week Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Week
+		dataType: string
+		lineageTag: c7c1683d-8e46-4f2f-901f-2e844278605a
+		summarizeBy: none
+		sourceColumn: Week
+		sortByColumn: 'Week Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Week Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8000d6dc-4231-44e3-80dc-58a0b17f74fa
+		summarizeBy: sum
+		sourceColumn: Year Week Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Week'
+		dataType: string
+		lineageTag: 1e7059ec-c678-4a36-be6e-b054de3ee827
+		summarizeBy: none
+		sourceColumn: Year Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: cb8fa3d4-ca46-41e8-869f-938f9b2b1117
+		summarizeBy: sum
+		sourceColumn: Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: string
+		lineageTag: 1049cc12-e102-44c3-a295-ef655ae0622b
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: 'Month Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4491e63f-cf19-4998-a216-68e9d2213c21
+		summarizeBy: sum
+		sourceColumn: Day of Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: bb5cef2f-aeaa-45a3-875d-d70c5f707977
+		summarizeBy: sum
+		sourceColumn: Year Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month'
+		dataType: string
+		lineageTag: 07deeb60-1111-4187-bfec-ac26c6338390
+		summarizeBy: none
+		sourceColumn: Year Month
+		sortByColumn: 'Year Month Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Start of Month'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 2583fabd-2f91-481c-82c5-9fb3bc128af4
+		summarizeBy: none
+		sourceColumn: Start of Month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'End of Month'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 122770b0-1ad4-489b-b1f4-ded745f77484
+		summarizeBy: none
+		sourceColumn: End of Month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Month In Quarter Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: f86199e5-43ea-44a4-b850-23b11224d06e
+		summarizeBy: sum
+		sourceColumn: Month In Quarter Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Of Week Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: c835356b-c100-4c03-babe-cfef1abef2d3
+		summarizeBy: sum
+		sourceColumn: Day Of Week Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Of Year Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: f757105c-d74f-4328-9e8d-97886b5891db
+		summarizeBy: sum
+		sourceColumn: Day Of Year Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: string
+		lineageTag: 0551561e-b215-4b81-978d-8ed639574a36
+		summarizeBy: none
+		sourceColumn: Day of Week
+		sortByColumn: 'Day Of Week Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Weekday Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: bb4961e6-d6d8-446d-9229-edf3d9b9159d
+		summarizeBy: sum
+		sourceColumn: Weekday Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Working Day'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ce6f9ad5-af58-4210-af67-56218b87a3d1
+		summarizeBy: none
+		sourceColumn: Is Working Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Irish Seasons'
+		dataType: string
+		lineageTag: 2c08d9a7-9bfb-40e8-b794-6636add286cc
+		summarizeBy: none
+		sourceColumn: Irish Seasons
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Day'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2da5807f-e07f-443f-af30-727319efd3dd
+		summarizeBy: none
+		sourceColumn: Is Completed Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Week'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 80cf70f8-5469-488e-b9bf-3f7f92880a70
+		summarizeBy: none
+		sourceColumn: Is Completed Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Month'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ddc5c236-e59e-44ca-9ae8-801df14eca2b
+		summarizeBy: none
+		sourceColumn: Is Completed Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Quarter'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 51d720fa-536e-47ff-9ccf-8ccfb13f9b1a
+		summarizeBy: none
+		sourceColumn: Is Completed Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Completed Year'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 27177846-091d-48dd-94a0-272ecc47e9f3
+		summarizeBy: none
+		sourceColumn: Is Completed Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Included Date'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 88176b15-31f8-4622-ac76-786ba01b15e1
+		summarizeBy: none
+		sourceColumn: Is Included Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Current Week'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5849ce02-dc3d-4563-84d9-d76b458ebba8
+		summarizeBy: none
+		sourceColumn: Is Current Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Current Week' = IF([Is Current Week] = TRUE(), "Show Current Week Only", BLANK())
+		lineageTag: 7b727331-b098-4c16-a5c8-01f538b94821
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Last 12 Completed Months' = ```
+			
+			VAR TodayDate = TODAY()
+			VAR LastCompletedMonthEnd = EOMONTH(TodayDate, -1)
+			VAR Last12MonthsStart = EOMONTH(TodayDate, -13) + 1
+			RETURN
+			    '41 - Document Date'[Date] >= Last12MonthsStart 
+			        && '41 - Document Date'[Date] <= LastCompletedMonthEnd
+			```
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5295ba42-91d2-4d08-8f35-a1917ebd24c4
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Last 12 Completed Months 30Day Delay' = ```
+			
+			VAR TodayDate = TODAY()
+			VAR StandardLastMonthEnd = EOMONTH(TodayDate, -1)
+			
+			-- Check how many days have passed since the previous month ended
+			VAR DaysSinceMonthEnd = INT(TodayDate - StandardLastMonthEnd)
+			
+			-- If less than 30 days have passed, shift back to 2 months ago
+			VAR MonthOffset = IF(DaysSinceMonthEnd >= 30, -1, -2)
+			
+			VAR LastCompletedMonthEnd = EOMONTH(TodayDate, MonthOffset)
+			VAR Last12MonthsStart = EOMONTH(LastCompletedMonthEnd, -12) + 1
+			
+			RETURN
+			    '41 - Document Date'[Date] >= Last12MonthsStart 
+			        && '41 - Document Date'[Date] <= LastCompletedMonthEnd
+			```
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: de7193ae-e1d5-44bb-b915-41252856ee53
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '41 - Document Date' = m
+		mode: import
+		source =
+				let
+				    Source       = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    Nav          = Source{[Name = #"Database"]}[Data],
+				    DocumentDate = Nav{[Schema = "dbo", Item = "41 - Document Date"]}[Data],
+				    #"Added Custom" = Table.AddColumn(DocumentDate, "Is Included Date", each if [Date] < #"Data From" then false else true),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom",{{"Is Included Date", type logical}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

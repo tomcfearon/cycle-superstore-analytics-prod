@@ -1,0 +1,3 @@
+# Source System Database Objects (`sources/`)
+
+This directory contains version-controlled DDL scripts and interface views deployed directly to **upstream source systems** (such as ERP, POS, or transactional databases) rather than the primary data warehouse (`css-dwh`).

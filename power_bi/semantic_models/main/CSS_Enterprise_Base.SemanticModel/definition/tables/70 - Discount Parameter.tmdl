@@ -1,0 +1,62 @@
+table '70 - Discount Parameter'
+	lineageTag: 28660427-91ab-44a7-98ca-d1901be41084
+
+	column Value
+		formatString: 0%;-0%;0%
+		lineageTag: 0074bd10-c498-4aae-a43c-d5f9c56f9809
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Display
+		lineageTag: 22b83607-592e-410f-9b5a-5c8a78514efb
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Display]
+		sortByColumn: SortOrder
+
+		annotation SummarizationSetBy = Automatic
+
+	column SortOrder
+		lineageTag: 4e504a97-f5e0-44af-bf44-caf31c0724e7
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [SortOrder]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '70 - Discount Parameter' = calculated
+		mode: import
+		source = ```
+				
+				// 1. Create the "None" row with a hidden negative value
+				VAR _NoneRow = 
+				    DATATABLE (
+				        "Value", DOUBLE,
+				        "Display", STRING,
+				        "SortOrder", DOUBLE,
+				        { { -0.01, "None", -1 } }
+				    )
+				
+				// 2. Generate the standard percentage series
+				VAR _NumberSeries = GENERATESERIES ( 0.00, 1.01, 0.01 )
+				
+				// 3. Add the display text and sort order to the number series
+				VAR _FormattedSeries = 
+				    ADDCOLUMNS (
+				        _NumberSeries,
+				        "Display", FORMAT([Value], "0%"),
+				        "SortOrder", [Value]
+				    )
+				
+				// 4. Combine them together
+				RETURN
+				    UNION ( _NoneRow, _FormattedSeries )
+				```
+
+	annotation PBI_Id = 72d88db6be964433a71c2f7c0d01f3b8
+

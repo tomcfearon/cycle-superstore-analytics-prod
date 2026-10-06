@@ -1,0 +1,468 @@
+table '42 - Product'
+	lineageTag: cc8ff03e-0c53-4aa2-aeba-a4cb1cc90049
+
+	column 'Product Key'
+		dataType: string
+		isKey
+		lineageTag: e7accd7a-601a-4da5-bc5d-22380c84b0f6
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Stock Code'
+		dataType: string
+		lineageTag: 0f94b609-e2d2-4d71-9a52-4cc7eefb172c
+		summarizeBy: none
+		sourceColumn: Stock Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: 1844fb22-27b4-492c-8b61-ee500e7f9fea
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column Title
+		dataType: string
+		lineageTag: f936d1a2-07f5-4ac1-aade-72677ddd67b7
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Model'
+		dataType: string
+		lineageTag: 06a5b716-f705-4a9e-9683-a65fbe5d8a2e
+		summarizeBy: none
+		sourceColumn: Product Model
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: 6c1a6938-baee-4652-b612-9cbda7f45120
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategory
+		dataType: string
+		lineageTag: e3f6168f-b0d4-422b-908d-e4180e979574
+		summarizeBy: none
+		sourceColumn: Subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Retail Price'
+		dataType: double
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		lineageTag: 2cb7928b-02f7-487c-b467-89df29a9ed29
+		summarizeBy: sum
+		sourceColumn: Retail Price
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Cost Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: 935628c9-64f4-420d-8e8f-cd0b0568cc36
+		summarizeBy: sum
+		sourceColumn: Cost Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Average Cost Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: 9f7840c0-98ab-480b-86e7-7be75cc7bbb5
+		summarizeBy: sum
+		sourceColumn: Average Cost Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Selling Price 1'
+		dataType: double
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		lineageTag: 46a379ef-71eb-45dc-af7f-006980765e1e
+		summarizeBy: sum
+		sourceColumn: Selling Price 1
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Selling Price 2'
+		dataType: double
+		formatString: Currency
+		lineageTag: 7bb2db4a-1f87-476e-8479-3d832beeb841
+		summarizeBy: sum
+		sourceColumn: Selling Price 2
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Selling Price 3'
+		dataType: double
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		lineageTag: 7493a558-a318-4fff-91e6-bac56f94462a
+		summarizeBy: sum
+		sourceColumn: Selling Price 3
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Selling Price 4'
+		dataType: double
+		formatString: Currency
+		lineageTag: 7ba44eb2-0aad-474c-8e67-6241ec142ef1
+		summarizeBy: sum
+		sourceColumn: Selling Price 4
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Selling Price 5'
+		dataType: double
+		formatString: Currency
+		lineageTag: 753e0688-9bb1-4cd2-ac7c-6a88dc171231
+		summarizeBy: sum
+		sourceColumn: Selling Price 5
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Selling Price 6'
+		dataType: double
+		formatString: Currency
+		lineageTag: 0ed9be14-b31e-49b5-bcd6-ff31bdf6291a
+		summarizeBy: sum
+		sourceColumn: Selling Price 6
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Selling Price 7'
+		dataType: double
+		formatString: Currency
+		lineageTag: 793875db-06b0-4d67-b4c7-26bfd9fbcb2d
+		summarizeBy: sum
+		sourceColumn: Selling Price 7
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sale Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: db53766f-aff6-43d0-8ac9-0a58657cbb13
+		summarizeBy: sum
+		sourceColumn: Sale Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Trade Sale Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: d84fbf9e-0bc3-4dd6-9dab-2f83df7abe6a
+		summarizeBy: sum
+		sourceColumn: Trade Sale Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Is Active'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: f752e40c-ed03-475d-942d-3645b0b9826c
+		summarizeBy: none
+		sourceColumn: Is Active
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is On Web'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 959de1d7-df8c-4a9c-88de-539bf2fb025e
+		summarizeBy: none
+		sourceColumn: Is On Web
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Discontinued'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2aec0c82-1c49-4416-8fee-dac3dfcf6731
+		summarizeBy: none
+		sourceColumn: Is Discontinued
+
+		annotation SummarizationSetBy = Automatic
+
+	column Color
+		dataType: string
+		lineageTag: 70613b2f-6a7b-4641-92d8-2e6dfb062213
+		summarizeBy: none
+		sourceColumn: Color
+
+		annotation SummarizationSetBy = Automatic
+
+	column Size
+		dataType: string
+		lineageTag: e1525570-4ec9-48f4-a366-f6ff865ea19d
+		summarizeBy: none
+		sourceColumn: Size
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Link'
+		dataType: string
+		lineageTag: 82f61538-e10c-4732-8a70-1b1dd67ba0c8
+		summarizeBy: none
+		sourceColumn: Web Link
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Main Image Link'
+		dataType: string
+		lineageTag: a3786fca-e019-4daf-8353-b57e8401ab0d
+		summarizeBy: none
+		sourceColumn: Main Image Link
+
+		annotation SummarizationSetBy = Automatic
+
+	column Gender
+		dataType: string
+		lineageTag: 19b64b08-21bc-43cf-8628-d2a0d2f0f987
+		summarizeBy: none
+		sourceColumn: Gender
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Item Material'
+		dataType: string
+		lineageTag: df5e22c7-3763-49a4-8766-519813e2717b
+		summarizeBy: none
+		sourceColumn: Item Material
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Price'
+		dataType: double
+		formatString: Currency
+		lineageTag: adc4af35-e0b0-4b30-851d-ca633a8f3b7b
+		summarizeBy: sum
+		sourceColumn: Web Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Extended Warehouse Quantity'
+		dataType: int64
+		formatString: 0
+		lineageTag: e40c8290-7b51-4573-9e3f-4ce95f9da93e
+		summarizeBy: sum
+		sourceColumn: Extended Warehouse Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Model Year'
+		dataType: string
+		lineageTag: b89da7df-cdfd-40c5-9fb7-097053c21c64
+		summarizeBy: none
+		sourceColumn: Model Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is New'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 76bf4c26-9437-4bd0-8ed3-50bb577bdcec
+		summarizeBy: none
+		sourceColumn: Is New
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product ID'
+		dataType: string
+		lineageTag: 49d36424-6a66-48cd-a2d6-ac2184f28581
+		summarizeBy: none
+		sourceColumn: Product ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Group ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3b521641-2c9d-4510-8948-391b7028b170
+		summarizeBy: count
+		sourceColumn: Product Group ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Stock Type'
+		dataType: string
+		lineageTag: 0ce26bf7-83ce-4920-ac35-c11bc4aa619c
+		summarizeBy: none
+		sourceColumn: Stock Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bike Category'
+		dataType: string
+		lineageTag: 3802ccfe-983d-46bb-a939-ca22922a41ee
+		summarizeBy: none
+		sourceColumn: Bike Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Bike/Sundry
+		dataType: string
+		lineageTag: 6a5cd2b7-bcc8-4a48-8260-2af51b796203
+		summarizeBy: none
+		sourceColumn: Bike/Sundry
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Distribution'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ea231e18-2fc3-4182-917e-994bc57035b7
+		summarizeBy: none
+		sourceColumn: Is Distribution
+
+		annotation SummarizationSetBy = Automatic
+
+	column Electric/Manual
+		dataType: string
+		lineageTag: 01ae220b-fc8c-4c94-96e4-c74b11a4b72b
+		summarizeBy: none
+		sourceColumn: Electric/Manual
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bike Type'
+		dataType: string
+		lineageTag: 4f518631-d9f5-4823-91a0-95aae924ee8d
+		summarizeBy: none
+		sourceColumn: Bike Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column Main/Sundry
+		dataType: string
+		lineageTag: 6f207030-afee-40a2-9c25-4215dd499c14
+		summarizeBy: none
+		sourceColumn: Main/Sundry
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'ERP Brand'
+		dataType: string
+		lineageTag: 54f8f835-2e74-42fa-bcc6-c72097bfeb74
+		summarizeBy: none
+		sourceColumn: ERP Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Store DB Title'
+		dataType: string
+		lineageTag: d77e82fb-1a15-4d25-87a9-f3ddee20244a
+		summarizeBy: none
+		sourceColumn: Store DB Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Category Type'
+		dataType: string
+		lineageTag: 63778485-062d-49d2-a146-860384ac876c
+		summarizeBy: none
+		sourceColumn: Category Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Subcategory Type'
+		dataType: string
+		lineageTag: 3afa6757-73bf-4e14-b324-862cce3f6678
+		summarizeBy: none
+		sourceColumn: Subcategory Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Variant Descriptor'
+		dataType: string
+		lineageTag: 307e56dc-4d8a-41b3-8b3f-383443e76aa8
+		summarizeBy: none
+		sourceColumn: Variant Descriptor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Distribution = IF([Is Distribution] = TRUE(), "Distribution", "Retail")
+		lineageTag: ad0a8894-6554-481f-be80-1fa9b45b85e7
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Benchmark Price'
+		dataType: decimal
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		lineageTag: cbbb05a4-53a9-4483-ac21-8f3b75d5d194
+		summarizeBy: sum
+		sourceColumn: Benchmark Price
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Suggested Price'
+		dataType: double
+		lineageTag: 3a3b9c8e-0b21-41d0-a486-212a66d6c608
+		summarizeBy: sum
+		sourceColumn: Suggested Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Discontinued = IF([Is Discontinued] = TRUE(), "Discontinued", "Active")
+		lineageTag: f2d3193e-8d12-48f3-98f4-3e932beb0288
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Clean Product Name'
+		dataType: string
+		lineageTag: e05a688f-8b8c-419b-95f5-c50b166b2ff5
+		summarizeBy: none
+		sourceColumn: Clean Product Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '42 - Product' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_52 - Stock" = #"css-dwh"{[Schema="dbo",Item="42 - Product"]}[Data]
+				in
+				    #"dbo_52 - Stock"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

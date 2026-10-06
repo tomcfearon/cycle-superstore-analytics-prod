@@ -1,0 +1,284 @@
+table '02 - Till Invoices'
+	lineageTag: 17953a2e-c6ff-466e-b652-b8f29405ba93
+
+	measure 'Till Invoices Amount' =
+			
+			SUMX ( '02 - Till Invoices', [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: c7a25108-bd99-4634-91d5-e32726a99763
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Till Invoices COGS' =
+			
+			SUMX ( '02 - Till Invoices', [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 1a2ef347-c733-42e7-bcbb-5a62417142df
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Till Invoices Gross Profit' =
+			
+			SUMX ( '02 - Till Invoices', [Price] - [VAT Amount] - [Cost] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: a341378e-4c2a-4f4e-9de7-dc2b478a067a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Till Invoices Note Count' =
+			
+			DISTINCTCOUNT ( '02 - Till Invoices'[Transaction Key] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 7bd2beab-7b63-46b3-a8df-a2fd7eaaf4f2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Till Invoices Units Invoiced' =
+			
+			SUMX ( '02 - Till Invoices', [Quantity] )
+		formatString: 0
+		displayFolder: _Direct Measures
+		lineageTag: 39087d65-8480-4cc3-ac28-cb2ec7f17e51
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Till Invoices Customer Count' =
+			
+			DISTINCTCOUNT ( '02 - Till Invoices'[Customer Code] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 0d1d32c8-c193-42dc-8e67-cd894ecd24e3
+
+	measure 'Till Invoices Amount (Excl. VAT)' =
+			
+			SUMX ( '02 - Till Invoices', [Price] - [VAT Amount] )
+		displayFolder: _Direct Measures
+		lineageTag: 254f8ffa-9305-4c75-8fde-4864ede6c118
+
+	measure 'Till Invoices Discount Amount' =
+			
+			SUMX ( '02 - Till Invoices', [Price Before Discount] - [Price] )
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: _Direct Measures
+		lineageTag: 03f3237b-b9d5-4a8c-bfdc-7d2a54a831ce
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Invoice Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 5686fce8-f209-4527-ac79-3d8eeb947289
+		summarizeBy: none
+		sourceColumn: Invoice Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Customer Code'
+		dataType: string
+		lineageTag: 1e3820c1-44cb-4a56-95e5-d72a936a9959
+		summarizeBy: none
+		sourceColumn: Customer Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Employee Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4345665e-1073-4cc5-9895-59856f15f3a2
+		summarizeBy: none
+		sourceColumn: Employee Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Creditor Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 72af1c4b-3c73-4ff9-9d38-64bd164a7d06
+		summarizeBy: none
+		sourceColumn: Creditor Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Key'
+		dataType: string
+		lineageTag: 4aeb6524-54ea-46f2-94a8-bee70db27649
+		summarizeBy: none
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 8a2a9d71-3eba-4e1d-83eb-18f6018b45ea
+		summarizeBy: none
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Price
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 31f6cb9c-388d-4ec0-86cd-7e20101f6c92
+		summarizeBy: none
+		sourceColumn: Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Cost
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 0543851b-cec4-4daa-bd02-ec24bf9faed4
+		summarizeBy: none
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Price Before Discount'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: 43503d57-89ef-4946-b08c-e898a2bf50e5
+		summarizeBy: none
+		sourceColumn: Price Before Discount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Approver Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 482a950b-ad73-4fd2-a638-3206411406f6
+		summarizeBy: none
+		sourceColumn: Approver Key
+
+		annotation SummarizationSetBy = User
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 06f8a31e-07dc-4cdb-b865-a2ff9231791a
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Order Time'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 54a89603-e699-49b4-8370-0fedc27cad56
+		summarizeBy: none
+		sourceColumn: Order Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column 'Is Dispatched'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ff52172e-4b9d-4e9c-813f-8858c3a05311
+		summarizeBy: none
+		sourceColumn: Is Dispatched
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Invoice Connection Number'
+		dataType: string
+		lineageTag: 186fdd5d-ca14-40a2-94c6-d98b3c246773
+		summarizeBy: none
+		sourceColumn: Invoice Connection Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Sequence Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 69a5b1e4-d55d-4a83-87f4-cfd5fceee130
+		summarizeBy: none
+		sourceColumn: Line Sequence Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Description
+		dataType: string
+		lineageTag: 48467bac-c67f-4b67-ba2a-20151f7ea7b4
+		summarizeBy: none
+		sourceColumn: Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Last Modified Datetime'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ccc8f072-1321-4b11-8894-dc19b594f385
+		summarizeBy: none
+		sourceColumn: Last Modified Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Channel'
+		dataType: string
+		lineageTag: a65d3b3c-9317-444a-890a-3459db7c21d8
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VAT Amount'
+		dataType: decimal
+		formatString: Currency
+		lineageTag: eeb58f52-bcb1-48f3-b3d5-ac0e2b3a4601
+		summarizeBy: none
+		sourceColumn: VAT Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Is From Credit Note'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7a0f823c-1afa-4782-970e-d8439fb29899
+		summarizeBy: none
+		sourceColumn: Is From Credit Note
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Transaction Key'
+		dataType: string
+		lineageTag: 1a002222-2222-4222-8222-222222222202
+		summarizeBy: none
+		sourceColumn: Transaction Key
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '02 - Till Invoices' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_12 - Till Invoices" = #"css-dwh"{[Schema="dbo",Item="02 - Till Invoices"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(#"dbo_12 - Till Invoices", each [Invoice Date] >= #"Data From"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Price", Currency.Type}, {"VAT Amount", Currency.Type}, {"Cost", Currency.Type}, {"Price Before Discount", Currency.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

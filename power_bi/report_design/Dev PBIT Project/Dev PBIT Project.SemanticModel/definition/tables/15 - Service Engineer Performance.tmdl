@@ -1,0 +1,86 @@
+table '15 - Service Engineer Performance'
+	lineageTag: 8f79991f-b81e-459c-b305-4a309e687135
+
+	column 'Activity Date'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 1bc42080-6273-4bd8-9123-e78095cc0b56
+		summarizeBy: none
+		sourceColumn: Activity Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Engineer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7437f239-0d3e-4869-af35-6ad8f8ff09d1
+		summarizeBy: none
+		sourceColumn: Engineer Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Repair Time Spent'
+		dataType: double
+		lineageTag: 0f01800f-166f-4d3a-a286-f80668cbf1db
+		summarizeBy: sum
+		sourceColumn: Repair Time Spent
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Bike Builds'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1236b6fe-d0e1-4aa3-9881-52ef211dde01
+		summarizeBy: sum
+		sourceColumn: Bike Builds
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bike Build Time'
+		dataType: double
+		lineageTag: 49a8a391-2f8b-489d-a252-1c33c92993e0
+		summarizeBy: sum
+		sourceColumn: Bike Build Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Floor Bike Builds'
+		dataType: int64
+		formatString: 0
+		lineageTag: a9f0085e-cfe5-4afb-b5d2-fc3326362d07
+		summarizeBy: sum
+		sourceColumn: Floor Bike Builds
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Floor Bike Build Time'
+		dataType: double
+		lineageTag: 89271149-650b-421c-934d-3b4200973c3d
+		summarizeBy: sum
+		sourceColumn: Floor Bike Build Time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '15 - Service Engineer Performance' = m
+		mode: import
+		queryGroup: Facts
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh-dev" = Source{[Name="css-dwh-dev"]}[Data],
+				    #"dbo_14 - Google Product Performance" = #"css-dwh-dev"{[Schema="dbo",Item="15 - Service Engineer Performance"]}[Data]
+				in
+				    #"dbo_14 - Google Product Performance"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

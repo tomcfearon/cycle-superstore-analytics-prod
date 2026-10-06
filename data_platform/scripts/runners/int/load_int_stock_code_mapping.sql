@@ -1,0 +1,1 @@
+EXECUTE [int].[usp_load_product_code_mapping] @ForceFullLoad = 0;

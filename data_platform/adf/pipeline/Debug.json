@@ -1,0 +1,378 @@
+{
+	"name": "Debug",
+	"properties": {
+		"description": "[version 2026-07-06] Publish verification marker — if you can read this in ADF Studio, the latest Dev branch changes are live.",
+		"activities": [
+			{
+				"name": "test_copy1_copy1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [
+					{
+						"name": "GCP_Project",
+						"value": "@pipeline().parameters.project_id"
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.google_views",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Google Tables_copy1_copy1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 3,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Destination",
+									"value": "@{'raw_google'}.@{item().table}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "GoogleBigQueryV2Source",
+									"query": {
+										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.project_id, '.', item().dataset, '.', item().table,\n  '` WHERE DATE(_DATA_DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 300 DAY)'\n)\n",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@concat('IF OBJECT_ID(''raw_google.', item().table, ''', ''U'') IS NOT NULL TRUNCATE TABLE [raw_google].[', item().table, '];')",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": false,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "google_data",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": {
+											"value": "raw_google",
+											"type": "Expression"
+										},
+										"pTable": {
+											"value": "@item().table",
+											"type": "Expression"
+										},
+										"ds_database_name": "e"
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "test_copy1_copy1_copy1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [
+					{
+						"name": "GCP_Project",
+						"value": "@pipeline().parameters.project_id"
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.google_views",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Google Tables_copy1_copy1_copy1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 3,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Destination",
+									"value": "@{'raw_google'}.@{item().table}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "GoogleBigQueryV2Source",
+									"query": {
+										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.project_id, '.', item().dataset, '.', item().table,\n  '` WHERE DATE(_DATA_DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 300 DAY)'\n)\n",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@concat('IF OBJECT_ID(''raw_google.', item().table, ''', ''U'') IS NOT NULL TRUNCATE TABLE [raw_google].[', item().table, '];')",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": false,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "google_data",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": {
+											"value": "raw_google",
+											"type": "Expression"
+										},
+										"pTable": {
+											"value": "@item().table",
+											"type": "Expression"
+										},
+										"ds_database_name": "e"
+									}
+								}
+							]
+						},
+						{
+							"name": "Copy Google Tables_dummy_useless_copy_for_ci_test",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Copy Google Tables_copy1_copy1_copy1",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Purpose",
+									"value": "CI deploy test only"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "GoogleBigQueryV2Source",
+									"query": {
+										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.project_id, '.', item().dataset, '.', item().table,\n  '` WHERE DATE(_DATA_DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 300 DAY)'\n)\n",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@concat('IF OBJECT_ID(''raw_google.', item().table, ''', ''U'') IS NOT NULL TRUNCATE TABLE [raw_google].[', item().table, '];')",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": false,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "google_data",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": {
+											"value": "raw_google",
+											"type": "Expression"
+										},
+										"pTable": {
+											"value": "@item().table",
+											"type": "Expression"
+										},
+										"ds_database_name": "e"
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "TestActivity3",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			},
+			{
+				"name": "test_copy1_copy1_copy2",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [
+					{
+						"name": "GCP_Project",
+						"value": "@pipeline().parameters.project_id"
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.google_views",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy Google Tables_copy1_copy1_copy2",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 3,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Destination",
+									"value": "@{'raw_google'}.@{item().table}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "GoogleBigQueryV2Source",
+									"query": {
+										"value": "@concat(\n  'SELECT * FROM `',\n  pipeline().parameters.project_id, '.', item().dataset, '.', item().table,\n  '` WHERE DATE(_DATA_DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 300 DAY)'\n)\n",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@concat('IF OBJECT_ID(''raw_google.', item().table, ''', ''U'') IS NOT NULL TRUNCATE TABLE [raw_google].[', item().table, '];')",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": false,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "google_data",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_sql_dwh",
+									"type": "DatasetReference",
+									"parameters": {
+										"pSchema": {
+											"value": "raw_google",
+											"type": "Expression"
+										},
+										"pTable": {
+											"value": "@item().table",
+											"type": "Expression"
+										},
+										"ds_database_name": "e"
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"google_views": {
+				"type": "string"
+			},
+			"project_id": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Dev Only"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-08-15T14:14:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

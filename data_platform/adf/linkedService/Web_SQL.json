@@ -1,0 +1,28 @@
+{
+	"name": "Web_SQL",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "EC2AMAZ-CRTOT3E\\SQLEXPRESS ",
+			"database": "css2",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "Tom",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "tom-on-prem-connect"
+			}
+		},
+		"connectVia": {
+			"referenceName": "Web-DB",
+			"type": "IntegrationRuntimeReference"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
+}

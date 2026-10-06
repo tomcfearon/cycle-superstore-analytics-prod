@@ -1,0 +1,83 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "96f2fff60c408ee49457",
+  "position": {
+    "x": 402.40248286333087,
+    "y": 0,
+    "z": 2,
+    "height": 243.27059191283186,
+    "width": 506.66130796883027
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Sales Invoice Gross Profit"
+                }
+              },
+              "queryRef": "00 - Measures.Sales Invoice Gross Profit",
+              "nativeQueryRef": "Sales Invoice Gross Profit"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "00 - Measures"
+                    }
+                  },
+                  "Property": "Sales Credit Gross Loss"
+                }
+              },
+              "queryRef": "00 - Measures.Sales Credit Gross Loss",
+              "nativeQueryRef": "Sales Credit Gross Loss"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "1a1aa46676dc54ccb6c5",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "00 - Measures"
+              }
+            },
+            "Property": "Sales Invoice Gross Profit"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "e01460dcc2897ed2096b",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "00 - Measures"
+              }
+            },
+            "Property": "Sales Credit Gross Loss"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

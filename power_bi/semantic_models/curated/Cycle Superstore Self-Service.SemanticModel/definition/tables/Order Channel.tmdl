@@ -1,0 +1,41 @@
+table 'Order Channel'
+	lineageTag: 75c3fcb2-86d0-4e6e-9f74-e6abad99d03c
+
+	column 'Order Channel'
+		dataType: string
+		isKey
+		lineageTag: 95bb0933-337f-4308-850b-34125cead658
+		isDefaultLabel
+		summarizeBy: none
+		sourceColumn: Order Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Web Sales' =
+			
+			IF(
+			    [Order Channel] = "In-Store",
+			    "Off"
+			)
+		isHidden
+		lineageTag: cb5b7e7e-89ed-4073-a210-44c1be9a5683
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition '55 - Order Channel' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("css-sql-prd-neu.database.windows.net"),
+				    #"css-dwh" = Source{[Name=Database]}[Data],
+				    #"dbo_55 - Order Channel" = #"css-dwh"{[Schema="dbo",Item="45 - Order Channel"]}[Data]
+				in
+				    #"dbo_55 - Order Channel"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
