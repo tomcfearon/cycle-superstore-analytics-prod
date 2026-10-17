@@ -1,7 +1,4 @@
 # Cycle Superstore Analytics Platform
-
-[![Build CSS DWH Project on Dev](https://github.com/cyclesuperstore/cycle-superstore-analytics/actions/workflows/build-dwh-dev.yml/badge.svg)](https://github.com/cyclesuperstore/cycle-superstore-analytics/actions/workflows/build-dwh-dev.yml)
-[![Deploy CSS DWH Project to Azure SQL](https://github.com/cyclesuperstore/cycle-superstore-analytics/actions/workflows/deploy-dwh-prod.yml/badge.svg)](https://github.com/cyclesuperstore/cycle-superstore-analytics/actions/workflows/deploy-dwh-prod.yml)
 ![SQL Project SDK](https://img.shields.io/badge/Microsoft.Build.Sql-2.2.0-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 
