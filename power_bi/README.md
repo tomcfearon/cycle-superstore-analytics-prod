@@ -164,7 +164,7 @@ Numbers 21 – 29 and 31 – 39 are reserved.
 
 ### Zone 3 — Report-Specific Folders (71 – 89)
 
-These measures **stay in the Enterprise model** but are only selectively copied to the specific downstream model that needs them. When using **ALM Toolkit** to push measures to a downstream model:
+These measures **stay in the Enterprise model** but are only selectively copied to the specific downstream model that needs them. 
 
 1. Copy all Zone 1 (core) and Zone 2 (system) folders — these go to every model.
 2. Copy **only the single report-specific folder** that matches the target model.
