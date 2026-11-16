@@ -116,7 +116,7 @@ All core measures live on `'00 - Measures'`. They are organised into display fol
 
 ### Zone 1 — Core Business Domains (01 – 19)
 
-These folders are **shipped to every downstream model** via ALM Toolkit. Each domain follows a standardised internal hierarchy:
+Each domain follows a standardised internal hierarchy:
 
 ```
 XX - Domain Name
